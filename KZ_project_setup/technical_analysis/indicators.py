@@ -1,5 +1,6 @@
 import pandas as pd
 import talib
+import pandas_ta as ta
 
 
 class Indicators():
@@ -10,7 +11,7 @@ class Indicators():
         self.create_ind_features()
 
     def create_ind_features(self) -> None:
-        self.create_ind_with_ct('sma', talib.SMA, self.range)
+        self.create_ind_with_ct('sma', ta.sma, self.range)
         self.create_bband_t(self.range)
         self.create_ind_with_ct('dema', talib.DEMA, self.range)
         self.create_ind_with_ct('ema', talib.EMA, self.range)
