@@ -1,14 +1,14 @@
 import pandas as pd
 import numpy as np
 import os
-from indicators import Indicators
+from technical_analysis.indicators import Indicators
 import yfinance as yf
-from candlestick_features import *
+from technical_analysis.candlestick_features import *
 
 
 class DataManipulation():
     def __init__(self, symbol: str, source: str, range: list, period=None, interval=None, 
-                                start_date=None, end_date=None, scale=1):
+                                start_date=None, end_date=None, scale=1, prefix_path='.'):
         self.symbol = symbol
         self.source = source
         self.scale = scale
@@ -17,12 +17,13 @@ class DataManipulation():
         self.interval = interval 
         self.start_date = start_date
         self.end_date = end_date
-        self.df = self.create_data_one(self.symbol, self.source, self.period, self.interval)
+        self.prefix_path = prefix_path
+        self.df = self.create_data_one(self.symbol, self.source, self.period, self.interval, prefix_path=self.prefix_path)
 
     
-    def create_data_one(self, symbol, source, period=None, interval=None) -> pd.DataFrame():
-        path_df = './outputs/data_ind/'+symbol
-        pure_data = './pure_data/'+symbol
+    def create_data_one(self, symbol, source, period=None, interval=None, prefix_path='.') -> pd.DataFrame():
+        path_df = prefix_path+'/data/outputs/data_ind/'+symbol 
+        pure_data = prefix_path+'/data/pure_data/'+symbol
         pure_file = f'{symbol}_{period}_{interval}.csv'
         file = f'{symbol}_df_{period}_{interval}.csv'
         
