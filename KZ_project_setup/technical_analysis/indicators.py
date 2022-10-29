@@ -34,11 +34,20 @@ class Indicators():
         self.create_ind_with_hlct('atr', talib.ATR, self.range)
         self.create_ind_with_hlct('natr', talib.NATR, self.range)
         self.create_ind_with_ct('roc', talib.ROC, self.range)
-
+        self.create_ind_with_c_stoch(ta.stochrsi)
+        self.create_ichmiouk_kijunsen()
 
     def create_ind_with_ct(self, ind: str, func_ta, range: list) -> None:
         for i in range:
             self.df[ind+'_'+str(i)] = func_ta(self.df['Close'], timeperiod=i)
+
+    def create_ind_with_c_stoch(self, func_ta) -> None:
+        self.df['stochrsi_k'], self.df['stochrsi_d'] = func_ta(self.df['Close'])
+
+    def create_ichmiouk_kijunsen(self) -> None:
+        period26_high = pd.rolling_max(self.df['High'], window=26)
+        period26_low = pd.rolling_min(self.df['Low'], window=26)
+        self.df['ich_kline'] = (period26_high + period26_low) / 2
 
     def create_ind_with_hlcvt(self, ind: str, func_ta, range: list) -> None:
         for i in range:
