@@ -34,7 +34,7 @@ class Indicators():
         self.create_ind_with_hlct('atr', talib.ATR, self.range)
         self.create_ind_with_hlct('natr', talib.NATR, self.range)
         self.create_ind_with_ct('roc', talib.ROC, self.range)
-        self.create_ind_with_c_stoch(ta.stochrsi)
+        self.create_ind_with_c_stoch(talib.STOCHRSI)
         self.create_ichmiouk_kijunsen()
 
     def create_ind_with_ct(self, ind: str, func_ta, range: list) -> None:
@@ -42,11 +42,11 @@ class Indicators():
             self.df[ind+'_'+str(i)] = func_ta(self.df['Close'], timeperiod=i)
 
     def create_ind_with_c_stoch(self, func_ta) -> None:
-        self.df['stochrsi_k'], self.df['stochrsi_d'] = func_ta(self.df['Close'])
+        self.df['stoch_k'], self.df['stoch_d'] = func_ta(self.df['Close'], timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
 
     def create_ichmiouk_kijunsen(self) -> None:
-        period26_high = pd.rolling_max(self.df['High'], window=26)
-        period26_low = pd.rolling_min(self.df['Low'], window=26)
+        period26_high = self.df['High'].rolling(window=26).max()
+        period26_low = self.df['Low'].rolling(window=26).min()
         self.df['ich_kline'] = (period26_high + period26_low) / 2
 
     def create_ind_with_hlcvt(self, ind: str, func_ta, range: list) -> None:

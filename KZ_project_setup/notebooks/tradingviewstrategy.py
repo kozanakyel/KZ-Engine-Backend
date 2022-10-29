@@ -10,7 +10,7 @@ screener_bist = 'turkey'
 screener_crypto = 'crypto'
 
 # df = pd.read_csv('./symbol_data/crypto.csv', index_col='Order')
-df = pd.read_csv('./symbol_data/bist100.csv', index_col='Order')
+df = pd.read_csv('./symbol_data/ana_market.csv', index_col='Order')
 df_symbols = df['Code'].to_list()
 df_symbols = [f'{exchange_bist}:{i.lower()}' for i in df_symbols]
 
@@ -56,7 +56,7 @@ print(f'INTERVAL_1_HOUR {screener_bist} INDEX BUY/SELL Signals')
 while True:
     analysis = get_multiple_analysis(
         screener=screener_bist, 
-        interval=Interval.INTERVAL_1_HOUR, 
+        interval=Interval.INTERVAL_1_DAY, 
         symbols=df_symbols
         )
 

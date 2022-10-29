@@ -122,6 +122,19 @@ def bt_plot_ind(df: pd.DataFrame(), trade_sheet: pd.DataFrame(), param1):
     ax3.set_title('pnl_cash')
     ax3.legend()
 
+def bt_plot_strategy(df: pd.DataFrame(), trade_sheet: pd.DataFrame()):
+    fig, (ax1, ax2) = plt.subplots(2,1, figsize=(10,6))
+    ax1.plot(df.index, df['Close'], label='Close')
+    ax1.scatter(trade_sheet['entry_time'], trade_sheet['entry_price'], marker='o', color='green', label='buy')
+    ax1.scatter(trade_sheet['exit_time'], trade_sheet['exit_price'], marker='x', color='red', label='sell')
+    ax1.set_xlabel('Time')
+    ax1.set_ylabel('Price')
+    ax1.legend()
+
+    ax2.plot(trade_sheet['entry_time'], trade_sheet['pnl_cash'], label='buy')
+    ax2.set_title('pnl_cash')
+    ax2.legend()
+
 
 
 def bt_band_range(df: pd.DataFrame(), upper_thresh, 
