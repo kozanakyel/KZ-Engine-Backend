@@ -36,6 +36,9 @@ class Indicators():
         self.create_ind_with_ct('roc', talib.ROC, self.range)
         self.create_ind_with_c_stoch(talib.STOCHRSI)
         self.create_ichmiouk_kijunsen()
+        self.create_ichmiouk_tenkansen()
+        self.df.ta.fisher(append=True)
+        self.df['log_rt'] = self.df.ta.log_return()
 
     def create_ind_with_ct(self, ind: str, func_ta, range: list) -> None:
         for i in range:
@@ -48,6 +51,11 @@ class Indicators():
         period26_high = self.df['High'].rolling(window=26).max()
         period26_low = self.df['Low'].rolling(window=26).min()
         self.df['ich_kline'] = (period26_high + period26_low) / 2
+
+    def create_ichmiouk_tenkansen(self) -> None:
+        period26_high = self.df['High'].rolling(window=9).max()
+        period26_low = self.df['Low'].rolling(window=9).min()
+        self.df['ich_tline'] = (period26_high + period26_low) / 2
 
     def create_ind_with_hlcvt(self, ind: str, func_ta, range: list) -> None:
         for i in range:

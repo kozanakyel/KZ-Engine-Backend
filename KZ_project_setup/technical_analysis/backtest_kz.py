@@ -314,4 +314,86 @@ def write_backtest_result(df, symbol, period, interval, result_list=None):
         for i in result_list:
             pnl = i[0]
             res_file.write(f'{pnl[0]},{pnl[1]},{i[1]},\n')
- 
+
+
+def hisse_strategy_bt(df: pd.DataFrame(), start_budget=1000) -> pd.DataFrame():
+    sample = df.copy()
+    entry_time = []
+    exit_time = []
+
+    entry_price = []
+    exit_price = []
+
+    ema5 = df['ema_5']
+    sma10 = df['sma_10']
+    macd = df['macd']
+    macds = df['macdsignal']
+    ichkline = df['ich_kline']
+    close = df['Close']
+    dmu = df['dmi_up_15']
+    dmd = df['dmi_down_15']
+    stk = df['stoch_k']
+    std = df['stoch_d']
+
+    trade_taken = False
+
+    for index, datetime in enumerate(sample.index):
+        current_datetime = datetime
+        ema5 = sample['ema_5'].iloc[index]
+        sma10 = sample['sma_10'].iloc[index]
+        macd = sample['macd'].iloc[index]
+        macds = sample['macdsignal'].iloc[index]
+        ichkline = sample['ich_kline'].iloc[index]
+        close = sample['Close'].iloc[index]
+        dmu = sample['dmi_up_15'].iloc[index]
+        dmd = sample['dmi_down_15'].iloc[index]
+        stk = sample['stoch_k'].iloc[index]
+        std = sample['stoch_d'].iloc[index]
+
+        pattern1 = ema5 >= sma10
+        pattern2 = macd > macds
+        pattern3 = ichkline < close
+        pattern4 = dmu >= dmd
+        pattern5 = sma10 < close
+        pattern6 = stk > std
+
+        all_pattern = (pattern1 and pattern2 and pattern3 and pattern4 and pattern5 and pattern6)
+
+        if all_pattern and trade_taken == True:
+            continue
+        
+        elif all_pattern and trade_taken == False:
+            trade_taken = True
+
+            entry_time.append(current_datetime)
+            entry_price.append(close)
+        elif not all_pattern and trade_taken:
+            trade_taken = False
+            exit_time.append(current_datetime)
+            exit_price.append(close)
+        
+
+        elif (index == (len(sample) - 1)) and (trade_taken != False):
+            trade_taken = False
+            exit_time.append(current_datetime)
+            exit_price.append(close)
+    
+    #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
+    if len(entry_time) != len(exit_time):
+        print(f'last entry is exist: {entry_time}, price: {entry_price}')
+        entry_time.pop()
+        entry_price.pop()
+    print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
+    trade_sheet = pd.DataFrame({"entry_time" :entry_time,
+                               "exit_time" : exit_time,
+                               "entry_price" : entry_price,
+                               "exit_price" : exit_price})
+    print(trade_sheet.index)
+    # calculating pnl from trade sheet
+    start_budget = 1000
+    for i in trade_sheet.index:
+        trade_sheet.loc[i, "pnl_percent"] = (trade_sheet.loc[i,'exit_price'] - trade_sheet.loc[i,'entry_price'])/trade_sheet.loc[i,'entry_price']
+        trade_sheet.loc[i, "pnl_cash"] = 1000 * trade_sheet.loc[i, "pnl_percent"] + start_budget - start_budget*0.001
+        start_budget = trade_sheet.loc[i, "pnl_cash"]
+    
+    return trade_sheet
