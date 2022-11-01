@@ -1,5 +1,5 @@
 import pandas as pd
-from tradingview_ta import TA_Handler, Interval, Exchange
+from tradingview_ta import TA_Handler, Interval, Exchange, Analysis
 from tradingview_ta import *
 import yfinance as yf
 import time
@@ -18,6 +18,15 @@ df_symbols = [f'{exchange_bist}:{i.lower()}' for i in df_symbols]
 df_symbols_dict = [(i.upper(), -1) for i in df_symbols] 
 df_symbols_dict = dict(df_symbols_dict)
 # return 'bist:sasa':-1
+
+def get_one_analysis(symbol, screener, exchange) -> Analysis:
+    symbol_analysis = TA_Handler(
+        symbol=symbol,
+        screener=screener,
+        exchange=exchange,
+        interval=Interval.INTERVAL_1_HOUR
+    )
+    return symbol_analysis.get_analysis()
 
 def indicator_strategy_buy_signal(stock_ind: dict, symbol_pair: dict, symbol: str, screener: str, exchange: str):
     # for current price we must get the 1 minute data otherwise our indicators wrong decision maybe
