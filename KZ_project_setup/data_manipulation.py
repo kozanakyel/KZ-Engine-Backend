@@ -84,4 +84,9 @@ class DataManipulation():
             os.makedirs(pathdf, exist_ok=True)
             with open(os.path.join(pathdf, filedf), mode='a'): pass 
             df.to_csv(os.path.join(pathdf, filedf))
+
+    def compound_annual_growth_rate(df: pd.DataFrame(), close) -> float:
+        norm = df[close][-1]/df[close][0]
+        cagr = (norm)**(1/((df.index[-1] - df.index[0]).days / 365.25)) - 1
+        return cagr
     
