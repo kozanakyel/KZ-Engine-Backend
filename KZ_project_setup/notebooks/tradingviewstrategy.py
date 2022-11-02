@@ -77,11 +77,14 @@ class TradingViewStrategy():
     def get_st_result_list(self, interval) -> list:
         result_list = []
         analysis = self.get_all_analysis(self.intervals[interval])
-        for k in analysis:
-            dict_ind = analysis[k].indicators
-            temp_symbol = self.ind_st_buy_status(dict_ind, k)
-            if temp_symbol != None:
-                result_list.append(temp_symbol)
+        try:
+            for k in analysis:
+                dict_ind = analysis[k].indicators
+                temp_symbol = self.ind_st_buy_status(dict_ind, k)
+                if temp_symbol != None:
+                    result_list.append(temp_symbol)
+        except AttributeError:
+            print(f"There is no such attribute for {k}")
         return result_list
 
     def ind_st_buy_signal(self, stock_ind: dict, symbol_pair: dict, symbol: str) -> None:
