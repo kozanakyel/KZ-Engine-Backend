@@ -135,6 +135,36 @@ def bt_plot_strategy(df: pd.DataFrame(), trade_sheet: pd.DataFrame()):
     ax2.set_title('pnl_cash')
     ax2.legend()
 
+def bt_plot_indocators(df: pd.DataFrame(), symbol: str):
+    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5,1, figsize=(15,8))
+    ax1.plot(df.index, df['Close'], label='Close')
+    ax1.plot(df.index, df['sma_8'], label='sma8')
+    ax1.plot(df.index, df['sma_10'], label='sma10')
+    ax1.plot(df.index, df['ema_10'], label='ema10')
+    ax1.set_title(f'{symbol} price and ma')
+    ax1.legend()
+
+    ax2.plot(df.index, df['FISHERT_9_1'], label='FISHERT_9_1')
+    ax2.set_title('Fischer transform')
+    ax2.legend()
+
+    ax3.plot(df.index, df['mfi_10'], label='mfi_10')
+    ax3.plot(df.index, df['mfi_5'], label='mfi_5')
+    ax3.set_title('money flow index')
+    ax3.legend()
+
+    ax4.plot(df.index, df['dmi_up_10'], label='up_10')
+    ax4.plot(df.index, df['dmi_down_10'], label='down_10')
+    ax4.set_title('Directional movement index')
+    ax4.legend()
+
+    ax5.plot(df.index, df['macd'], label='macd')
+    ax5.plot(df.index, df['macdsignal'], label='signal')
+    ax5.set_title('Macd')
+    ax5.legend()
+
+    fig.show()
+
 
 
 def bt_band_range(df: pd.DataFrame(), upper_thresh, 

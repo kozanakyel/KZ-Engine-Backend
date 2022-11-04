@@ -101,7 +101,7 @@ class TwitterCollection():
             df.to_csv(os.path.join(pathdf, filedf))
         else:
             temp_tweets = pd.read_csv(os.path.join(pathdf, filedf))
-            temp_tweets = pd.concat([df, temp_tweets], ignore_index=True)
+            temp_tweets = pd.concat([df, temp_tweets])  # extract ignore index
             temp_tweets.to_csv(os.path.join(pathdf, filedf))
 
     def get_tweets_df(self, symbol: str, pathdf: str, filedf: str) -> pd.DataFrame():
@@ -109,16 +109,17 @@ class TwitterCollection():
             print(f'This symbols {symbol} tweet not have')
             return
         else:
-            temp_tweets = pd.read_csv(os.path.join(pathdf, filedf))
+            temp_tweets = pd.read_csv(os.path.join(pathdf, filedf), index_col='index_col')
         return temp_tweets
 
-    def throw_unnamed_cols(self, query: str) -> None:
-        path_df = f'./tweets_data/{query}/'
+    def throw_unnamed_cols(self, query: str, prefix='.') -> None:
+        path_df = f'{prefix}/data/tweets_data/{query}/'
         file_df = f'{query}_tweets.csv'
         df_tweet = self.get_tweets_df('sasa', path_df, file_df)
         index_columns_list = ['created_at', 'text', 'source', 'name', 'username',
               'location', 'verified', 'description']
-        df_tweet['index_col'] = df_tweet.index
-        df_tweet = df_tweet.set_index('index_col')
         df_tweet = df_tweet.drop([i for i in df_tweet.columns.to_list() if i not in index_columns_list], axis=1)
+        df_tweet.reset_index(inplace=True)
+        df_tweet['index_col'] = df_tweet.index
+        df_tweet = df_tweet.set_index('index_col')        
         df_tweet.to_csv(os.path.join(path_df, file_df))
