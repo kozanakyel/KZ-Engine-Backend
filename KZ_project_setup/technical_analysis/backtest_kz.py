@@ -135,7 +135,7 @@ def bt_plot_strategy(df: pd.DataFrame(), trade_sheet: pd.DataFrame()):
     ax2.set_title('pnl_cash')
     ax2.legend()
 
-def bt_plot_indocators(df: pd.DataFrame(), symbol: str):
+def bt_plot_indicators(df: pd.DataFrame(), symbol: str):
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5,1, figsize=(15,8))
     ax1.plot(df.index, df['Close'], label='Close')
     ax1.plot(df.index, df['sma_8'], label='sma8')

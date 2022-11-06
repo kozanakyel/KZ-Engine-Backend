@@ -11,14 +11,14 @@ class Indicators():
         self.create_ind_features()
 
     def create_ind_features(self) -> None:
-        self.create_ind_with_ct('sma', ta.sma, self.range)
+        self.create_ind_with_ct('sma', talib.SMA, self.range)
         self.create_bband_t(self.range)
         self.create_ind_with_ct('dema', talib.DEMA, self.range)
         self.create_ind_with_ct('ema', talib.EMA, self.range)
         self.create_ind_with_ct('kama', talib.KAMA, self.range)
         self.create_ind_with_ct('t3', talib.T3, self.range)
         self.create_ind_with_ct('tema', talib.TEMA, self.range)
-        self.create_ind_with_ct('TRIMA', talib.TRIMA, self.range)
+        self.create_ind_with_ct('trima', talib.TRIMA, self.range)
         self.create_ind_with_ct('wma', talib.WMA, self.range)
         self.create_ind_with_hlct('adx', talib.ADX, self.range)
         self.create_ind_with_hlct('dmi_up', talib.PLUS_DI, self.range)
@@ -74,7 +74,6 @@ class Indicators():
         self.df['macd'], self.df['macdsignal'], self.df['macdhist'] = \
                 talib.MACD(self.df['Close'], fastperiod=fastperiod, slowperiod=slowperiod, signalperiod=signalperiod)
     
-
     def create_ind_cv(self, ind: str, func_ta):
         self.df[ind] = func_ta(self.df['Close'], self.df['Volume'])
 
