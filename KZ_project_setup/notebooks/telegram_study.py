@@ -32,8 +32,8 @@ async def main():
     print(df.head())
     df.to_csv('./burda.csv')
 
-async with client:
-    client.loop.run_until_complete(main())
+#async with client:
+#    client.loop.run_until_complete(main())
 
 import nest_asyncio
 nest_asyncio.apply()

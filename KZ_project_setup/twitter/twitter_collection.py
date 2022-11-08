@@ -28,15 +28,10 @@ class TwitterCollection():
         self.client = tweepy.Client(bearer_token=self.bearer_token)
 
     def connect_twitter(self):
-        # attempt authentication
         try:
-            # create OAuthHandler object
             auth = OAuthHandler(self.consumer_key, self.consumer_secret)
-            # set access token and secret
             auth.set_access_token(self.access_token, self.access_token_secret)
-            # create tweepy API object to fetch tweets
             api = tweepy.API(auth, wait_on_rate_limit=True)
-            #data = self.api.rate_limit_status()
             print("Authentication Successfull")
         except:
             print("Error: Authentication Failed")
@@ -55,7 +50,6 @@ class TwitterCollection():
 
     def converts_tweets_pd(self, tweets: dict) -> pd.DataFrame():
         tweet_info_ls = []
-        # iterate over each tweet and corresponding user details
         for user in tweets.includes.get('users', ''):
             for tweet, user in zip(tweets.data, tweets.includes['users']):
                 tweet_info = {
@@ -69,7 +63,6 @@ class TwitterCollection():
                 'description': user.description
                 }
                 tweet_info_ls.append(tweet_info)
-        # create dataframe from the extracted records
         tweets_df = pd.DataFrame(tweet_info_ls)
         return tweets_df
 
@@ -112,10 +105,8 @@ class TwitterCollection():
             temp_tweets = pd.read_csv(os.path.join(pathdf, filedf), index_col='index_col')
         return temp_tweets
 
-    def throw_unnamed_cols(self, query: str, prefix='.') -> None:
-        path_df = f'{prefix}/data/tweets_data/{query}/'
-        file_df = f'{query}_tweets.csv'
-        df_tweet = self.get_tweets_df('sasa', path_df, file_df)
+    def throw_unnamed_cols(self, query: str, path_df, file_df) -> None:
+        df_tweet = self.get_tweets_df(query, path_df, file_df)
         index_columns_list = ['created_at', 'text', 'source', 'name', 'username',
               'location', 'verified', 'description']
         df_tweet = df_tweet.drop([i for i in df_tweet.columns.to_list() if i not in index_columns_list], axis=1)

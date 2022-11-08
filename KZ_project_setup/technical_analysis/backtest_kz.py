@@ -66,8 +66,8 @@ def bt_crossover(df: pd.DataFrame(), upper_thresh,
     
     #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
     if len(entry_time) != len(exit_time):
-        entry_time.pop()
-        entry_price.pop()
+        exit_time.append(sample.index[-1])
+        exit_price.append(sample.Close[-1])
     #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
     trade_sheet = pd.DataFrame({"entry_time" :entry_time,
                                "exit_time" : exit_time,
@@ -103,6 +103,7 @@ def bt_plot_crossover(df: pd.DataFrame(), trade_sheet: pd.DataFrame(), param1, p
     ax3.plot(trade_sheet['entry_time'], trade_sheet['pnl_cash'], label='buy')
     ax3.set_title('pnl_cash')
     ax3.legend()
+    plt.show()
 
 def bt_plot_ind(df: pd.DataFrame(), trade_sheet: pd.DataFrame(), param1):
     fig, (ax1, ax2, ax3) = plt.subplots(3,1, figsize=(10,6))
@@ -121,6 +122,7 @@ def bt_plot_ind(df: pd.DataFrame(), trade_sheet: pd.DataFrame(), param1):
     ax3.plot(trade_sheet['entry_time'], trade_sheet['pnl_cash'], label='buy')
     ax3.set_title('pnl_cash')
     ax3.legend()
+    plt.show()
 
 def bt_plot_strategy(df: pd.DataFrame(), trade_sheet: pd.DataFrame()):
     fig, (ax1, ax2) = plt.subplots(2,1, figsize=(10,6))
@@ -134,6 +136,7 @@ def bt_plot_strategy(df: pd.DataFrame(), trade_sheet: pd.DataFrame()):
     ax2.plot(trade_sheet['entry_time'], trade_sheet['pnl_cash'], label='buy')
     ax2.set_title('pnl_cash')
     ax2.legend()
+    plt.show()
 
 def bt_plot_indicators(df: pd.DataFrame(), symbol: str):
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5,1, figsize=(15,8))
@@ -163,7 +166,7 @@ def bt_plot_indicators(df: pd.DataFrame(), symbol: str):
     ax5.set_title('Macd')
     ax5.legend()
 
-    fig.show()
+    plt.show()
 
 
 
@@ -206,8 +209,8 @@ def bt_band_range(df: pd.DataFrame(), upper_thresh,
     
     #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
     if len(entry_time) != len(exit_time):
-        entry_time.pop()
-        entry_price.pop()
+        exit_time.append(sample.index[-1])
+        exit_price.append(sample.Close[-1])
     #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
     trade_sheet = pd.DataFrame({"entry_time" :entry_time,
                                "exit_time" : exit_time,
@@ -222,8 +225,6 @@ def bt_band_range(df: pd.DataFrame(), upper_thresh,
         start_budget = trade_sheet.loc[i, "pnl_cash"]
 
     return trade_sheet
-
-
 
 def bt_threshold(df: pd.DataFrame(), indicator, upper_thresh, 
                 lower_thresh, start_budget=1000) -> pd.DataFrame():
@@ -263,8 +264,8 @@ def bt_threshold(df: pd.DataFrame(), indicator, upper_thresh,
     
     #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
     if len(entry_time) != len(exit_time):
-        entry_time.pop()
-        entry_price.pop()
+        exit_time.append(sample.index[-1])
+        exit_price.append(sample.Close[-1])
     #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
     trade_sheet = pd.DataFrame({"entry_time" :entry_time,
                                "exit_time" : exit_time,

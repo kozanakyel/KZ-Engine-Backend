@@ -9,15 +9,15 @@ from strategy_kz.strategy_var import StrategyVar
 from data_pipelines.data_manipulation import DataManipulation
 from technical_analysis.backtest_kz import *
 
-#screener="turkey"
-#exchange="BIST"
-#path_symbol = './symbol_data/ana_market.csv'
-#index = 'Order'
-
-screener="crypto"
-exchange="BINANCE"
-path_symbol = './data/symbol_data/usdtcoins.csv'
+screener="turkey"
+exchange="BIST"
+path_symbol = './data/symbol_data/ana_market.csv'
 index = 'Order'
+
+#screener="crypto"
+#exchange="BINANCE"
+#path_symbol = './data/symbol_data/usdtcoins.csv'
+#index = 'Order'
 
 SYMBOL = ''
 scale = 1
@@ -49,13 +49,10 @@ if __name__ == '__main__':
     df_filter_list = []
     for i in filtre:
         SYMBOL = f'{i}'
-        data = DataManipulation(SYMBOL, source, range, period=period, interval=interval, scale=scale, prefix_path='./coins')
+        data = DataManipulation(SYMBOL, source, range, period=period, interval=interval, scale=scale, prefix_path='./ana_market')
         if data.df is not None:
             df_filter_list.append(i)
+            bt_plot_indicators(data.df[-24*5:], i)
 
-    test_kalman = StrategyVar()
-    #test_kalman.get_kalman_filter_result(data, df_filter_list)
 
-    for symbol in df_filter_list[:5]:
-        data1 = DataManipulation(SYMBOL, source, range, period=period, interval=interval, scale=scale, prefix_path='./coins')
-        bt_plot_indicators(data1.get_symbol_df(symbol)[-24*5:], symbol)
+    
