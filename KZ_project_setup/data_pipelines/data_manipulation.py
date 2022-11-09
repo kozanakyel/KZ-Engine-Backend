@@ -117,6 +117,7 @@ class DataManipulation():
             self.add_lags(sample, df, 5)
             sample['log_return'] = df.log_rt
             sample.drop(columns=['Close', 'Volume'], axis=1, inplace=True)
+            sample = sample.replace([np.inf, -np.inf], np.nan).dropna()
             self.write_file_data(sample, path_df, file_df)
 
         return sample
