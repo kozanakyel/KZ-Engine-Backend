@@ -21,8 +21,8 @@ index = 'Order'
 
 SYMBOL = ''
 scale = 1
-range = [5, 8, 10, 15, 20, 25]
-range = [i*scale for i in range]
+range_list = [5, 8, 10, 15, 20, 25]
+range_list = [i*scale for i in range_list]
 period = '3mo'
 interval = '1h'
 start_date = ''
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     df_filter_list = []
     for i in filtre:
         SYMBOL = f'{i}'
-        data = DataManipulation(SYMBOL, source, range, period=period, interval=interval, scale=scale, prefix_path='./ana_market')
+        data = DataManipulation(SYMBOL, source, range_list, period=period, interval=interval, scale=scale, prefix_path='./ana_market')
         if data.df is not None:
             df_filter_list.append(i)
             bt_plot_indicators(data.df[-24*5:], i)

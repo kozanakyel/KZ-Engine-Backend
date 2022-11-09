@@ -54,7 +54,7 @@ class DataManipulation():
             self.df = self.df.set_index('Datetime')
             if self.df.shape[0] > self.range[-1]:
                 self.write_file_data(self.df, pure_data, pure_file)
-
+                
                 ind = Indicators(self.df, self.range)
                 create_candle_columns(self.df, candle_names=candle_names, candle_rankings=candle_rankings)
                 create_candle_label(self.df)
@@ -84,6 +84,107 @@ class DataManipulation():
             os.makedirs(pathdf, exist_ok=True)
             with open(os.path.join(pathdf, filedf), mode='a'): pass 
             df.to_csv(os.path.join(pathdf, filedf))
+
+    def extract_features(self):
+        df = self.df.copy()
+        sample  = df[['Open','High','Low','Close','Volume']].copy()
+        sample.drop(columns=['Open','High','Low'], axis=1, inplace=True)
+        sample['st_hisse'] = np.nan
+        sample['st_stoch'] = np.nan
+        sample['st_fisher'] = np.nan
+        sample['st_ich'] = np.nan
+        sample['st_mfi'] = np.nan
+
+        for index, datetime in enumerate(df.index):
+            current_datetime = datetime
+            ema5 = df['ema_5'].iloc[index]
+            sma10 = df['sma_10'].iloc[index]
+            macd = df['macd'].iloc[index]
+            macds = df['macdsignal'].iloc[index]
+            ichkline = df['ich_kline'].iloc[index]
+            ichtline = df['ich_tline'].iloc[index]
+            close = df['Close'].iloc[index]
+            dmu = df['dmi_up_15'].iloc[index]
+            dmd = df['dmi_down_15'].iloc[index]
+            stk = df['stoch_k'].iloc[index]
+            std = df['stoch_d'].iloc[index]
+            fischer = df['FISHERT_9_1'].iloc[index]
+            mfi = df['mfi_20'].iloc[index]
+
+            if stk >= std:
+                sample['st_stoch'].iloc[index] = 1
+            else:
+                sample['st_stoch'].iloc[index] = 0
+
+            if fischer >= 2.5:
+                sample['st_fisher'].iloc[index] = 3
+            elif fischer >= -2.5:
+                sample['st_fisher'].iloc[index] = 2
+            else:
+                sample['st_fisher'].iloc[index] = 1 
+
+            if mfi >= 75:
+                sample['st_mfi'].iloc[index] = 3
+            elif mfi >= 25:
+                sample['st_mfi'].iloc[index] = 2
+            else:
+                sample['st_mfi'].iloc[index] = 1 
+
+            pattern1 = ema5 >= sma10
+            pattern2 = macd > macds
+            pattern3 = ichkline < close
+            pattern4 = dmu >= dmd
+            pattern5 = sma10 < close
+            pattern6 = stk > std
+
+            all_pattern = (pattern1 and pattern2 and pattern3 and pattern4 and pattern5 and pattern6)
+            if all_pattern:
+                sample['st_hisse'].iloc[index] = 1
+            else:
+                sample['st_hisse'].iloc[index] = 0
+        
+        self.norm_features_ind(sample, df, 'ema', self.range, df.Close)
+        self.norm_features_ind(sample, df, 'mfi', self.range, 100)
+        self.norm_features_ind(sample, df, 'sma', self.range, df.Close)
+        self.norm_features_ind(sample, df, 'wma', self.range, df.Close)
+        self.norm_features_ind(sample, df, 'tema', self.range, df.Close)
+        self.norm_features_ind(sample, df, 'kama', self.range, df.Close)
+        self.norm_features_ind(sample, df, 'rsi', self.range, 100)
+        self.norm_adx_ind(sample, df, self.range)
+        sample['st_ich'] = (df['ich_tline'] > df['ich_kline']).astype(int)
+        
+        sample['month'] = sample.index.month
+        sample['weekday'] = sample.index.weekday
+        sample['is_quarter_end'] = sample.index.is_quarter_end*1
+        sample['candle'] = df.candle_label
+        sample['vol_delta'] = sample['Volume'].pct_change()
+        self.add_lags(sample, df, 5)
+        sample['log_return'] = df.log_rt
+        sample.drop(columns=['Close', 'Volume'], axis=1, inplace=True)
+
+        return sample
+
+    def norm_features_ind(self, sampledf, df, ind, range, dividend):
+        k = 0
+        for i in range:
+            sampledf[f'st_{ind}_{i}'] = (dividend - df[f'{ind}_{i}']) / dividend
+            if k % 2 == 1:
+                sampledf[f'st_cut_{ind}_{range[k-1]}_{range[k]}'] = \
+                        (df[f'{ind}_{range[k-1]}'] > df[f'{ind}_{range[k]}']).astype(int)
+            k += 1
+
+    def norm_adx_ind(self, sampledf, df, range):
+        for i in range:
+            sampledf[f'st_adx_{i}'] = (100 - df[f'adx_{i}']) / 100
+            pattern1 = df[f'adx_{i}'] < 50
+            pattern2 = df[f'dmi_up_{i}'] > df[f'dmi_down_{i}']
+            sampledf[f'st_adxdmi_{i}'] = (pattern2).astype(int) + pattern1
+
+    def add_lags(self, sampledf: pd.DataFrame(), df: pd.DataFrame(), lag_numbers: int) -> None:
+        i = 1
+        while i < lag_numbers:
+            sampledf[f'lag_{i}'] = (df.log_rt.shift(i) > 0).astype(int)
+            i += 1
 
     def compound_annual_growth_rate(df: pd.DataFrame(), close) -> float:
         norm = df[close][-1]/df[close][0]
