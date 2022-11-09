@@ -139,11 +139,13 @@ def bt_plot_strategy(df: pd.DataFrame(), trade_sheet: pd.DataFrame()):
     plt.show()
 
 def bt_plot_indicators(df: pd.DataFrame(), symbol: str):
+
+    
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5,1, figsize=(15,8))
     ax1.plot(df.index, df['Close'], label='Close')
-    ax1.plot(df.index, df['sma_8'], label='sma8')
+    ax1.plot(df.index, df['sma_5'], label='sma5')
     ax1.plot(df.index, df['sma_10'], label='sma10')
-    ax1.plot(df.index, df['ema_10'], label='ema10')
+    ax1.plot(df.index, df['ema_15'], label='ema15')
     ax1.set_title(f'{symbol} price and ma')
     ax1.legend()
 
