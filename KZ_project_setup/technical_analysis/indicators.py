@@ -1,7 +1,13 @@
 import pandas as pd
 import talib
 import pandas_ta as ta
-import numpy as np
+from technical_analysis.candlestick_features import *
+"""
+@author: Ugur AKYEL
+@description: For creating columns and Dataframes with related to technical analysis and indicators
+                each talib or pandas_ta library using for any programming environment you can
+                work this code.
+"""
 
 
 class Indicators():
@@ -10,9 +16,9 @@ class Indicators():
         self.range_list = range_list
         self.df = df.copy()
 
-    def create_ind_features(self) -> None:
+    def create_ind_candle_cols_talib(self) -> None:
         self.create_ind_with_ct(self.df, 'sma', talib.SMA, self.range_list)
-        self.create_bband_t(self.df, self.range_list)
+        self.create_bband_t(self.df, talib.BBANDS, self.range_list)
         self.create_ind_with_ct(self.df, 'dema', talib.DEMA, self.range_list)
         self.create_ind_with_ct(self.df, 'ema', talib.EMA, self.range_list)
         self.create_ind_with_ct(self.df, 'kama', talib.KAMA, self.range_list)
@@ -24,7 +30,7 @@ class Indicators():
         self.create_ind_with_hlct(self.df, 'dmi_up', talib.PLUS_DI, self.range_list)
         self.create_ind_with_hlct(self.df, 'dmi_down', talib.MINUS_DI, self.range_list)
         self.create_ind_with_ct(self.df, 'cmo', talib.CMO, self.range_list)
-        self.create_macd(self.df)
+        self.create_macd(self.df, talib.MACD)
         self.create_ind_with_hlct(self.df, 'cci', talib.CCI, self.range_list)
         self.create_ind_with_ct(self.df, 'rsi', talib.RSI, self.range_list)
         self.create_ind_with_hlct(self.df, 'wllr', talib.WILLR, self.range_list)
@@ -38,6 +44,9 @@ class Indicators():
         self.create_ichmiouk_kijunsen(self.df)
         self.create_ichmiouk_tenkansen(self.df)
         self.df.ta.fisher(append=True)
+        create_candle_columns(self.df, candle_names=candle_names, candle_rankings=candle_rankings)
+        create_candle_label(self.df)
+        self.df = self.df.drop(columns=['candlestick_match_count'], axis=1)
         self.df['log_rt'] = self.df.ta.log_return()
 
     def create_ind_with_ct(self, dft: pd.DataFrame(), ind: str, func_ta, range_list: list) -> None:
@@ -65,14 +74,14 @@ class Indicators():
         for i in range_list:
             dft[ind+'_'+str(i)] = func_ta(dft['High'], dft['Low'], dft['Close'], timeperiod=i)
 
-    def create_bband_t(self, dft: pd.DataFrame(), range_list: list, nbdevup=1, nbdevdn=1, matype=0) -> None:
+    def create_bband_t(self, dft: pd.DataFrame(), func_ta, range_list: list, nbdevup=1, nbdevdn=1, matype=0) -> None:
         for i in range_list:
             dft['upband_'+str(i)], dft['midband_'+str(i)], dft['lowband_'+str(i)] = \
-                        talib.BBANDS(dft['Close'], timeperiod=i, nbdevup=nbdevup, nbdevdn=nbdevdn, matype=matype)
+                        func_ta(dft['Close'], timeperiod=i, nbdevup=nbdevup, nbdevdn=nbdevdn, matype=matype)
 
-    def create_macd(self, dft: pd.DataFrame(), fastperiod=12, slowperiod=26, signalperiod=9) -> None:
+    def create_macd(self, dft: pd.DataFrame(), func_ta, fastperiod=12, slowperiod=26, signalperiod=9) -> None:
         dft['macd'], dft['macdsignal'], dft['macdhist'] = \
-                talib.MACD(dft['Close'], fastperiod=fastperiod, slowperiod=slowperiod, signalperiod=signalperiod)
+                func_ta(dft['Close'], fastperiod=fastperiod, slowperiod=slowperiod, signalperiod=signalperiod)
     
     def create_ind_cv(self, dft: pd.DataFrame(), ind: str, func_ta):
         dft[ind] = func_ta(dft['Close'], dft['Volume'])

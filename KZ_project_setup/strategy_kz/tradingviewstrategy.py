@@ -92,19 +92,20 @@ class TradingViewStrategy():
         pattern4 = stock_ind['ADX+DI'] >= stock_ind['ADX-DI']
         pattern5 = stock_ind['SMA10'] < stock_ind['close']
         pattern6 = stock_ind['Stoch.K'] > stock_ind['Stoch.D']
+        close = stock_ind['close']
 
         all_pattern = (pattern1 and pattern2 and pattern3 and pattern4 and pattern5 and pattern6)
 
         if all_pattern and symbol_pair[symbol] == -1:
-            print(f'INITLIAZE SIGNAL AT NOW BUY {symbol} at {current_price}')
+            print(f'INITLIAZE SIGNAL AT NOW BUY {symbol} at {close}')
             symbol_pair[symbol] = 1
         elif not all_pattern and symbol_pair[symbol] == -1:
             symbol_pair[symbol] = 0
         elif all_pattern and symbol_pair[symbol] == 0:
-            print(f'BUY SIGNAL FOR {symbol} at {current_price}')
+            print(f'BUY SIGNAL FOR {symbol} at {close}')
             symbol_pair[symbol] = 1
         elif symbol_pair[symbol] == 1 and not all_pattern:
-            print(f'SELL SIGNAL FOR {symbol} at {current_price}')
+            print(f'SELL SIGNAL FOR {symbol} at {close}')
             symbol_pair[symbol] = 0
         
     def listen_live_signal(self, interval, sleep_time=60*15) -> None:

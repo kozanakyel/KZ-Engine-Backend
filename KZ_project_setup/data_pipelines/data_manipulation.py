@@ -3,7 +3,7 @@ import numpy as np
 import os
 from technical_analysis.indicators import Indicators
 import yfinance as yf
-from technical_analysis.candlestick_features import *
+
 
 
 class DataManipulation():
@@ -59,9 +59,6 @@ class DataManipulation():
                 indicators = Indicators(self.df, self.range_list)
                 indicators.create_ind_features()
                 self.df = indicators.df.copy()
-                create_candle_columns(self.df, candle_names=candle_names, candle_rankings=candle_rankings)
-                create_candle_label(self.df)
-                self.df = self.df.drop(columns=['candlestick_match_count'], axis=1)
 
                 if 'Adj Close' in self.df.columns.to_list():
                     self.df = self.df.rename(columns={"Adj Close": "Adj_close"})
