@@ -14,7 +14,7 @@ def make_backtest(df, range) -> dict:
     write_bt_crossover(df, 'kama', bt_crossover, range, result_list)
     write_bt_crossover(df, 't3', bt_crossover, range, result_list)
     write_bt_crossover(df, 'tema', bt_crossover, range, result_list)
-    write_bt_crossover(df, 'TRIMA', bt_crossover, range, result_list)
+    write_bt_crossover(df, 'trima', bt_crossover, range, result_list)
     write_bt_crossover(df, 'wma', bt_crossover, range, result_list)
     write_bt_band(df, range, result_list, up='dmi_up', low='dmi_down')
     write_bt_crossover(df, 'cmo', bt_crossover, range, result_list)
@@ -42,7 +42,7 @@ def bt_crossover(df: pd.DataFrame(), upper_thresh,
         current_datetime = datetime
         upper = df[upper_thresh].iloc[index]
         lower = df[lower_thresh].iloc[index]
-        close = sample['Close'].iloc[index]
+        close = sample['close'].iloc[index]
         
         
         if (upper > lower) and (trade_taken == True):
@@ -67,7 +67,7 @@ def bt_crossover(df: pd.DataFrame(), upper_thresh,
     #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
     if len(entry_time) != len(exit_time):
         exit_time.append(sample.index[-1])
-        exit_price.append(sample.Close[-1])
+        exit_price.append(sample.close[-1])
     #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
     trade_sheet = pd.DataFrame({"entry_time" :entry_time,
                                "exit_time" : exit_time,
@@ -85,7 +85,7 @@ def bt_crossover(df: pd.DataFrame(), upper_thresh,
 
 def bt_plot_crossover(df: pd.DataFrame(), trade_sheet: pd.DataFrame(), param1, param2):
     fig, (ax1, ax2, ax3) = plt.subplots(3,1, figsize=(10,6))
-    ax1.plot(df.index, df['Close'], label='Close')
+    ax1.plot(df.index, df['close'], label='close')
     ax1.plot(df.index, df[param1], label=param1)
     ax1.plot(df.index, df[param2], label=param2)
     ax1.scatter(trade_sheet['entry_time'], trade_sheet['entry_price'], marker='o', color='green', label='buy')
@@ -107,7 +107,7 @@ def bt_plot_crossover(df: pd.DataFrame(), trade_sheet: pd.DataFrame(), param1, p
 
 def bt_plot_ind(df: pd.DataFrame(), trade_sheet: pd.DataFrame(), param1):
     fig, (ax1, ax2, ax3) = plt.subplots(3,1, figsize=(10,6))
-    ax1.plot(df.index, df['Close'], label='Close')
+    ax1.plot(df.index, df['close'], label='close')
     ax1.scatter(trade_sheet['entry_time'], trade_sheet['entry_price'], marker='o', color='green', label='buy')
     ax1.scatter(trade_sheet['exit_time'], trade_sheet['exit_price'], marker='x', color='red', label='sell')
     ax1.set_xlabel('Time')
@@ -126,7 +126,7 @@ def bt_plot_ind(df: pd.DataFrame(), trade_sheet: pd.DataFrame(), param1):
 
 def bt_plot_strategy(df: pd.DataFrame(), trade_sheet: pd.DataFrame()):
     fig, (ax1, ax2) = plt.subplots(2,1, figsize=(10,6))
-    ax1.plot(df.index, df['Close'], label='Close')
+    ax1.plot(df.index, df['close'], label='close')
     ax1.scatter(trade_sheet['entry_time'], trade_sheet['entry_price'], marker='o', color='green', label='buy')
     ax1.scatter(trade_sheet['exit_time'], trade_sheet['exit_price'], marker='x', color='red', label='sell')
     ax1.set_xlabel('Time')
@@ -142,14 +142,14 @@ def bt_plot_indicators(df: pd.DataFrame(), symbol: str):
 
     
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5,1, figsize=(15,8))
-    ax1.plot(df.index, df['Close'], label='Close')
+    ax1.plot(df.index, df['close'], label='close')
     ax1.plot(df.index, df['sma_5'], label='sma5')
     ax1.plot(df.index, df['sma_10'], label='sma10')
     ax1.plot(df.index, df['ema_15'], label='ema15')
     ax1.set_title(f'{symbol} price and ma')
     ax1.legend()
 
-    ax2.plot(df.index, df['FISHERT_9_1'], label='FISHERT_9_1')
+    ax2.plot(df.index, df['fishert_9_1'], label='FISHERT_9_1')
     ax2.set_title('Fischer transform')
     ax2.legend()
 
@@ -187,7 +187,7 @@ def bt_band_range(df: pd.DataFrame(), upper_thresh,
         current_datetime = datetime
         upper = df[upper_thresh].iloc[index]
         lower = df[lower_thresh].iloc[index]
-        close = sample['Close'].iloc[index]
+        close = sample['close'].iloc[index]
         
         if (lower < close) and (upper > close) and (trade_taken == True):
             continue
@@ -212,7 +212,7 @@ def bt_band_range(df: pd.DataFrame(), upper_thresh,
     #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
     if len(entry_time) != len(exit_time):
         exit_time.append(sample.index[-1])
-        exit_price.append(sample.Close[-1])
+        exit_price.append(sample.close[-1])
     #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
     trade_sheet = pd.DataFrame({"entry_time" :entry_time,
                                "exit_time" : exit_time,
@@ -242,7 +242,7 @@ def bt_threshold(df: pd.DataFrame(), indicator, upper_thresh,
     for index,datetime in enumerate(sample.index):
         current_datetime = datetime
         indicat = df[indicator].iloc[index]
-        close = sample['Close'].iloc[index]
+        close = sample['close'].iloc[index]
         
         if (lower_thresh < indicat) and (upper_thresh > indicat) and (trade_taken == True):
             continue
@@ -267,7 +267,7 @@ def bt_threshold(df: pd.DataFrame(), indicator, upper_thresh,
     #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
     if len(entry_time) != len(exit_time):
         exit_time.append(sample.index[-1])
-        exit_price.append(sample.Close[-1])
+        exit_price.append(sample.close[-1])
     #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
     trade_sheet = pd.DataFrame({"entry_time" :entry_time,
                                "exit_time" : exit_time,
@@ -362,7 +362,7 @@ def hisse_strategy_bt(df: pd.DataFrame(), start_budget=1000) -> pd.DataFrame():
     macd = df['macd']
     macds = df['macdsignal']
     ichkline = df['ich_kline']
-    close = df['Close']
+    close = df['close']
     dmu = df['dmi_up_15']
     dmd = df['dmi_down_15']
     stk = df['stoch_k']
@@ -377,7 +377,7 @@ def hisse_strategy_bt(df: pd.DataFrame(), start_budget=1000) -> pd.DataFrame():
         macd = sample['macd'].iloc[index]
         macds = sample['macdsignal'].iloc[index]
         ichkline = sample['ich_kline'].iloc[index]
-        close = sample['Close'].iloc[index]
+        close = sample['close'].iloc[index]
         dmu = sample['dmi_up_15'].iloc[index]
         dmd = sample['dmi_down_15'].iloc[index]
         stk = sample['stoch_k'].iloc[index]

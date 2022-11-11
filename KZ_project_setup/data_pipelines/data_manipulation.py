@@ -3,12 +3,13 @@ import numpy as np
 import os
 from technical_analysis.indicators import Indicators
 import yfinance as yf
+import shutil
 
 
 
 class DataManipulation():
     def __init__(self, symbol: str, source: str, range_list: list, period=None, interval=None, 
-                                start_date=None, end_date=None, scale=1, prefix_path='.'):
+                                start_date=None, end_date=None, scale=1, prefix_path='.', saved_to_csv=True):
         self.symbol = symbol
         self.source = source
         self.scale = scale
@@ -18,6 +19,7 @@ class DataManipulation():
         self.start_date = start_date
         self.end_date = end_date
         self.prefix_path = prefix_path
+        self.saved_to_csv = saved_to_csv
         self.df = self.create_data_one(self.symbol, self.source, self.period, self.interval, prefix_path=self.prefix_path)
 
     def get_symbol_df(self, symbol, pure=False):
@@ -49,22 +51,28 @@ class DataManipulation():
             self.df = self.df.set_index('Datetime')
 
         elif source == 'yahoo' and period != None:
+
             df_download = yf.download(symbol, period=period, interval=interval)
             self.df = df_download.copy()
             self.df['Datetime'] = self.df.index
             self.df = self.df.set_index('Datetime')
+
             if self.df.shape[0] > self.range_list[-1]:
-                self.write_file_data(self.df, pure_data, pure_file)
+                self.df.columns = self.df.columns.str.lower()
+                if 'adj close' in self.df.columns.to_list():
+                    self.df = self.df.rename(columns={'adj close': 'adj_close'})             # all the column names to lowercase
+                if self.saved_to_csv:
+                    self.write_file_data(self.df, pure_data, pure_file)
                 
                 indicators = Indicators(self.df, self.range_list)
-                indicators.create_ind_features()
+                indicators.create_ind_candle_cols_talib()
                 self.df = indicators.df.copy()
-
-                if 'Adj Close' in self.df.columns.to_list():
-                    self.df = self.df.rename(columns={"Adj Close": "Adj_close"})
+                self.df.columns = self.df.columns.str.lower() 
                 self.create_binary_feature_label()
                 self.df.dropna(inplace= True, how='any')
-                self.write_file_data(self.df, path_df, file) 
+                
+                if self.saved_to_csv:
+                    self.write_file_data(self.df, path_df, file) 
             else:
                 print(f'{self.symbol} shape size not sufficient from download')
                 return None
@@ -73,7 +81,7 @@ class DataManipulation():
         
     
     def create_binary_feature_label(self) -> None:
-        self.df['d_r'] = self.df['Close'].pct_change()
+        self.df['d_r'] = self.df['close'].pct_change()
         self.df['temp'] = self.df['d_r']*10000
         self.df['feature_label'] = np.where(self.df['temp'].ge(0), 1, 0)
         self.df['feature_label'] = self.df['feature_label'].shift()
@@ -115,7 +123,8 @@ class DataManipulation():
             sample['log_return'] = df.log_rt
             sample.drop(columns=['Close', 'Volume'], axis=1, inplace=True)
             sample = sample.replace([np.inf, -np.inf], np.nan).dropna()
-            self.write_file_data(sample, path_df, file_df)
+            if self.saved_to_csv:
+                self.write_file_data(sample, path_df, file_df)
 
         return sample
 
@@ -141,14 +150,10 @@ class DataManipulation():
             sampledf[f'lag_{i}'] = (df.log_rt.shift(i) > 0).astype(int)
             i += 1
 
-    def compound_annual_growth_rate(df: pd.DataFrame(), close) -> float:
-        norm = df[close][-1]/df[close][0]
-        cagr = (norm)**(1/((df.index[-1] - df.index[0]).days / 365.25)) - 1
-        return cagr
 
     def pattern_helper_for_extract_feature(self, df):
-        sample  = df[['Open','High','Low','Close','Volume']].copy()
-        sample.drop(columns=['Open','High','Low'], axis=1, inplace=True)
+        sample  = df[['open','high','low','close','volume']].copy()
+        sample.drop(columns=['open','high','low'], axis=1, inplace=True)
         sample['st_hisse'] = np.nan
         sample['st_stoch'] = np.nan
         sample['st_fisher'] = np.nan
@@ -163,12 +168,12 @@ class DataManipulation():
             macds = df['macdsignal'].iloc[index]
             ichkline = df['ich_kline'].iloc[index]
             ichtline = df['ich_tline'].iloc[index]
-            close = df['Close'].iloc[index]
+            close = df['close'].iloc[index]
             dmu = df['dmi_up_15'].iloc[index]
             dmd = df['dmi_down_15'].iloc[index]
             stk = df['stoch_k'].iloc[index]
             std = df['stoch_d'].iloc[index]
-            fischer = df['FISHERT_9_1'].iloc[index]
+            fischer = df['fishert_9_1'].iloc[index]
             mfi = df['mfi_20'].iloc[index]
 
             if stk >= std:
@@ -204,4 +209,12 @@ class DataManipulation():
                 sample['st_hisse'].iloc[index] = 0
 
         return sample
+
+
+    def remove_directory(self, path: str) -> None:
+        if os.path.exists(path):
+            shutil.rmtree(path)
+            print(f'The path is REMOVED: {path}')
+        else:
+            print(f'The path is not exist. {path}')
     

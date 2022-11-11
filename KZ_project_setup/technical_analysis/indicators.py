@@ -51,40 +51,50 @@ class Indicators():
 
     def create_ind_with_ct(self, dft: pd.DataFrame(), ind: str, func_ta, range_list: list) -> None:
         for i in range_list:
-            dft[ind+'_'+str(i)] = func_ta(dft['Close'], timeperiod=i)
+            dft[ind+'_'+str(i)] = func_ta(dft['close'], timeperiod=i)
 
     def create_ind_with_c_stoch(self, dft: pd.DataFrame(), func_ta) -> None:
-        dft['stoch_k'], dft['stoch_d'] = func_ta(dft['Close'], timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
+        dft['stoch_k'], dft['stoch_d'] = func_ta(dft['close'], timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
 
     def create_ichmiouk_kijunsen(self, dft: pd.DataFrame()) -> None:
-        period26_high = dft['High'].rolling(window=26).max()
-        period26_low = dft['Low'].rolling(window=26).min()
+        period26_high = dft['high'].rolling(window=26).max()
+        period26_low = dft['low'].rolling(window=26).min()
         dft['ich_kline'] = (period26_high + period26_low) / 2
 
     def create_ichmiouk_tenkansen(self, dft: pd.DataFrame()) -> None:
-        period26_high = dft['High'].rolling(window=9).max()
-        period26_low = dft['Low'].rolling(window=9).min()
+        period26_high = dft['high'].rolling(window=9).max()
+        period26_low = dft['low'].rolling(window=9).min()
         dft['ich_tline'] = (period26_high + period26_low) / 2
 
     def create_ind_with_hlcvt(self, dft: pd.DataFrame(), ind: str, func_ta, range_list: list) -> None:
         for i in range_list:
-            dft[ind+'_'+str(i)] = func_ta(dft['High'], dft['Low'], dft['Close'], dft['Volume'], timeperiod=i) 
+            dft[ind+'_'+str(i)] = func_ta(dft['high'], dft['low'], dft['close'], dft['volume'], timeperiod=i) 
 
     def create_ind_with_hlct(self, dft: pd.DataFrame(), ind: str, func_ta, range_list: list) -> None:
         for i in range_list:
-            dft[ind+'_'+str(i)] = func_ta(dft['High'], dft['Low'], dft['Close'], timeperiod=i)
+            dft[ind+'_'+str(i)] = func_ta(dft['high'], dft['low'], dft['close'], timeperiod=i)
 
     def create_bband_t(self, dft: pd.DataFrame(), func_ta, range_list: list, nbdevup=1, nbdevdn=1, matype=0) -> None:
         for i in range_list:
             dft['upband_'+str(i)], dft['midband_'+str(i)], dft['lowband_'+str(i)] = \
-                        func_ta(dft['Close'], timeperiod=i, nbdevup=nbdevup, nbdevdn=nbdevdn, matype=matype)
+                        func_ta(dft['close'], timeperiod=i, nbdevup=nbdevup, nbdevdn=nbdevdn, matype=matype)
 
     def create_macd(self, dft: pd.DataFrame(), func_ta, fastperiod=12, slowperiod=26, signalperiod=9) -> None:
         dft['macd'], dft['macdsignal'], dft['macdhist'] = \
-                func_ta(dft['Close'], fastperiod=fastperiod, slowperiod=slowperiod, signalperiod=signalperiod)
+                func_ta(dft['close'], fastperiod=fastperiod, slowperiod=slowperiod, signalperiod=signalperiod)
     
     def create_ind_cv(self, dft: pd.DataFrame(), ind: str, func_ta):
-        dft[ind] = func_ta(dft['Close'], dft['Volume'])
+        dft[ind] = func_ta(dft['close'], dft['volume'])
 
     def create_ind_hlcv(self, dft: pd.DataFrame(), ind: str, func_ta):
-        dft[ind] = func_ta(dft['High'], dft['Low'], dft['Close'], dft['Volume'])
+        dft[ind] = func_ta(dft['high'], dft['low'], dft['close'], dft['volume'])
+
+    
+    def compound_annual_growth_rate(self, df: pd.DataFrame(), close) -> float:
+        norm = df[close][-1]/df[close][0]
+        cagr = (norm)**(1/((df.index[-1] - df.index[0]).days / 365.25)) - 1
+        return cagr
+
+    def create_ind_cols_ta(self) -> None:
+        for i in self.range_list:
+            self.df.ta.sma(length=i, append=True)

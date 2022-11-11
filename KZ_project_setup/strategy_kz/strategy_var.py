@@ -14,12 +14,12 @@ class StrategyVar():
 
         df1 = data.get_symbol_df(symbol)
         df_sample1 = df1.copy()
-        df_sample1 = df_sample1[['Open', 'High', 'Low', 'Close', 'Volume']]
+        df_sample1 = df_sample1[['open', 'high', 'low', 'close', 'volume']]
         # df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms').dt.tz_localize(None)
         df_sample1.index = pd.to_datetime(df_sample1.index, unit='ms')
     
-        close = df_sample1['Close'][len(df_sample1)-1]
-        low = df_sample1['Low'][len(df_sample1)-1]
+        close = df_sample1['close'][len(df_sample1)-1]
+        low = df_sample1['low'][len(df_sample1)-1]
         # Construct a Kalman filter
         kf = KalmanFilter(transition_matrices = [1],    # The value for At. It is a random walk so is set to 1.0
                       observation_matrices = [1],   # The value for Ht.
@@ -28,7 +28,7 @@ class StrategyVar():
                       observation_covariance=1,     # Sigma value for the Rt in Equation (2) the Gaussian distribution
                       transition_covariance=.01)    # A small turbulence in the random walk parameter 1.0
         # Get the Kalman smoothing
-        state_means, _ = kf.filter(df_sample1['Close'].values)
+        state_means, _ = kf.filter(df_sample1['close'].values)
         # Call it kf_mean
         df_sample1['kf_mean'] = np.array(state_means)
         kalman = df_sample1.kf_mean[len(df_sample1)-1]

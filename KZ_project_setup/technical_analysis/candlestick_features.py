@@ -131,10 +131,10 @@ candle_rankings = {
     }
 
 def create_candle_columns(df: pd.DataFrame(), candle_names=candle_names, candle_rankings=candle_rankings) -> None:
-    open=df.Open 
-    high=df.High 
-    low=df.Low 
-    close=df.Close
+    open=df.open 
+    high=df.high 
+    low=df.low 
+    close=df.close
     # create columns for each pattern
     for candle in candle_names:
         df[candle] = getattr(talib, candle)(open, high, low, close)

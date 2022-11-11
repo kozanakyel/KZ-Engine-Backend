@@ -9,15 +9,15 @@ from strategy_kz.strategy_var import StrategyVar
 from data_pipelines.data_manipulation import DataManipulation
 from technical_analysis.backtest_kz import *
 
-screener="turkey"
-exchange="BIST"
-path_symbol = './data/symbol_data/ana_market.csv'
-index = 'Order'
-
-#screener="crypto"
-#exchange="BINANCE"
-#path_symbol = './data/symbol_data/usdtcoins.csv'
+#screener="turkey"
+#exchange="BIST"
+#path_symbol = './data/symbol_data/ana_market.csv'
 #index = 'Order'
+
+screener="crypto"
+exchange="BINANCE"
+path_symbol = './data/symbol_data/usdtcoins.csv'
+index = 'Order'
 
 SYMBOL = ''
 scale = 1
@@ -49,7 +49,8 @@ if __name__ == '__main__':
     df_filter_list = []
     for i in filtre:
         SYMBOL = f'{i}'
-        data = DataManipulation(SYMBOL, source, range_list, period=period, interval=interval, scale=scale, prefix_path='./ana_market')
+        data = DataManipulation(SYMBOL, source, range_list, period=period, interval=interval, 
+                                        scale=scale, prefix_path='./binance_st', saved_to_csv=False)
         if data.df is not None:
             df_filter_list.append(i)
             bt_plot_indicators(data.df[-24*5:], i)
