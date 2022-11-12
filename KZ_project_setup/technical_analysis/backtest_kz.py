@@ -16,11 +16,11 @@ def make_backtest(df, range) -> dict:
     write_bt_crossover(df, 'tema', bt_crossover, range, result_list)
     write_bt_crossover(df, 'trima', bt_crossover, range, result_list)
     write_bt_crossover(df, 'wma', bt_crossover, range, result_list)
-    write_bt_band(df, range, result_list, up='dmi_up', low='dmi_down')
+    write_bt_band(df, range, result_list, up='dmp', low='dmn')
     write_bt_crossover(df, 'cmo', bt_crossover, range, result_list)
     write_bt_range(df, 'cci', bt_threshold, 200, -150, range, result_list)
     write_bt_range(df, 'rsi', bt_threshold, 80, 20, range, result_list)
-    write_bt_range(df, 'wllr', bt_threshold, -20, -80, range, result_list)
+    write_bt_range(df, 'willr', bt_threshold, -20, -80, range, result_list)
     write_bt_range(df, 'mfi', bt_threshold, 90, 10, range, result_list)
     write_bt_macd(df, bt_band_range, result_list)
     result_list.sort(reverse=True)
@@ -149,7 +149,7 @@ def bt_plot_indicators(df: pd.DataFrame(), symbol: str):
     ax1.set_title(f'{symbol} price and ma')
     ax1.legend()
 
-    ax2.plot(df.index, df['fishert_9_1'], label='FISHERT_9_1')
+    ax2.plot(df.index, df['fishert'], label='fisherts')
     ax2.set_title('Fischer transform')
     ax2.legend()
 
@@ -158,8 +158,8 @@ def bt_plot_indicators(df: pd.DataFrame(), symbol: str):
     ax3.set_title('money flow index')
     ax3.legend()
 
-    ax4.plot(df.index, df['dmi_up_10'], label='up_10')
-    ax4.plot(df.index, df['dmi_down_10'], label='down_10')
+    ax4.plot(df.index, df['dmp_10'], label='up_10')
+    ax4.plot(df.index, df['dmn_10'], label='down_10')
     ax4.set_title('Directional movement index')
     ax4.legend()
 
@@ -338,8 +338,8 @@ def write_bt_macd(df: pd.DataFrame, func_bt, result: list, up='macd', low='macds
         print('no entry macd')
 
 
-def write_backtest_result(df, symbol, period, interval, result_list=None):
-    path_df = '../data/outputs/data_ind/'+symbol
+def write_backtest_result(df, symbol, period, interval, result_list=None, prefix='..'):
+    path_df = f'{prefix}/data/outputs/data_ind/'+symbol
     if result_list == None:
         result_list = make_backtest(df, range)
     file_res_indicator = f'res_ind_{symbol}_{period}_{interval}.csv'
@@ -363,8 +363,8 @@ def hisse_strategy_bt(df: pd.DataFrame(), start_budget=1000) -> pd.DataFrame():
     macds = df['macdsignal']
     ichkline = df['ich_kline']
     close = df['close']
-    dmu = df['dmi_up_15']
-    dmd = df['dmi_down_15']
+    dmu = df['dmp_15']
+    dmd = df['dmn_15']
     stk = df['stoch_k']
     std = df['stoch_d']
 
@@ -378,8 +378,8 @@ def hisse_strategy_bt(df: pd.DataFrame(), start_budget=1000) -> pd.DataFrame():
         macds = sample['macdsignal'].iloc[index]
         ichkline = sample['ich_kline'].iloc[index]
         close = sample['close'].iloc[index]
-        dmu = sample['dmi_up_15'].iloc[index]
-        dmd = sample['dmi_down_15'].iloc[index]
+        dmu = sample['dmp_15'].iloc[index]
+        dmd = sample['dmn_15'].iloc[index]
         stk = sample['stoch_k'].iloc[index]
         std = sample['stoch_d'].iloc[index]
 

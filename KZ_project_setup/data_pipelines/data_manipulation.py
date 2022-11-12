@@ -65,9 +65,10 @@ class DataManipulation():
                     self.write_file_data(self.df, pure_data, pure_file)
                 
                 indicators = Indicators(self.df, self.range_list)
-                indicators.create_ind_candle_cols_talib()
+                indicators.create_indicators_columns()
                 self.df = indicators.df.copy()
-                self.df.columns = self.df.columns.str.lower() 
+                self.df.columns = self.df.columns.str.lower()
+                self.df = self.df.reindex(sorted(self.df.columns), axis=1) 
                 self.create_binary_feature_label()
                 self.df.dropna(inplace= True, how='any')
                 
@@ -116,6 +117,8 @@ class DataManipulation():
         
             sample['month'] = sample.index.month
             sample['weekday'] = sample.index.weekday
+            if self.interval[-1] == 'h':
+                sample['hour'] = sample.index.hour
             sample['is_quarter_end'] = sample.index.is_quarter_end*1
             sample['candle'] = df.candle_label
             sample['vol_delta'] = sample['Volume'].pct_change()
