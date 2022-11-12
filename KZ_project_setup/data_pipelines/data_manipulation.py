@@ -36,6 +36,8 @@ class DataManipulation():
             df_temp = pd.read_csv(os.path.join(path_df, file))
             df_temp['Datetime'] = pd.to_datetime(df_temp['Datetime'])
             df_temp = df_temp.set_index('Datetime')
+        else:
+            print(f'{symbol} file is not found!')
 
         return df_temp
     
