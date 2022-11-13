@@ -5,8 +5,6 @@ from technical_analysis.indicators import Indicators
 import yfinance as yf
 import shutil
 
-
-
 class DataManipulation():
     def __init__(self, symbol: str, source: str, range_list: list, period=None, interval=None, 
                                 start_date=None, end_date=None, scale=1, prefix_path='.', saved_to_csv=True):
@@ -23,7 +21,8 @@ class DataManipulation():
         self.df = self.create_data_one(self.symbol, self.source, self.period, self.interval, prefix_path=self.prefix_path)
 
     def get_symbol_df(self, symbol, pure=False):
-        path_df = self.prefix_path+'/../data/outputs/data_ind/'+symbol 
+
+        path_df = self.prefix_path+'/data/outputs/data_ind/'+symbol 
         pure_data = self.prefix_path+'/data/pure_data/'+symbol
         pure_file = f'{symbol}_{self.period}_{self.interval}.csv'
         file = f'{symbol}_df_{self.period}_{self.interval}.csv'
