@@ -67,7 +67,7 @@ class TwitterCollection():
         return tweets_df
 
 
-    def get_tweets_with_interval(self, hashtag: str, lang: str, start_time=None, finish_time=None, hour=24, interval =1) -> pd.DataFrame():
+    def get_tweets_with_interval(self, hashtag: str, lang: str, start_time=None, finish_time=None, hour=24, interval = 1) -> pd.DataFrame():
         now = datetime.datetime.now(datetime.timezone.utc)
         if start_time == None:
             start_time = now - td(hours=hour)
@@ -76,12 +76,12 @@ class TwitterCollection():
         end_time = start_time + td(hours=interval)
 
         result_tweets = pd.DataFrame()
-        while end_time <= finish_time - td(hours=1):
+        while end_time <= finish_time - td(hours=interval):
             temp_tweets = self.get_tweets(hashtag, lang, start_time.isoformat(), end_time.isoformat())
             df_temp_tweets = self.converts_tweets_pd(temp_tweets)
             result_tweets = pd.concat([df_temp_tweets, result_tweets], ignore_index=True)
-            start_time = start_time + td(hours=1)
-            end_time = end_time + td(hours=1)
+            start_time = start_time + td(hours=interval)
+            end_time = end_time + td(hours=interval)
         return result_tweets
 
 
@@ -95,6 +95,7 @@ class TwitterCollection():
         else:
             temp_tweets = pd.read_csv(os.path.join(pathdf, filedf))
             temp_tweets = pd.concat([df, temp_tweets])  # extract ignore index
+            temp_tweets = self.throw_unnamed_cols(temp_tweets)
             temp_tweets.to_csv(os.path.join(pathdf, filedf))
 
     def get_tweets_df(self, symbol: str, pathdf: str, filedf: str) -> pd.DataFrame():
@@ -103,14 +104,14 @@ class TwitterCollection():
             return
         else:
             temp_tweets = pd.read_csv(os.path.join(pathdf, filedf), index_col='index_col')
+            temp_tweets = self.throw_unnamed_cols(temp_tweets)
         return temp_tweets
 
-    def throw_unnamed_cols(self, query: str, path_df, file_df) -> None:
-        df_tweet = self.get_tweets_df(query, path_df, file_df)
+    def throw_unnamed_cols(self, df_tweet) -> pd.DataFrame():
         index_columns_list = ['created_at', 'text', 'source', 'name', 'username',
               'location', 'verified', 'description']
         df_tweet = df_tweet.drop([i for i in df_tweet.columns.to_list() if i not in index_columns_list], axis=1)
         df_tweet.reset_index(inplace=True)
         df_tweet['index_col'] = df_tweet.index
-        df_tweet = df_tweet.set_index('index_col')        
-        df_tweet.to_csv(os.path.join(path_df, file_df))
+        df_tweet = df_tweet.set_index('index_col')
+        return df_tweet
