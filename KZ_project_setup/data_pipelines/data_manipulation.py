@@ -86,7 +86,7 @@ class DataManipulation():
         self.df['d_r'] = self.df['close'].pct_change()
         self.df['temp'] = self.df['d_r']*10000
         self.df['feature_label'] = np.where(self.df['temp'].ge(0), 1, 0)
-        self.df['feature_label'] = self.df['feature_label'].shift()
+        self.df['feature_label'] = self.df['feature_label'].shift(-1)
         self.df = self.df.drop(columns=['temp'], axis=1)
 
     def write_file_data(self, df: pd.DataFrame(), pathdf: str, filedf: str) -> None:
@@ -106,12 +106,12 @@ class DataManipulation():
         else:
             df = self.df.copy()
             sample = self.pattern_helper_for_extract_feature(df)        
-            self.norm_features_ind(sample, df, 'ema', self.range_list, df.Close)
+            self.norm_features_ind(sample, df, 'ema', self.range_list, df.close)
             self.norm_features_ind(sample, df, 'mfi', self.range_list, 100)
-            self.norm_features_ind(sample, df, 'sma', self.range_list, df.Close)
-            self.norm_features_ind(sample, df, 'wma', self.range_list, df.Close)
-            self.norm_features_ind(sample, df, 'tema', self.range_list, df.Close)
-            self.norm_features_ind(sample, df, 'kama', self.range_list, df.Close)
+            self.norm_features_ind(sample, df, 'sma', self.range_list, df.close)
+            self.norm_features_ind(sample, df, 'wma', self.range_list, df.close)
+            self.norm_features_ind(sample, df, 'tema', self.range_list, df.close)
+            self.norm_features_ind(sample, df, 'kama', self.range_list, df.close)
             self.norm_features_ind(sample, df, 'rsi', self.range_list, 100)
             self.norm_adx_ind(sample, df, self.range_list)
             sample['st_ich'] = (df['ich_tline'] > df['ich_kline']).astype(int)
@@ -122,10 +122,10 @@ class DataManipulation():
                 sample['hour'] = sample.index.hour
             sample['is_quarter_end'] = sample.index.is_quarter_end*1
             sample['candle'] = df.candle_label
-            sample['vol_delta'] = sample['Volume'].pct_change()
+            sample['vol_delta'] = sample['volume'].pct_change()
             self.add_lags(sample, df, 5)
             sample['log_return'] = df.log_rt
-            sample.drop(columns=['Close', 'Volume'], axis=1, inplace=True)
+            sample.drop(columns=['close', 'volume'], axis=1, inplace=True)
             sample = sample.replace([np.inf, -np.inf], np.nan).dropna()
             if self.saved_to_csv:
                 self.write_file_data(sample, path_df, file_df)
@@ -145,7 +145,7 @@ class DataManipulation():
         for i in range_list:
             sampledf[f'st_adx_{i}'] = (100 - df[f'adx_{i}']) / 100
             pattern1 = df[f'adx_{i}'] < 50
-            pattern2 = df[f'dmi_up_{i}'] > df[f'dmi_down_{i}']
+            pattern2 = df[f'dmp_{i}'] > df[f'dmn_{i}']
             sampledf[f'st_adxdmi_{i}'] = (pattern2).astype(int) + pattern1
 
     def add_lags(self, sampledf: pd.DataFrame(), df: pd.DataFrame(), lag_numbers: int) -> None:
@@ -173,11 +173,11 @@ class DataManipulation():
             ichkline = df['ich_kline'].iloc[index]
             ichtline = df['ich_tline'].iloc[index]
             close = df['close'].iloc[index]
-            dmu = df['dmi_up_15'].iloc[index]
-            dmd = df['dmi_down_15'].iloc[index]
+            dmu = df['dmp_15'].iloc[index]
+            dmd = df['dmn_15'].iloc[index]
             stk = df['stoch_k'].iloc[index]
             std = df['stoch_d'].iloc[index]
-            fischer = df['fishert_9_1'].iloc[index]
+            fischer = df['fishert'].iloc[index]
             mfi = df['mfi_20'].iloc[index]
 
             if stk >= std:
