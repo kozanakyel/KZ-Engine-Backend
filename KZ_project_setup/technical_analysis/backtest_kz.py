@@ -27,8 +27,8 @@ def make_backtest(df, range) -> dict:
     return result_list
 
 
-def bt_crossover(df: pd.DataFrame(), upper_thresh, 
-                lower_thresh, start_budget=1000) -> pd.DataFrame():
+def bt_crossover(df: pd.DataFrame(), upper_col, 
+                lower_col, start_budget=1000) -> pd.DataFrame():
     sample = df.copy()
     entry_time = []
     exit_time = []
@@ -40,8 +40,8 @@ def bt_crossover(df: pd.DataFrame(), upper_thresh,
 
     for index,datetime in enumerate(sample.index):
         current_datetime = datetime
-        upper = df[upper_thresh].iloc[index]
-        lower = df[lower_thresh].iloc[index]
+        upper = df[upper_col].iloc[index]
+        lower = df[lower_col].iloc[index]
         close = sample['close'].iloc[index]
         
         
@@ -172,8 +172,8 @@ def bt_plot_indicators(df: pd.DataFrame(), symbol: str):
 
 
 
-def bt_band_range(df: pd.DataFrame(), upper_thresh, 
-                lower_thresh, start_budget=1000) -> pd.DataFrame():
+def bt_band_range_close(df: pd.DataFrame(), upper_col, 
+                lower_col, start_budget=1000) -> pd.DataFrame():
     sample = df.copy()
     entry_time = []
     exit_time = []
@@ -185,8 +185,8 @@ def bt_band_range(df: pd.DataFrame(), upper_thresh,
 
     for index,datetime in enumerate(sample.index):
         current_datetime = datetime
-        upper = df[upper_thresh].iloc[index]
-        lower = df[lower_thresh].iloc[index]
+        upper = df[upper_col].iloc[index]
+        lower = df[lower_col].iloc[index]
         close = sample['close'].iloc[index]
         
         if (lower < close) and (upper > close) and (trade_taken == True):

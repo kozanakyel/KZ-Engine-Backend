@@ -151,7 +151,7 @@ class DataManipulation():
     def add_lags(self, sampledf: pd.DataFrame(), df: pd.DataFrame(), lag_numbers: int) -> None:
         i = 1
         while i < lag_numbers:
-            sampledf[f'lag_{i}'] = (df.log_rt.shift(i) > 0).astype(int)
+            sampledf[f'lag_{i}'] = (df.log_return.shift(i) > 0).astype(int)
             i += 1
 
     def pattern_helper_for_extract_feature(self, df) -> pd.DataFrame():
