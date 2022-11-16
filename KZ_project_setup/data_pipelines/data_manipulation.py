@@ -70,7 +70,7 @@ class DataManipulation():
                 self.df = indicators.df.copy()
                 self.df.columns = self.df.columns.str.lower()
                 self.df = self.df.reindex(sorted(self.df.columns), axis=1) 
-                self.create_binary_feature_label()
+                self.create_binary_feature_label(self.df)
                 self.df.dropna(inplace= True, how='any')
                 
                 if self.saved_to_csv:
@@ -82,12 +82,12 @@ class DataManipulation():
         return self.df
         
     
-    def create_binary_feature_label(self) -> None:
-        self.df['d_r'] = self.df['close'].pct_change()
-        self.df['temp'] = self.df['d_r']*10000
-        self.df['feature_label'] = np.where(self.df['temp'].ge(0), 1, 0)
-        self.df['feature_label'] = self.df['feature_label'].shift(-1)
-        self.df = self.df.drop(columns=['temp'], axis=1)
+    def create_binary_feature_label(self, df: pd.DataFrame()) -> None:
+        df['daily_return'] = df['close'].pct_change()
+        df['temp'] = df['daily_return']*10000
+        df['feature_label'] = np.where(df['temp'].ge(0), 1, 0)
+        df['feature_label'] = df['feature_label'].shift(-1)
+        df.drop(columns=['temp'], inplace=True, axis=1)
 
     def write_file_data(self, df: pd.DataFrame(), pathdf: str, filedf: str) -> None:
         if not os.path.exists(os.path.join(pathdf, filedf)):
@@ -95,7 +95,7 @@ class DataManipulation():
             with open(os.path.join(pathdf, filedf), mode='a'): pass 
             df.to_csv(os.path.join(pathdf, filedf))
 
-    def extract_features(self):
+    def extract_features(self) -> pd.DataFrame():
         path_df = self.prefix_path+'/data/outputs/feature_data/'+self.symbol
         file_df = f'{self.symbol}_df_{self.period}_{self.interval}.csv'
         
@@ -114,17 +114,17 @@ class DataManipulation():
             self.norm_features_ind(sample, df, 'kama', self.range_list, df.close)
             self.norm_features_ind(sample, df, 'rsi', self.range_list, 100)
             self.norm_adx_ind(sample, df, self.range_list)
-            sample['st_ich'] = (df['ich_tline'] > df['ich_kline']).astype(int)
         
-            sample['month'] = sample.index.month
-            sample['weekday'] = sample.index.weekday
+            sample['month'] = sample.index.month / 12
+            sample['weekday'] = sample.index.weekday / 7
             if self.interval[-1] == 'h':
-                sample['hour'] = sample.index.hour
+                sample['hour'] = sample.index.hour / 24
             sample['is_quarter_end'] = sample.index.is_quarter_end*1
-            sample['candle'] = df.candle_label
+            sample['candle_label'] = df.candle_label
             sample['vol_delta'] = sample['volume'].pct_change()
-            self.add_lags(sample, df, 5)
-            sample['log_return'] = df.log_rt
+            sample['log_return'] = df.log_return
+            self.add_lags(sample, df, 9)
+            self.create_binary_feature_label(sample)
             sample.drop(columns=['close', 'volume'], axis=1, inplace=True)
             sample = sample.replace([np.inf, -np.inf], np.nan).dropna()
             if self.saved_to_csv:
@@ -132,7 +132,7 @@ class DataManipulation():
 
         return sample
 
-    def norm_features_ind(self, sampledf, df, ind, range_list, dividend):
+    def norm_features_ind(self, sampledf, df, ind, range_list, dividend) -> None:
         k = 0
         for i in range_list:
             sampledf[f'st_{ind}_{i}'] = (dividend - df[f'{ind}_{i}']) / dividend
@@ -141,7 +141,7 @@ class DataManipulation():
                         (df[f'{ind}_{range_list[k-1]}'] > df[f'{ind}_{range_list[k]}']).astype(int)
             k += 1
 
-    def norm_adx_ind(self, sampledf, df, range_list):
+    def norm_adx_ind(self, sampledf, df, range_list) -> None:
         for i in range_list:
             sampledf[f'st_adx_{i}'] = (100 - df[f'adx_{i}']) / 100
             pattern1 = df[f'adx_{i}'] < 50
@@ -154,63 +154,31 @@ class DataManipulation():
             sampledf[f'lag_{i}'] = (df.log_rt.shift(i) > 0).astype(int)
             i += 1
 
-
-    def pattern_helper_for_extract_feature(self, df):
+    def pattern_helper_for_extract_feature(self, df) -> pd.DataFrame():
         sample  = df[['open','high','low','close','volume']].copy()
         sample.drop(columns=['open','high','low'], axis=1, inplace=True)
-        sample['st_hisse'] = np.nan
-        sample['st_stoch'] = np.nan
-        sample['st_fisher'] = np.nan
-        sample['st_ich'] = np.nan
-        sample['st_mfi'] = np.nan
+        
+        sample['st_stoch'] = (df['stoch_k'] > df['stoch_d']).astype(int)
+        sample['st_ich'] = (df['ich_tline'] > df['ich_kline']).astype(int)  
+        sample['st_cut_ema5_sma10'] = (df['ema_5'] >= df['sma_10']).astype(int)
+        sample['st_macd'] = (df['macd'] >= df['macdsignal']).astype(int)
+        sample['st_ich_close'] = (df['ich_kline'] < df['close']).astype(int)
+        sample['st_dmi'] = (df['dmp_15'] > df['dmn_15']).astype(int)
+        sample['st_cut_sma10_close'] = (df['sma_10'] > df['close']).astype(int)
 
-        for index, datetime in enumerate(df.index):
-            current_datetime = datetime
-            ema5 = df['ema_5'].iloc[index]
-            sma10 = df['sma_10'].iloc[index]
-            macd = df['macd'].iloc[index]
-            macds = df['macdsignal'].iloc[index]
-            ichkline = df['ich_kline'].iloc[index]
-            ichtline = df['ich_tline'].iloc[index]
-            close = df['close'].iloc[index]
-            dmu = df['dmp_15'].iloc[index]
-            dmd = df['dmn_15'].iloc[index]
-            stk = df['stoch_k'].iloc[index]
-            std = df['stoch_d'].iloc[index]
-            fischer = df['fishert'].iloc[index]
-            mfi = df['mfi_20'].iloc[index]
+        sample['st_hisse'] = sample['st_stoch'] & sample['st_ich'] & sample['st_cut_ema5_sma10'] \
+                    & sample['st_macd'] & sample['st_ich_close'] & sample['st_dmi'] & sample['st_cut_sma10_close']
 
-            if stk >= std:
-                sample['st_stoch'].iloc[index] = 1
+        def helper_divide_three(x, params: list):
+            if x >= params[0]: 
+                return 3
+            elif x >= params[1]:
+                return 2
             else:
-                sample['st_stoch'].iloc[index] = 0
+                return 1
 
-            if fischer >= 2.5:
-                sample['st_fisher'].iloc[index] = 3
-            elif fischer >= -2.5:
-                sample['st_fisher'].iloc[index] = 2
-            else:
-                sample['st_fisher'].iloc[index] = 1 
-
-            if mfi >= 75:
-                sample['st_mfi'].iloc[index] = 3
-            elif mfi >= 25:
-                sample['st_mfi'].iloc[index] = 2
-            else:
-                sample['st_mfi'].iloc[index] = 1 
-
-            pattern1 = ema5 >= sma10
-            pattern2 = macd > macds
-            pattern3 = ichkline < close
-            pattern4 = dmu >= dmd
-            pattern5 = sma10 < close
-            pattern6 = stk > std
-
-            all_pattern = (pattern1 and pattern2 and pattern3 and pattern4 and pattern5 and pattern6)
-            if all_pattern:
-                sample['st_hisse'].iloc[index] = 1
-            else:
-                sample['st_hisse'].iloc[index] = 0
+        sample['st_mfi'] = df["mfi_15"].apply(lambda x: helper_divide_three(x, params=[75, 25])) / 3
+        sample['st_fishert'] = df["fishert"].apply(lambda x: helper_divide_three(x, params=[2.5, -2.5])) / 3
 
         return sample
 

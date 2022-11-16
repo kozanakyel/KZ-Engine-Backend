@@ -61,7 +61,7 @@ class Indicators():
         create_candle_label(self.df)
 
         self.df = self.df.drop(columns=['candlestick_match_count'], axis=1)
-        self.df['log_rt'] = self.df.ta.log_return()
+        self.df['log_return'] = self.df.ta.log_return()
 
     def create_ind_cols_ta(self) -> None:
         for i in self.range_list:

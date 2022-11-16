@@ -89,8 +89,6 @@ class TwitterCollection():
         if not os.path.exists(os.path.join(pathdf, filedf)):
             os.makedirs(pathdf, exist_ok=True)
             with open(os.path.join(pathdf, filedf), mode='a'): pass
-            df['index_col'] = df.index 
-            df = df.set_index('index_col')
             df.to_csv(os.path.join(pathdf, filedf))
         else:
             temp_tweets = pd.read_csv(os.path.join(pathdf, filedf))
@@ -103,7 +101,7 @@ class TwitterCollection():
             print(f'This symbols {symbol} tweet not have')
             return
         else:
-            temp_tweets = pd.read_csv(os.path.join(pathdf, filedf), index_col='index_col')
+            temp_tweets = pd.read_csv(os.path.join(pathdf, filedf))
             temp_tweets = self.throw_unnamed_cols(temp_tweets)
         return temp_tweets
 
@@ -112,6 +110,6 @@ class TwitterCollection():
               'location', 'verified', 'description']
         df_tweet = df_tweet.drop([i for i in df_tweet.columns.to_list() if i not in index_columns_list], axis=1)
         df_tweet.reset_index(inplace=True)
-        df_tweet['index_col'] = df_tweet.index
-        df_tweet = df_tweet.set_index('index_col')
+        if 'index' in df_tweet.columns:
+            df_tweet.drop(columns=['index'], axis=1, inplace=True)
         return df_tweet
