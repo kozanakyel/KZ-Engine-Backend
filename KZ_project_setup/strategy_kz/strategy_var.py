@@ -10,9 +10,8 @@ class StrategyVar():
     def __init__(self, name=None):
         self.name = name
 
-    def kalman_strategy_filter(self, data: DataManipulation, symbol: str):
-
-        df1 = data.get_symbol_df(symbol)
+    def kalman_strategy_filter(self, df1: pd.DataFrame(), symbol: str):
+        
         df_sample1 = df1.copy()
         df_sample1 = df_sample1[['open', 'high', 'low', 'close', 'volume']]
         # df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms').dt.tz_localize(None)
@@ -66,7 +65,7 @@ class StrategyVar():
         return df_sample1, symbol, close, isa_9, isb_26, chop, rsi, amat, ema_crossover, buy, sell, aboveKalman
 
     def get_kalman_filter_result(self, data: DataManipulation, symbol_list: list, 
-                            write_path_file='./results_kalman.csv') -> pd.DataFrame():
+                            write_path_file='./results_kalman.csv', to_csv=True) -> pd.DataFrame():
 
         results = []
         symbols = []
@@ -93,7 +92,8 @@ class StrategyVar():
             except:
                 pass
         results = pd.DataFrame(results)
-        results.to_csv(write_path_file)
+        if to_csv:
+            results.to_csv(write_path_file)
 
         return results
 

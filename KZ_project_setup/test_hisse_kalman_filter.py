@@ -52,8 +52,10 @@ if __name__ == '__main__':
         data = DataManipulation(SYMBOL, source, range_list, period=period, interval=interval, 
                                         scale=scale, prefix_path='./binance_st', saved_to_csv=False)
         if data.df is not None:
-            df_filter_list.append(i)
-            bt_plot_indicators(data.df[-24*5:], i)
+            kalman_out = StrategyVar().kalman_strategy_filter(df1=data.df, symbol=data.symbol)
+            if kalman_out[7] and kalman_out[8] and kalman_out[11]:
+                df_filter_list.append(i)
+                bt_plot_indicators(data.df[-24*5:], i)
 
 
     

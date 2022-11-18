@@ -86,7 +86,7 @@ class DataManipulation():
         df['daily_return'] = df['close'].pct_change()
         df['temp'] = df['daily_return']*10000
         df['feature_label'] = np.where(df['temp'].ge(0), 1, 0)
-        df['feature_label'] = df['feature_label'].shift(-1)
+        df['feature_label'] = df['feature_label'].shift()
         df.drop(columns=['temp'], inplace=True, axis=1)
 
     def write_file_data(self, df: pd.DataFrame(), pathdf: str, filedf: str) -> None:
@@ -106,12 +106,12 @@ class DataManipulation():
         else:
             df = self.df.copy()
             sample = self.pattern_helper_for_extract_feature(df)        
-            self.norm_features_ind(sample, df, 'ema', self.range_list, df.close)
+            self.norm_features_ind(sample, df, 'ema', self.range_list)
             self.norm_features_ind(sample, df, 'mfi', self.range_list, 100)
-            self.norm_features_ind(sample, df, 'sma', self.range_list, df.close)
-            self.norm_features_ind(sample, df, 'wma', self.range_list, df.close)
-            self.norm_features_ind(sample, df, 'tema', self.range_list, df.close)
-            self.norm_features_ind(sample, df, 'kama', self.range_list, df.close)
+            self.norm_features_ind(sample, df, 'sma', self.range_list)
+            self.norm_features_ind(sample, df, 'wma', self.range_list)
+            self.norm_features_ind(sample, df, 'tema', self.range_list)
+            self.norm_features_ind(sample, df, 'kama', self.range_list)
             self.norm_features_ind(sample, df, 'rsi', self.range_list, 100)
             self.norm_adx_ind(sample, df, self.range_list)
         
@@ -121,7 +121,7 @@ class DataManipulation():
                 sample['hour'] = sample.index.hour / 24
             sample['is_quarter_end'] = sample.index.is_quarter_end*1
             sample['candle_label'] = df.candle_label
-            sample['vol_delta'] = sample['volume'].pct_change()
+            sample['vol_delta'] = (sample['volume'].pct_change() > 0).astype(int)
             sample['log_return'] = df.log_return
             self.add_lags(sample, df, 9)
             self.create_binary_feature_label(sample)
@@ -132,13 +132,16 @@ class DataManipulation():
 
         return sample
 
-    def norm_features_ind(self, sampledf, df, ind, range_list, dividend) -> None:
+    def norm_features_ind(self, sampledf, df, ind, range_list, dividend=None) -> None:
         k = 0
         for i in range_list:
-            sampledf[f'st_{ind}_{i}'] = (dividend - df[f'{ind}_{i}']) / dividend
-            if k % 2 == 1:
-                sampledf[f'st_cut_{ind}_{range_list[k-1]}_{range_list[k]}'] = \
-                        (df[f'{ind}_{range_list[k-1]}'] > df[f'{ind}_{range_list[k]}']).astype(int)
+            if dividend != None:
+                sampledf[f'st_{ind}_{i}'] = df[f'{ind}_{i}'] / dividend
+            else:
+                sampledf[f'st_{ind}_{i}'] = (df[f'{ind}_{i}'].pct_change() > 0).astype(int)
+                if k % 2 == 1:
+                    sampledf[f'st_cut_{ind}_{range_list[k-1]}_{range_list[k]}'] = \
+                            (df[f'{ind}_{range_list[k-1]}'] > df[f'{ind}_{range_list[k]}']).astype(int)
             k += 1
 
     def norm_adx_ind(self, sampledf, df, range_list) -> None:
