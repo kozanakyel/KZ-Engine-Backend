@@ -12,15 +12,15 @@ warnings.simplefilter(action = 'ignore', category = pd.errors.PerformanceWarning
 
 SYMBOL = 'SASA.IS'
 scale = 1
-range = [5, 10, 15, 20, 25, 30]
-range = [i*scale for i in range]
-period = '1y'
-interval = '1d'
+range_list = [5,6,7,8,10,12,14,15,20]
+range_list = [i*scale for i in range_list]
+period = '8y'
+interval = '1wk'
 start_date = ''
 end_data = ''
 source = 'yahoo'
 
-data = DataManipulation(SYMBOL, source, range, period=period, interval=interval, scale=scale, prefix_path='..')
+data = DataManipulation(SYMBOL, source, range_list, period=period, interval=interval, scale=scale, prefix_path='..', saved_to_csv=True)
 
 df = data.df
 print(df.head())

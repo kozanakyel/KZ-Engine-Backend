@@ -13,7 +13,6 @@ from technical_analysis.backtest_kz import *
 #exchange="BIST"
 #path_symbol = './data/symbol_data/ana_market.csv'
 #index = 'Order'
-
 screener="crypto"
 exchange="BINANCE"
 path_symbol = './data/symbol_data/usdtcoins.csv'

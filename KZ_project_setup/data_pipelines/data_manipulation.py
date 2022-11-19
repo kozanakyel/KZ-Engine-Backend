@@ -57,11 +57,12 @@ class DataManipulation():
             self.df = df_download.copy()
             self.df['Datetime'] = self.df.index
             self.df = self.df.set_index('Datetime')
+            self.df.dropna(inplace=True)
 
             if self.df.shape[0] > self.range_list[-1]:
                 self.df.columns = self.df.columns.str.lower()
                 if 'adj close' in self.df.columns.to_list():
-                    self.df = self.df.rename(columns={'adj close': 'adj_close'})             # all the column names to lowercase
+                    self.df = self.df.rename(columns={'adj close': 'adj_close'})   
                 if self.saved_to_csv:
                     self.write_file_data(self.df, pure_data, pure_file)
                 
@@ -152,7 +153,7 @@ class DataManipulation():
             sampledf[f'st_adxdmi_{i}'] = (pattern2).astype(int) + pattern1
 
     def add_lags(self, sampledf: pd.DataFrame(), df: pd.DataFrame(), lag_numbers: int) -> None:
-        i = 1
+        i = 2
         while i < lag_numbers:
             sampledf[f'lag_{i}'] = (df.log_return.shift(i) > 0).astype(int)
             i += 1
