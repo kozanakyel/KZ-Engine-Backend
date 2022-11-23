@@ -87,7 +87,7 @@ class DataManipulation():
         df['daily_return'] = df['close'].pct_change()
         df['temp'] = df['daily_return']*10000
         df['feature_label'] = np.where(df['temp'].ge(0), 1, 0)
-        df['feature_label'] = df['feature_label'].shift()
+        df['feature_label'] = df['feature_label'].shift(-1)
         df.drop(columns=['temp'], inplace=True, axis=1)
 
     def write_file_data(self, df: pd.DataFrame(), pathdf: str, filedf: str) -> None:
