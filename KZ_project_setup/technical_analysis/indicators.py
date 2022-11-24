@@ -61,6 +61,7 @@ class Indicators():
         create_candle_label(self.df)
 
         self.df = self.df.drop(columns=['candlestick_match_count'], axis=1)
+        self.df['daily_return'] = self.df['close'].pct_change()
         self.df['log_return'] = self.df.ta.log_return()
 
     def create_ind_cols_ta(self) -> None:
@@ -114,6 +115,7 @@ class Indicators():
 
         self.df['candle_label'] = 0
         self.df['candlestick_pattern'] = 'NO_PATTERN'
+        self.df['daily_return'] = self.df['close'].pct_change()
         self.df['log_rt'] = self.df.ta.log_return()
 
     def create_ind_with_ct(self, dft: pd.DataFrame(), ind: str, func_ta, range_list: list) -> None:

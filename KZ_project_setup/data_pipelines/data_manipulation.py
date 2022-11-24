@@ -82,10 +82,8 @@ class DataManipulation():
             
         return self.df
         
-    
     def create_binary_feature_label(self, df: pd.DataFrame()) -> None:
-        df['daily_return'] = df['close'].pct_change()
-        df['temp'] = df['daily_return']*10000
+        df['temp'] = df['log_return']*10000
         df['feature_label'] = np.where(df['temp'].ge(0), 1, 0)
         df['feature_label'] = df['feature_label'].shift(-1)
         df.drop(columns=['temp'], inplace=True, axis=1)
@@ -116,10 +114,11 @@ class DataManipulation():
             self.norm_features_ind(sample, df, 'rsi', self.range_list, 100)
             self.norm_adx_ind(sample, df, self.range_list)
         
-            sample['month'] = sample.index.month / 12
-            sample['weekday'] = sample.index.weekday / 7
+            # date normalization and find date weightys for daily return!!!!!!
+            sample['month'] = sample.index.month
+            sample['weekday'] = sample.index.weekday
             if self.interval[-1] == 'h':
-                sample['hour'] = sample.index.hour / 24
+                sample['hour'] = sample.index.hour
             sample['is_quarter_end'] = sample.index.is_quarter_end*1
             sample['candle_label'] = df.candle_label
             sample['vol_delta'] = (sample['volume'].pct_change() > 0).astype(int)
