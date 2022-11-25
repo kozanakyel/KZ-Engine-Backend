@@ -14,7 +14,7 @@ import re
 
 
 class TweetSentimentAnalyzer():
-    def __init__(self, df_twitter: pd.dataFrame()):
+    def __init__(self, df_twitter: pd.DataFrame()):
         self.df_tweets = df_twitter.copy()
         self.sid = SentimentIntensityAnalyzer()
 
@@ -104,8 +104,9 @@ class TweetSentimentAnalyzer():
             df_result['compound_total'] = 0
             for i, dt, com in df_result.itertuples():  
                 sub_df = df_tweets.loc[(df_tweets.comp_score != 'Neutral'), :]
-                df_result.loc[i, 'compound_total'] = sub_df.loc[(sub_df.Datetime.unique()[i] == sub_df.Datetime), 'compound'].mean()
+                df_result.loc[i, 'compound_total'] = sub_df.loc[(sub_df.Date.unique()[i] == sub_df.Date), 'compound'].mean()
             df_result.set_index('Date', inplace=True)
+            df_result = df_result.sort_values('Date')
         elif interval == '1h':
             df_result['Datetime'] = df_tweets.Datetime.unique()
             df_result['compound_total'] = 0
@@ -113,7 +114,7 @@ class TweetSentimentAnalyzer():
                 sub_df = df_tweets.copy()
                 df_result.loc[i, 'compound_total'] = sub_df.loc[(sub_df.Datetime.unique()[i] == sub_df.Datetime), 'compound'].mean()
             df_result.set_index('Datetime', inplace=True)
-        df_result = df_result.sort_values('Datetime')
+            df_result = df_result.sort_values('Datetime')
         return df_result
     
     def concat_ohlc_compound_score(self, ohlc: pd.DataFrame(), result_sent_df: pd.DataFrame()) -> pd.DataFrame():
