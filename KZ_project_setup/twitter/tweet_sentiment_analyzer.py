@@ -11,11 +11,12 @@ import pandas as pd
 import numpy as np
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import re
-
+########## GIVING A RESULT OF ANY TURKISH EXCHANGE ADD A TRANSLATE TO ENGLISH FOR SENTIMENT ANALYSIS WITH TWITTER
 
 class TweetSentimentAnalyzer():
-    def __init__(self, df_twitter: pd.DataFrame()):
+    def __init__(self, df_twitter: pd.DataFrame(), lang: str='en'):
         self.df_tweets = df_twitter.copy()
+        self.lang = lang
         self.sid = SentimentIntensityAnalyzer()
 
     def cleaning_tweet_data(self, df: pd.DataFrame()):
@@ -119,6 +120,7 @@ class TweetSentimentAnalyzer():
     
     def concat_ohlc_compound_score(self, ohlc: pd.DataFrame(), result_sent_df: pd.DataFrame()) -> pd.DataFrame():
         result = ohlc.merge(result_sent_df, how='outer', left_index=True, right_index=True)
+        result['compound_total'] = result['compound_total'].fillna(0)
         return result
     
     def plot_wordcloud(self, text, mask=None, max_words=200, max_font_size=50, figure_size=(16.0,9.0), color = 'white',

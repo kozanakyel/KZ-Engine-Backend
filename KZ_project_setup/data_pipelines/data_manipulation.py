@@ -24,6 +24,7 @@ class DataManipulation():
         self.feature_path = feature_path
         self.saved_to_csv = saved_to_csv
         self.df = self.create_data_one(self.symbol, self.source, self.period, self.interval, prefix_path=self.prefix_path)
+        self.pure_df = None
 
     def get_symbol_df(self, symbol, pure=False):
 
@@ -67,7 +68,8 @@ class DataManipulation():
             if self.df.shape[0] > self.range_list[-1]:
                 self.df.columns = self.df.columns.str.lower()
                 if 'adj close' in self.df.columns.to_list():
-                    self.df = self.df.rename(columns={'adj close': 'adj_close'})   
+                    self.df = self.df.rename(columns={'adj close': 'adj_close'})  
+                self.pure_df = self.df.copy() 
                 if self.saved_to_csv:
                     self.write_file_data(self.df, pure_data, pure_file)
                 
