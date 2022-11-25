@@ -7,7 +7,9 @@ import shutil
 
 class DataManipulation():
     def __init__(self, symbol: str, source: str, range_list: list, period=None, interval=None, 
-                                start_date=None, end_date=None, scale=1, prefix_path='.', saved_to_csv=True):
+                                start_date=None, end_date=None, scale=1, prefix_path='.', 
+                                main_path='/data/outputs/data_ind/', pure_path='/data/pure_data/',
+                                feature_path='/data/outputs/feature_data/', saved_to_csv=True):
         self.symbol = symbol
         self.source = source
         self.scale = scale
@@ -17,13 +19,16 @@ class DataManipulation():
         self.start_date = start_date
         self.end_date = end_date
         self.prefix_path = prefix_path
+        self.main_path = main_path
+        self.pure_path = pure_path
+        self.feature_path = feature_path
         self.saved_to_csv = saved_to_csv
         self.df = self.create_data_one(self.symbol, self.source, self.period, self.interval, prefix_path=self.prefix_path)
 
     def get_symbol_df(self, symbol, pure=False):
 
-        path_df = self.prefix_path+'/data/outputs/data_ind/'+symbol 
-        pure_data = self.prefix_path+'/data/pure_data/'+symbol
+        path_df = self.prefix_path+self.main_path+symbol 
+        pure_data = self.prefix_path+self.pure_path+symbol
         pure_file = f'{symbol}_{self.period}_{self.interval}.csv'
         file = f'{symbol}_df_{self.period}_{self.interval}.csv'
 
@@ -41,8 +46,8 @@ class DataManipulation():
         return df_temp
     
     def create_data_one(self, symbol, source, period=None, interval=None, prefix_path='.'):
-        path_df = prefix_path+'/data/outputs/data_ind/'+symbol 
-        pure_data = prefix_path+'/data/pure_data/'+symbol
+        path_df = prefix_path+self.main_path+symbol 
+        pure_data = prefix_path+self.pure_path+symbol
         pure_file = f'{symbol}_{period}_{interval}.csv'
         file = f'{symbol}_df_{period}_{interval}.csv'
         
@@ -83,10 +88,8 @@ class DataManipulation():
         return self.df
         
     def create_binary_feature_label(self, df: pd.DataFrame()) -> None:
-        df['temp'] = df['log_return']*10000
-        df['feature_label'] = np.where(df['temp'].ge(0), 1, 0)
+        df['feature_label'] = (df['log_return'] > 0).astype(int)
         df['feature_label'] = df['feature_label'].shift(-1)
-        df.drop(columns=['temp'], inplace=True, axis=1)
 
     def write_file_data(self, df: pd.DataFrame(), pathdf: str, filedf: str) -> None:
         if not os.path.exists(os.path.join(pathdf, filedf)):
@@ -95,7 +98,7 @@ class DataManipulation():
             df.to_csv(os.path.join(pathdf, filedf))
 
     def extract_features(self) -> pd.DataFrame():
-        path_df = self.prefix_path+'/data/outputs/feature_data/'+self.symbol
+        path_df = self.prefix_path+self.feature_path+self.symbol
         file_df = f'{self.symbol}_df_{self.period}_{self.interval}.csv'
         
         if os.path.exists(os.path.join(path_df, file_df)):
