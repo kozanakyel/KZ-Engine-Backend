@@ -136,8 +136,8 @@ class TweetSentimentAnalyzer():
                     max_words = max_words,
                     max_font_size = max_font_size, 
                     random_state = 42,
-                    width=400, 
-                    height=400,
+                    width=600, 
+                    height=200,
                     mask = mask)
         wordcloud.generate(str(text))
     

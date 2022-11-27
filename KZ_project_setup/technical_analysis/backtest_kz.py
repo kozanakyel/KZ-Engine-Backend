@@ -180,6 +180,7 @@ def bt_band_range_close(df: pd.DataFrame(), upper_col,
 
     entry_price = []
     exit_price = []
+    
 
     trade_taken = False
 
@@ -237,6 +238,9 @@ def bt_threshold(df: pd.DataFrame(), indicator, upper_thresh,
     entry_price = []
     exit_price = []
 
+    entry_ind = []
+    exit_ind = []
+
     trade_taken = False
 
     for index,datetime in enumerate(sample.index):
@@ -252,27 +256,33 @@ def bt_threshold(df: pd.DataFrame(), indicator, upper_thresh,
 
             entry_time.append(current_datetime)
             entry_price.append(close)
+            entry_ind.append(indicat)
             #print(current_datetime, close, 'burda')
 
         elif trade_taken and (upper_thresh <= indicat):
             trade_taken = False
             exit_time.append(current_datetime)
             exit_price.append(close)
+            exit_ind.append(indicat)
 
         elif (index == (len(sample) - 1)) and (trade_taken != False):
             trade_taken = False
             exit_time.append(current_datetime)
             exit_price.append(close)
+            exit_ind.append(indicat)
     
     #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
     if len(entry_time) != len(exit_time):
         exit_time.append(sample.index[-1])
         exit_price.append(sample.close[-1])
+        exit_ind.append(indicat)
     #print(len(entry_time), len(exit_time), len(entry_price), len(exit_price))
     trade_sheet = pd.DataFrame({"entry_time" :entry_time,
                                "exit_time" : exit_time,
                                "entry_price" : entry_price,
-                               "exit_price" : exit_price})
+                               "exit_price" : exit_price,
+                               "entry_ind": entry_ind,
+                               "exit_ind": exit_ind})
 
     # calculating pnl from trade sheet
     start_budget = 1000
