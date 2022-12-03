@@ -7,11 +7,11 @@ if __name__ == '__main__':
 
     query_list = ['btc','eth','xrp','bnb', 'ens']
     query_list_bist = ['sumas', 'orma', 'xu100', 'bist', 'sasa']
-    test_query = ['agyo', 'sngyo', 'yprak']
+    test_query = ['agyo', 'sngyo']
 
     
-    for i in test_query:
-        df_tweets = client.get_tweets_with_interval(i, 'tr', hour=24*3, interval=1)
+    for i in query_list_bist[:3]:
+        df_tweets = client.get_tweets_with_interval(i, 'tr', hour=24*7, interval=4)
         print(f'shape of {i} tweets df: {df_tweets.shape}')
         path_df = f'./KZ_project_setup/data/tweets_data/{i}/'
         file_df = f'{i}_tweets.csv'
