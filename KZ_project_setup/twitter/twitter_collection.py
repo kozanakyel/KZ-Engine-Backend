@@ -84,6 +84,20 @@ class TwitterCollection():
             end_time = end_time + td(hours=interval)
         return result_tweets
 
+    def cleaning_tweet_data(self, df: pd.DataFrame()):
+        df_tweets = df.copy()
+        df_tweets.dropna(inplace=True)
+        if 'Unnamed: 0' in df_tweets.columns:
+            df_tweets.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
+        df_tweets.drop(columns=['source', 'name', 'location', 'verified', 'description'], axis=1, inplace=True)
+        blanks = []  # start with an empty list
+
+        for i, created_at, text, *others in df_tweets.itertuples():  
+            if type(text)==str:            
+                if text.isspace():         
+                    blanks.append(i)    
+
+        df_tweets.drop(blanks, inplace=True)
 
     def write_tweets_csv(self, df: pd.DataFrame(), pathdf: str, filedf: str) -> None:
         if not os.path.exists(os.path.join(pathdf, filedf)):
@@ -91,17 +105,33 @@ class TwitterCollection():
             with open(os.path.join(pathdf, filedf), mode='a'): pass
             df.to_csv(os.path.join(pathdf, filedf))
         else:
-            temp_tweets = pd.read_csv(os.path.join(pathdf, filedf))
+            print('burda')
+            chunksize = 1000
+            list_of_dataframes = []
+            for df in pd.read_csv(os.path.join(pathdf, filedf), chunksize=chunksize):
+                list_of_dataframes.append(df)
+            temp_tweets = pd.concat(list_of_dataframes)
+            #temp_tweets = pd.read_csv(os.path.join(pathdf, filedf))
+            print('okudu')
             temp_tweets = pd.concat([df, temp_tweets])  # extract ignore index
+            print('birlestirdi')
             temp_tweets = self.throw_unnamed_cols(temp_tweets)
+            print('unanmed')
+            self.cleaning_tweet_data(temp_tweets)
             temp_tweets.to_csv(os.path.join(pathdf, filedf))
+            print('yazdi')
 
     def get_tweets_df(self, symbol: str, pathdf: str, filedf: str) -> pd.DataFrame():
         if not os.path.exists(os.path.join(pathdf, filedf)):
             print(f'This symbols {symbol} tweet not have')
             return
         else:
-            temp_tweets = pd.read_csv(os.path.join(pathdf, filedf))
+            chunksize = 1000
+            list_of_dataframes = []
+            for df in pd.read_csv(os.path.join(pathdf, filedf), chunksize=chunksize):
+                list_of_dataframes.append(df)
+            temp_tweets = pd.concat(list_of_dataframes)
+            #temp_tweets = pd.read_csv(os.path.join(pathdf, filedf))
             temp_tweets = self.throw_unnamed_cols(temp_tweets)
         return temp_tweets
 
