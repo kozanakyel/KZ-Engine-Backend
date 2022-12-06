@@ -14,8 +14,8 @@ import re
 ########## GIVING A RESULT OF ANY TURKISH EXCHANGE ADD A TRANSLATE TO ENGLISH FOR SENTIMENT ANALYSIS WITH TWITTER
 
 class TweetSentimentAnalyzer():
-    def __init__(self, df_twitter: pd.DataFrame(), lang: str='en'):
-        self.df_tweets = df_twitter.copy()
+    def __init__(self, lang: str='en'):
+        #self.df_tweets = df_twitter.copy()
         self.lang = lang
         self.sid = SentimentIntensityAnalyzer()
 
@@ -24,44 +24,45 @@ class TweetSentimentAnalyzer():
         df_tweets.dropna(inplace=True)
         if 'Unnamed: 0' in df_tweets.columns:
             df_tweets.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
-        df_tweets.drop(columns=['source', 'name', 'location', 'verified', 'description'], axis=1, inplace=True)
-        blanks = []  # start with an empty list
+        if 'source' in df_tweets.columns:
+            df_tweets.drop(columns=['source', 'name', 'location', 'verified', 'description'], axis=1, inplace=True)
+        #blanks = []  # start with an empty list
 
-        for i, created_at, text, username in df_tweets.itertuples():  
-            if type(text)==str:            
-                if text.isspace():         
-                    blanks.append(i)    
+        #for i, created_at, text, username in df_tweets.itertuples():  
+            #if type(text)==str:            
+                #if text.isspace():         
+                    #blanks.append(i)    
 
-        df_tweets.drop(blanks, inplace=True)
-        df_tweets = df_tweets.apply(lambda x: x.astype(str).str.lower()).drop_duplicates(subset=['text', 'username'], keep='first')
+        #df_tweets.drop(blanks, inplace=True)
+        #df_tweets = df_tweets.apply(lambda x: x.astype(str).str.lower()).drop_duplicates(subset=['text', 'username'], keep='first')
 
-        df_tweets['text'] = df_tweets['text'].apply(lambda x: re.split('https:\/\/.*', str(x))[0])
+        #df_tweets['text'] = df_tweets['text'].apply(lambda x: re.split('https:\/\/.*', str(x))[0])
         df_tweets['text'] = df_tweets['text'].str.lower()
-        df_tweets['text'] = df_tweets['text'].str.replace("@[a-z0-9A-Z]+", "", regex=True)
-        df_tweets['text'] = df_tweets['text'].str.replace("#[a-z0-9A-Z]+","", regex=True)
-        df_tweets['text'] = df_tweets['text'].str.replace(r"http\S+", "")
-        df_tweets['text'] = df_tweets['text'].str.replace(r"www.\S+", "")
-        df_tweets['text'] = df_tweets['text'].str.replace('[()!?]', ' ')
-        df_tweets['text'] = df_tweets['text'].str.replace('\[.*?\]',' ')
-        df_tweets['text'] = df_tweets['text'].str.replace("[^a-z0-9]"," ")
-        df_tweets['words'] = df_tweets['text'].apply(lambda x:str(x.lower()).split())
+        #df_tweets['text'] = df_tweets['text'].str.replace("@[a-z0-9A-Z]+", "", regex=True)
+        #df_tweets['text'] = df_tweets['text'].str.replace("#[a-z0-9A-Z]+","", regex=True)
+        #df_tweets['text'] = df_tweets['text'].str.replace(r"http\S+", "")
+        #df_tweets['text'] = df_tweets['text'].str.replace(r"www.\S+", "")
+        #df_tweets['text'] = df_tweets['text'].str.replace('[()!?]', ' ')
+        #df_tweets['text'] = df_tweets['text'].str.replace('\[.*?\]',' ')
+        #df_tweets['text'] = df_tweets['text'].str.replace("[^a-z0-9]"," ")
+        #df_tweets['words'] = df_tweets['text'].apply(lambda x:str(x.lower()).split())
 
-        df_tweets['tweet_without_stopwords'] = df_tweets['text'].apply(lambda x: ' '.join([word for word in str(x).split() if word not in (stop)]))
+        #df_tweets['tweet_without_stopwords'] = df_tweets['text'].apply(lambda x: ' '.join([word for word in str(x).split() if word not in (stop)]))
 
         def remove_stopword(x):
             return [y for y in x if y not in stopwords.words('english')]
-        df_tweets['words'] = df_tweets['words'].apply(lambda x:remove_stopword(x))
+        #df_tweets['words'] = df_tweets['words'].apply(lambda x:remove_stopword(x))
 
         def remove_hashtag(x):
             return [y for y in x if not y.startswith('#')]
-        df_tweets['words'] = df_tweets['words'].apply(lambda x:remove_hashtag(x))
+        #df_tweets['words'] = df_tweets['words'].apply(lambda x:remove_hashtag(x))
 
         return df_tweets
     
     def preprocessing_tweet_datetime(self, df: pd.DataFrame()) -> pd.DataFrame():
         df_temp = df.copy()
-        df_temp.drop(df_temp[df_temp.created_at == 'twitter'].index, inplace=True)
-        df_temp.created_at = pd.to_datetime(df_temp.created_at)
+        #df_temp.drop(df_temp[df_temp.created_at == 'twitter'].index, inplace=True)
+        #df_temp.created_at = pd.to_datetime(df_temp.created_at)
         df_temp['Date'] = df_temp.created_at.apply(lambda x: x.date())
         df_temp['hour'] = df_temp.created_at.apply(lambda x: x.hour)
         df_temp['minute'] = df_temp.created_at.apply(lambda x: x.minute)
