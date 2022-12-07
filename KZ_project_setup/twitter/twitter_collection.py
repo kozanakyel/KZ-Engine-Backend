@@ -126,13 +126,13 @@ class TwitterCollection():
             print(f'This symbols {symbol} tweet not have')
             return
         else:
-            chunksize = 1000
+            chunksized = 100000
             list_of_dataframes = []
-            for df in pd.read_csv(os.path.join(pathdf, filedf), chunksize=chunksize):
+            for df in pd.read_csv(os.path.join(pathdf, filedf), chunksize=chunksized, index_col=0, lineterminator='\n'):
                 list_of_dataframes.append(df)
             temp_tweets = pd.concat(list_of_dataframes)
             #temp_tweets = pd.read_csv(os.path.join(pathdf, filedf))
-            temp_tweets = self.throw_unnamed_cols(temp_tweets)
+            #temp_tweets = self.throw_unnamed_cols(temp_tweets)
         return temp_tweets
 
     def throw_unnamed_cols(self, df_tweet) -> pd.DataFrame():
