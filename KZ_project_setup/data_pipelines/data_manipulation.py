@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 from technical_analysis.indicators import Indicators
+from logger.logger import Logger
 import yfinance as yf
 import shutil
 
@@ -23,10 +24,11 @@ class DataManipulation():
         self.pure_path = pure_path
         self.feature_path = feature_path
         self.saved_to_csv = saved_to_csv
+        self.pure_df = None
         self.df = self.create_data_one(self.symbol, self.source, self.period, 
                                         self.interval, self.start_date, 
                                         self.end_date, prefix_path=self.prefix_path)
-        self.pure_df = None
+        
 
     def get_symbol_df(self, symbol, pure=False):
 
