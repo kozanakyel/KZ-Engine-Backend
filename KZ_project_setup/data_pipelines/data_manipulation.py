@@ -54,6 +54,7 @@ class DataManipulation():
 
         path_df = prefix_path+self.main_path+symbol 
         pure_data = prefix_path+self.pure_path+symbol
+
         if period != None:
             pure_file = f'{symbol}_{period}_{interval}.csv'
             file = f'{symbol}_df_{period}_{interval}.csv'
@@ -113,7 +114,11 @@ class DataManipulation():
 
     def extract_features(self) -> pd.DataFrame():
         path_df = self.prefix_path+self.feature_path+self.symbol
-        file_df = f'{self.symbol}_df_{self.period}_{self.interval}.csv'
+        
+        if self.period != None:
+            file_df = f'{self.symbol}_df_{self.period}_{self.interval}.csv'
+        else:
+            file_df = f'{self.symbol}_df_{self.start_date}_{self.end_date}_{self.interval}.csv'
         
         if os.path.exists(os.path.join(path_df, file_df)):
             sample = pd.read_csv(os.path.join(path_df, file_df))
@@ -144,6 +149,7 @@ class DataManipulation():
             self.create_binary_feature_label(sample)
             sample.drop(columns=['close', 'volume'], axis=1, inplace=True)
             sample = sample.replace([np.inf, -np.inf], np.nan).dropna()
+            sample['kz_score'] = sample.sum(axis = 1)/100
             if self.saved_to_csv:
                 self.write_file_data(sample, path_df, file_df)
 
@@ -201,6 +207,11 @@ class DataManipulation():
         sample['st_fishert'] = df["fishert"].apply(lambda x: helper_divide_three(x, params=[2.5, -2.5]))
 
         return sample
+
+
+    def normalized_df(self, df: pd.DataFrame(), column:str):
+        df[column] = (df[column] - df[column].min()) / \
+                    (df[column].max() - df[column].min())
 
 
     def remove_directory(self, path: str) -> None:
