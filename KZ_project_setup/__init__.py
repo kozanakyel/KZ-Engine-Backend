@@ -1,1 +1,1 @@
-__all__ = ["strategy_kz", "technical_analysis", "twitter","data_pipelines"]
+__all__ = ["strategy_kz", "technical_analysis", "twitter","data_pipelines","logger"]

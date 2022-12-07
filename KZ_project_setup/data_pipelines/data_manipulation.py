@@ -11,7 +11,7 @@ class DataManipulation():
                                 start_date=None, end_date=None, scale=1, prefix_path='.', 
                                 main_path='/data/outputs/data_ind/', pure_path='/data/pure_data/',
                                 feature_path='/data/outputs/feature_data/', saved_to_csv=True,
-                                log_output_path=None, log_prefix=None):
+                                logger: Logger =None):
         self.symbol = symbol
         self.source = source
         self.scale = scale
@@ -26,8 +26,8 @@ class DataManipulation():
         self.feature_path = feature_path
         self.saved_to_csv = saved_to_csv
         self.pure_df = None
-        if log_output_path != None:
-            self.logger = Logger(log_output_path, log_prefix)
+        if logger != None:
+            self.logger = logger
         self.df = self.create_data_one(self.symbol, self.source, self.period, 
                                         self.interval, self.start_date, 
                                         self.end_date, prefix_path=self.prefix_path)
