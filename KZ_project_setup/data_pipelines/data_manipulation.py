@@ -23,7 +23,9 @@ class DataManipulation():
         self.pure_path = pure_path
         self.feature_path = feature_path
         self.saved_to_csv = saved_to_csv
-        self.df = self.create_data_one(self.symbol, self.source, self.period, self.interval, prefix_path=self.prefix_path)
+        self.df = self.create_data_one(self.symbol, self.source, self.period, 
+                                        self.interval, self.start_date, 
+                                        self.end_date, prefix_path=self.prefix_path)
         self.pure_df = None
 
     def get_symbol_df(self, symbol, pure=False):
@@ -46,46 +48,56 @@ class DataManipulation():
 
         return df_temp
     
-    def create_data_one(self, symbol, source, period=None, interval=None, prefix_path='.'):
+    def create_data_one(self, symbol, source, period=None, 
+                        interval=None, start_date=None, 
+                        end_date=None, prefix_path='.'):
+
         path_df = prefix_path+self.main_path+symbol 
         pure_data = prefix_path+self.pure_path+symbol
-        pure_file = f'{symbol}_{period}_{interval}.csv'
-        file = f'{symbol}_df_{period}_{interval}.csv'
+        if period != None:
+            pure_file = f'{symbol}_{period}_{interval}.csv'
+            file = f'{symbol}_df_{period}_{interval}.csv'
+        else:
+            pure_file = f'{symbol}_{start_date}_{end_date}_{interval}.csv'
+            file = f'{symbol}_df_{start_date}_{end_date}_{interval}.csv'
         
         if os.path.exists(os.path.join(path_df, file)):
             self.df = pd.read_csv(os.path.join(path_df, file))
             self.df['Datetime'] = pd.to_datetime(self.df['Datetime'])
             self.df = self.df.set_index('Datetime')
+            return self.df
 
         elif source == 'yahoo' and period != None:
-
             df_download = yf.download(symbol, period=period, interval=interval)
-            self.df = df_download.copy()
-            self.df['Datetime'] = self.df.index
-            self.df = self.df.set_index('Datetime')
-            self.df.dropna(inplace=True)
+        else:
+            df_download = yf.download(symbol, start=start_date, end=end_date, interval=interval)
 
-            if self.df.shape[0] > self.range_list[-1]:
-                self.df.columns = self.df.columns.str.lower()
-                if 'adj close' in self.df.columns.to_list():
-                    self.df = self.df.rename(columns={'adj close': 'adj_close'})  
-                self.pure_df = self.df.copy() 
-                if self.saved_to_csv:
-                    self.write_file_data(self.df, pure_data, pure_file)
+        self.df = df_download.copy()
+        self.df['Datetime'] = self.df.index
+        self.df = self.df.set_index('Datetime')
+        self.df.dropna(inplace=True)
+
+        if self.df.shape[0] > self.range_list[-1]:
+            self.df.columns = self.df.columns.str.lower()
+            if 'adj close' in self.df.columns.to_list():
+                self.df = self.df.rename(columns={'adj close': 'adj_close'})  
+            self.pure_df = self.df.copy() 
+            if self.saved_to_csv:
+                self.write_file_data(self.df, pure_data, pure_file)
                 
-                indicators = Indicators(self.df, self.range_list)
-                indicators.create_indicators_columns()
-                self.df = indicators.df.copy()
-                self.df.columns = self.df.columns.str.lower()
-                self.df = self.df.reindex(sorted(self.df.columns), axis=1) 
-                self.create_binary_feature_label(self.df)
-                self.df.dropna(inplace= True, how='any')
+            indicators = Indicators(self.df, self.range_list)
+            indicators.create_indicators_columns()
+            self.df = indicators.df.copy()
+            self.df.columns = self.df.columns.str.lower()
+            self.df = self.df.reindex(sorted(self.df.columns), axis=1) 
+            self.create_binary_feature_label(self.df)
+            self.df.dropna(inplace= True, how='any')
                 
-                if self.saved_to_csv:
-                    self.write_file_data(self.df, path_df, file) 
-            else:
-                print(f'{self.symbol} shape size not sufficient from download')
-                return None
+            if self.saved_to_csv:
+                self.write_file_data(self.df, path_df, file) 
+        else:
+            print(f'{self.symbol} shape size not sufficient from download')
+            return None
             
         return self.df
         
@@ -185,8 +197,8 @@ class DataManipulation():
             else:
                 return 1
 
-        sample['st_mfi'] = df["mfi_15"].apply(lambda x: helper_divide_three(x, params=[75, 25])) / 3
-        sample['st_fishert'] = df["fishert"].apply(lambda x: helper_divide_three(x, params=[2.5, -2.5])) / 3
+        sample['st_mfi'] = df["mfi_15"].apply(lambda x: helper_divide_three(x, params=[75, 25]))
+        sample['st_fishert'] = df["fishert"].apply(lambda x: helper_divide_three(x, params=[2.5, -2.5]))
 
         return sample
 
