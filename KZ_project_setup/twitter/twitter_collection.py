@@ -108,8 +108,8 @@ class TwitterCollection():
             print('burda')
             chunksize = 1000
             list_of_dataframes = []
-            for df in pd.read_csv(os.path.join(pathdf, filedf), chunksize=chunksize):
-                list_of_dataframes.append(df)
+            for df_read in pd.read_csv(os.path.join(pathdf, filedf), chunksize=chunksize):
+                list_of_dataframes.append(df_read)
             temp_tweets = pd.concat(list_of_dataframes)
             #temp_tweets = pd.read_csv(os.path.join(pathdf, filedf))
             print('okudu')
