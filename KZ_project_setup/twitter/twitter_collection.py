@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 import datetime
 from datetime import datetime as dt 
 from datetime import timedelta as td
+import warnings
+warnings.filterwarnings('ignore')
 
 load_dotenv()
 

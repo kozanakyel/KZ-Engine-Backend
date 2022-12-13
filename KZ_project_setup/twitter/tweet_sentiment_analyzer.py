@@ -11,6 +11,11 @@ import pandas as pd
 import numpy as np
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import re
+from textblob import TextBlob
+import os
+import translators as ts
+import warnings
+warnings.filterwarnings('ignore')
 ########## GIVING A RESULT OF ANY TURKISH EXCHANGE ADD A TRANSLATE TO ENGLISH FOR SENTIMENT ANALYSIS WITH TWITTER
 
 class TweetSentimentAnalyzer():
@@ -19,6 +24,13 @@ class TweetSentimentAnalyzer():
         self.lang = lang
         self.sid = SentimentIntensityAnalyzer()
 
+    def create_sentiment_scores(self, df_tweets: pd.DataFrame()) -> pd.DataFrame():
+        df = self.cleaning_tweet_data(df_tweets)
+        df = self.preprocessing_tweet_datetime(df)
+        df = self.get_sentiment_scores(df)
+        self.add_datetime_to_col(df)
+        return df 
+
     def cleaning_tweet_data(self, df: pd.DataFrame()):
         df_tweets = df.copy()
         df_tweets.dropna(inplace=True)
@@ -26,20 +38,20 @@ class TweetSentimentAnalyzer():
             df_tweets.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
         if 'source' in df_tweets.columns:
             df_tweets.drop(columns=['source', 'name', 'location', 'verified', 'description'], axis=1, inplace=True)
-        blanks = []  # start with an empty list
-
-        for i, created_at, text, *username in df_tweets.itertuples():  
-            if type(text)==str:            
-                if text.isspace():         
-                    blanks.append(i)    
-
-        df_tweets.drop(blanks, inplace=True)
+        
         df_tweets = df_tweets.apply(lambda x: x.astype(str).str.lower()).drop_duplicates(subset=['text', 'username'], keep='first')
 
         df_tweets['text'] = df_tweets['text'].apply(lambda x: re.split('https:\/\/.*', str(x))[0])
         df_tweets['text'] = df_tweets['text'].str.lower()
         df_tweets['text'] = df_tweets['text'].str.replace("@[a-z0-9A-Z]+", "", regex=True)
         df_tweets['text'] = df_tweets['text'].str.replace("#[a-z0-9A-Z]+","", regex=True)
+
+        blanks = []  # start with an empty list
+        for i, created_at, text, *username in df_tweets.itertuples():  
+            if type(text)==str:            
+                if text.isspace():         
+                    blanks.append(i)    
+        df_tweets.drop(blanks, inplace=True)
         #df_tweets['text'] = df_tweets['text'].str.replace(r"http\S+", "")
         #df_tweets['text'] = df_tweets['text'].str.replace(r"www.\S+", "")
         #df_tweets['text'] = df_tweets['text'].str.replace('[()!?]', ' ')
@@ -72,6 +84,12 @@ class TweetSentimentAnalyzer():
     
     def get_sentiment_scores(self, df: pd.DataFrame()):
         df_temp = df.copy()
+        if self.lang == 'tr':
+            for i in df_temp.index:
+                print(f'translate start: {i}')
+            #############################
+                df_temp.loc[i, "text"] = ts.google(df_temp.loc[i, "text"], to_language='en')
+                #df_temp.loc[i, "text"] = str(TextBlob(df_temp.loc[i, "text"]).translate(to='en'))
         df_temp['scores'] = df_temp['text'].apply(lambda review: self.sid.polarity_scores(review))
         df_temp['compound']  = df_temp['scores'].apply(lambda score_dict: score_dict['compound'])
         df_temp['comp_score'] = df_temp['compound'].apply(lambda score: self.get_vader_sentiment(score))
@@ -116,6 +134,40 @@ class TweetSentimentAnalyzer():
         result = ohlc.merge(result_sent_df, how='outer', left_index=True, right_index=True)
         result['compound_total'] = result['compound_total'].fillna(0)
         return result
+
+    def create_sent_results_df(self, symbol: str, df_tweets: pd.DataFrame(), path_df: str, saved: bool=True) -> tuple:
+        sent_day_file_df = f'{symbol}_day.csv'
+        sent_hour_file_df = f'{symbol}_hour.csv'
+        if not os.path.exists(os.path.join(path_df, sent_day_file_df)):
+            os.makedirs(path_df, exist_ok=True)
+            with open(os.path.join(path_df, sent_day_file_df), mode='a'): pass
+            df = self.create_sentiment_scores(df_tweets)
+
+            df_result_day = self.get_sent_with_mean_interval(df, interval='1d')
+            df_result_hour = self.get_sent_with_mean_interval(df, interval='1h')
+
+            if saved:
+                df_result_day.to_csv(os.path.join(path_df, sent_day_file_df))
+                df_result_hour.to_csv(os.path.join(path_df, sent_hour_file_df))
+        else:
+            sent_day_df = pd.read_csv(os.path.join(path_df, sent_day_file_df), index_col=[0], parse_dates=True)
+            sent_hour_df = pd.read_csv(os.path.join(path_df, sent_hour_file_df), index_col=[0], parse_dates=True)
+
+            df = self.create_sentiment_scores(df_tweets)
+
+            df_result_day = self.get_sent_with_mean_interval(df, interval='1d')
+            df_result_day.index = pd.to_datetime(df_result_day.index)
+            sent_tweets_d = pd.concat([sent_day_df, df_result_day[df_result_day.index>sent_day_df.index[-1]]])
+        
+            df_result_hour = self.get_sent_with_mean_interval(df, interval='1h')
+            df_result_hour.index = pd.to_datetime(df_result_hour.index)
+            sent_tweets_h = pd.concat([sent_hour_df, df_result_hour[df_result_hour.index>sent_hour_df.index[-1]]])
+
+            if saved:
+                sent_tweets_d.to_csv(os.path.join(path_df, sent_day_file_df))
+                sent_tweets_h.to_csv(os.path.join(path_df, sent_hour_file_df))
+
+        return df_result_day, df_result_hour
     
     def plot_wordcloud(self, text, mask=None, max_words=200, max_font_size=50, figure_size=(16.0,9.0), color = 'white',
                    title = None, title_size=40, image_color=False):
