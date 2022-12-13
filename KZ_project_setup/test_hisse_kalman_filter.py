@@ -9,14 +9,14 @@ from strategy_kz.strategy_var import StrategyVar
 from data_pipelines.data_manipulation import DataManipulation
 from technical_analysis.backtest_kz import *
 
-#screener="turkey"
-#exchange="BIST"
-#path_symbol = './data/symbol_data/ana_market.csv'
-#index = 'Order'
-screener="crypto"
-exchange="BINANCE"
-path_symbol = './data/symbol_data/usdtcoins.csv'
+screener="turkey"
+exchange="BIST"
+path_symbol = './data/symbol_data/ana_market.csv'
 index = 'Order'
+#screener="crypto"
+#exchange="BINANCE"
+#path_symbol = './data/symbol_data/usdtcoins.csv'
+#index = 'Order'
 
 SYMBOL = ''
 scale = 1

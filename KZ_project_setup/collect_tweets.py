@@ -13,6 +13,7 @@ if __name__ == '__main__':
 
     tsa = TweetSentimentAnalyzer()
 
+    """
     for i in query_list:
         path_df = f'./KZ_project_setup/data/tweets_data/{i}/'
         file_df = f'{i}_tweets.csv'
@@ -26,12 +27,15 @@ if __name__ == '__main__':
 
         df_result_hour = tsa.get_sent_with_mean_interval(df, interval='1h')
         df_result_hour.to_csv(os.path.join(path_df, f'{i}_hour.csv'))
+    
+    """
+    
   
-    #for i in query_list:
-        #df_tweets = client.get_tweets_with_interval(i, 'en', hour=24*7, interval=4)
-        #print(f'shape of {i} tweets df: {df_tweets.shape}')
-        #path_df = f'./KZ_project_setup/data/tweets_data/{i}/'
-        #file_df = f'{i}_tweets.csv'
-        #client.write_tweets_csv(df_tweets, path_df, file_df)
+    for i in query_list_bist:
+        df_tweets = client.get_tweets_with_interval(i, 'tr', hour=24*7, interval=4)
+        print(f'shape of {i} tweets df: {df_tweets.shape}')
+        path_df = f'./KZ_project_setup/data/tweets_data/{i}/'
+        file_df = f'{i}_tweets.csv'
+        client.write_tweets_csv(df_tweets, path_df, file_df)
 
   
