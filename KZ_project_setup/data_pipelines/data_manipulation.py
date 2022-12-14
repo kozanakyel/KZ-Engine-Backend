@@ -11,7 +11,7 @@ class DataManipulation():
                                 start_date=None, end_date=None, scale=1, prefix_path='.', 
                                 main_path='/data/outputs/data_ind/', pure_path='/data/pure_data/',
                                 feature_path='/data/outputs/feature_data/', saved_to_csv=True,
-                                logger: Logger =None):
+                                logger: Logger=None):
         self.symbol = symbol
         self.source = source
         self.scale = scale
@@ -49,13 +49,16 @@ class DataManipulation():
         if pure:
             path_df = pure_data
             file = pure_file
+            self.log(f'Selected Pure data: {pure_data+pure_file}')
 
         if os.path.exists(os.path.join(path_df, file)):
             df_temp = pd.read_csv(os.path.join(path_df, file))
             df_temp['Datetime'] = pd.to_datetime(df_temp['Datetime'])
             df_temp = df_temp.set_index('Datetime')
+            self.log(f'File is exist for Data Manipulation: {pure_data+pure_file}')
         else:
-            print(f'{symbol} file is not found!')
+            self.log(f'{symbol} file is not found!')
+            return
 
         return df_temp
     
@@ -82,8 +85,10 @@ class DataManipulation():
 
         elif source == 'yahoo' and period != None:
             df_download = yf.download(symbol, period=period, interval=interval)
+            self.log(f'Get {symbol} data from yahoo period: {period} and interval: {interval}')
         else:
             df_download = yf.download(symbol, start=start_date, end=end_date, interval=interval)
+            self.log(f'Get {symbol} data from yahoo period: {start_date} and {end_date} also interval: {interval}')
 
         self.df = df_download.copy()
         self.df['Datetime'] = self.df.index
@@ -97,17 +102,22 @@ class DataManipulation():
             self.pure_df = self.df.copy() 
             if self.saved_to_csv:
                 self.write_file_data(self.df, pure_data, pure_file)
+                self.log(f'Write pure data file to {pure_data+pure_file}')
                 
             indicators = Indicators(self.df, self.range_list)
             indicators.create_indicators_columns()
             self.df = indicators.df.copy()
+            self.log(f'Created Indicator object and indicators columns')
+            
             self.df.columns = self.df.columns.str.lower()
             self.df = self.df.reindex(sorted(self.df.columns), axis=1) 
             self.create_binary_feature_label(self.df)
             self.df.dropna(inplace= True, how='any')
+            self.log(f'Created Feature label for next day and dropn NaN values')
                 
             if self.saved_to_csv:
                 self.write_file_data(self.df, path_df, file) 
+                self.log(f'Write indicator and featured data file to {path_df+file}')
         else:
             self.log(f'{self.symbol} shape size not sufficient from download')
             return None
@@ -229,7 +239,7 @@ class DataManipulation():
     def remove_directory(self, path: str) -> None:
         if os.path.exists(path):
             shutil.rmtree(path)
-            print(f'The path is REMOVED: {path}')
+            self.log(f'The path is REMOVED: {path}')
         else:
-            print(f'The path is not exist. {path}')
+            self.log(f'The path is not exist. {path}')
     
