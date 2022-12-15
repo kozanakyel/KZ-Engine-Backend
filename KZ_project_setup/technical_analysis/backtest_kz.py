@@ -22,7 +22,7 @@ def make_backtest(df, range) -> dict:
     write_bt_range(df, 'rsi', bt_threshold, 80, 20, range, result_list)
     write_bt_range(df, 'willr', bt_threshold, -20, -80, range, result_list)
     write_bt_range(df, 'mfi', bt_threshold, 90, 10, range, result_list)
-    write_bt_macd(df, bt_band_range, result_list)
+    #write_bt_macd(df, bt_band_range_close, result_list)
     result_list.sort(reverse=True)
     return result_list
 
@@ -325,7 +325,7 @@ def write_bt_range(df: pd.DataFrame, ind: str, func_bt, upper_thresh, lower_thre
 def write_bt_band(df: pd.DataFrame, range: list, result: list, up='upband', low='lowband') -> None:
     result_band = {}
     for i in range:
-        temp_band_df = bt_band_range(df, up+'_'+str(i), low+'_'+str(i))
+        temp_band_df = bt_band_range_close(df, up+'_'+str(i), low+'_'+str(i))
         if 'pnl_cash' in temp_band_df.columns:
             result_band['band_'+str(i)] = temp_band_df['pnl_cash'].iloc[-1], len(temp_band_df)
 

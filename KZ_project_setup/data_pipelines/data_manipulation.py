@@ -5,6 +5,7 @@ from technical_analysis.indicators import Indicators
 from logger.logger import Logger
 import yfinance as yf
 import shutil
+from tqdm import tqdm
 
 class DataManipulation():
     def __init__(self, symbol: str, source: str, range_list: list, period=None, interval=None, 
@@ -138,21 +139,29 @@ class DataManipulation():
             self.norm_features_ind(sample, df, 'kama', self.range_list)
             self.norm_features_ind(sample, df, 'rsi', self.range_list, 100)
             self.norm_adx_ind(sample, df, self.range_list)
+            self.log(f'Normalized features for indicators values to 1 and 0')
         
             # date normalization and find date weightys for daily return!!!!!!
             sample['month'] = sample.index.month
             sample['weekday'] = sample.index.weekday
             if self.interval[-1] == 'h':
                 sample['hour'] = sample.index.hour
+            else:
+                sample['hour'] = 0
             sample['is_quarter_end'] = sample.index.is_quarter_end*1
+            self.log(f'Add Datetime fetures for extracted feature data')
+
             sample['candle_label'] = df.candle_label
             sample['vol_delta'] = (sample['volume'].pct_change() > 0).astype(int)
             sample['log_return'] = df.log_return
             self.add_lags(sample, df, 9)
             self.create_binary_feature_label(sample)
+            self.log(f'Lags for features and log return vol_delta with binary label')
+
             sample.drop(columns=['close', 'volume'], axis=1, inplace=True)
             sample = sample.replace([np.inf, -np.inf], np.nan).dropna()
             sample['kz_score'] = sample.sum(axis = 1)/100
+            self.log(f'Add KZ score and Index label')
             if self.saved_to_csv:
                 self.write_file_data(sample, path_df, file_df)
 
@@ -160,7 +169,8 @@ class DataManipulation():
 
     def norm_features_ind(self, sampledf, df, ind, range_list, dividend=None) -> None:
         k = 0
-        for i in range_list:
+        self.log(f'Start {ind} normalized label')
+        for i in tqdm(range_list):
             if dividend != None:
                 sampledf[f'st_{ind}_{i}'] = df[f'{ind}_{i}'] / dividend
             else:
@@ -169,6 +179,7 @@ class DataManipulation():
                     sampledf[f'st_cut_{ind}_{range_list[k-1]}_{range_list[k]}'] = \
                             (df[f'{ind}_{range_list[k-1]}'] > df[f'{ind}_{range_list[k]}']).astype(int)
             k += 1
+        self.log(f'Add {ind} normalized label')
 
     def norm_adx_ind(self, sampledf, df, range_list) -> None:
         for i in range_list:
@@ -176,6 +187,7 @@ class DataManipulation():
             pattern1 = df[f'adx_{i}'] < 50
             pattern2 = df[f'dmp_{i}'] > df[f'dmn_{i}']
             sampledf[f'st_adxdmi_{i}'] = (pattern2).astype(int) + pattern1
+        self.log(f'Add ADX indicator normalized label')
 
     def add_lags(self, sampledf: pd.DataFrame(), df: pd.DataFrame(), lag_numbers: int) -> None:
         i = 2
@@ -184,6 +196,8 @@ class DataManipulation():
             i += 1
 
     def pattern_helper_for_extract_feature(self, df) -> pd.DataFrame():
+
+        self.log(f'Start helper function for Hisse strategy')
         sample  = df[['open','high','low','close','volume']].copy()
         sample.drop(columns=['open','high','low'], axis=1, inplace=True)
         
@@ -208,13 +222,13 @@ class DataManipulation():
 
         sample['st_mfi'] = df["mfi_15"].apply(lambda x: helper_divide_three(x, params=[75, 25]))
         sample['st_fishert'] = df["fishert"].apply(lambda x: helper_divide_three(x, params=[2.5, -2.5]))
+        self.log(f'SHisse strategy, mfi and fischer scoring is finished')
 
         return sample
 
 
     def normalized_df(self, df: pd.DataFrame(), column:str):
-        df[column] = (df[column] - df[column].min()) / \
-                    (df[column].max() - df[column].min())
+        df[column] = ((df[column] / df[column].mean()) > 1).astype(int)
 
 
     def remove_directory(self, path: str) -> None:
