@@ -39,29 +39,6 @@ class DataManipulation():
         else:
             print(text)
 
-    def get_symbol_df(self, symbol, pure=False):
-
-        path_df = self.prefix_path+self.main_path+symbol 
-        pure_data = self.prefix_path+self.pure_path+symbol
-        pure_file = f'{symbol}_{self.period}_{self.interval}.csv'
-        file = f'{symbol}_df_{self.period}_{self.interval}.csv'
-
-        if pure:
-            path_df = pure_data
-            file = pure_file
-            self.log(f'Selected Pure data: {pure_data+pure_file}')
-
-        if os.path.exists(os.path.join(path_df, file)):
-            df_temp = pd.read_csv(os.path.join(path_df, file))
-            df_temp['Datetime'] = pd.to_datetime(df_temp['Datetime'])
-            df_temp = df_temp.set_index('Datetime')
-            self.log(f'File is exist for Data Manipulation: {pure_data+pure_file}')
-        else:
-            self.log(f'{symbol} file is not found!')
-            return
-
-        return df_temp
-    
     def create_data_one(self, symbol, source, period=None, 
                         interval=None, start_date=None, 
                         end_date=None, prefix_path='.'):
@@ -82,13 +59,17 @@ class DataManipulation():
             self.df = self.df.set_index('Datetime')
             self.log(f'Get data from local file {os.path.join(path_df, file)}')
             return self.df
+        
+        elif os.path.exists(os.path.join(pure_data, pure_file)):
+            self.log('pure file exist')
+            df_download = pd.read_csv(os.path.join(pure_data, pure_file), index_col=True, parse_dates=True)
 
         elif source == 'yahoo' and period != None:
             df_download = yf.download(symbol, period=period, interval=interval)
             self.log(f'Get {symbol} data from yahoo period: {period} and interval: {interval}')
         else:
             df_download = yf.download(symbol, start=start_date, end=end_date, interval=interval)
-            self.log(f'Get {symbol} data from yahoo period: {start_date} and {end_date} also interval: {interval}')
+            self.log(f'Get {symbol} data from yahoo start date: {start_date} and {end_date} also interval: {interval}')
 
         self.df = df_download.copy()
         self.df['Datetime'] = self.df.index
