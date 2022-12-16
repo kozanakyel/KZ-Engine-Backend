@@ -164,3 +164,39 @@ class Indicators():
         cagr = (norm)**(1/((df.index[-1] - df.index[0]).days / 365.25)) - 1
         return cagr
 
+    def cvd(full_df):
+        full_df.index = full_df['Datetime'].apply(lambda x: pd.to_datetime(x, as_str=False))
+        month_groups = full_df.groupby(pd.Grouper(freq='M'))
+
+        monthly_deltas = []
+
+        for _, group in month_groups:
+            df = group.copy()
+
+            df['open_close_max'] = df.high - df[["open", "close"]].max(axis=1)
+            df['open_close_min'] = df[["open", "close"]].min(axis=1) - df.low
+            df['open_close_abs'] = (df.close - df.open).abs()
+            df['is_close_larger'] = df.close >= df.open
+            df['is_open_larger'] = df.open > df.close
+            df['is_body_cond_met'] = df.is_close_larger | df.is_open_larger
+        
+            df.loc[df.is_body_cond_met == False, 'open_close_abs_2x'] = 0
+            df.loc[df.is_body_cond_met == True, 'open_close_abs_2x'] = 2*df.open_close_abs
+
+            df['nominator'] = df.open_close_max + df.open_close_min + df.open_close_abs_2x
+            df['denom'] = df.open_close_max + df.open_close_min + df.open_close_abs
+        
+            df['delta'] = 0
+            df.loc[df.denom == 0, 'delta'] = 0.5
+            df.loc[df.denom != 0, 'delta'] = df.nominator / df.denom
+            df.loc[df.is_close_larger == False, 'delta'] = df.loc[df.is_close_larger == False, 'volume'] * (-df.loc[df.is_close_larger == False, 'delta'])
+            df.loc[df.is_close_larger == True, 'delta'] = df.loc[df.is_close_larger == True, 'volume'] * (df.loc[df.is_close_larger == True, 'delta'])
+
+            monthly_deltas.append(pd.Series(np.cumsum(df.delta.values)))
+    
+        all_deltas = pd.concat(monthly_deltas).reset_index(drop=True)
+        full_df = full_df.reset_index(drop=True)
+        full_df['cvd'] = all_deltas
+
+        return full_df
+

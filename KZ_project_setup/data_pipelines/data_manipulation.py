@@ -27,6 +27,7 @@ class DataManipulation():
         self.feature_path = feature_path
         self.saved_to_csv = saved_to_csv
         self.pure_df = None
+        self.logger = logger
         if logger != None:
             self.logger = logger
         self.df = self.create_data_one(self.symbol, self.source, self.period, 

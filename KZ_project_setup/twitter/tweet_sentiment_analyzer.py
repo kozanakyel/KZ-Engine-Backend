@@ -131,7 +131,7 @@ class TweetSentimentAnalyzer():
         return df_result
     
     def concat_ohlc_compound_score(self, ohlc: pd.DataFrame(), result_sent_df: pd.DataFrame()) -> pd.DataFrame():
-        result = ohlc.merge(result_sent_df, how='outer', left_index=True, right_index=True)
+        result = ohlc.merge(result_sent_df, how='inner', left_index=True, right_index=True)
         result['compound_total'] = result['compound_total'].fillna(0)
         return result
 
