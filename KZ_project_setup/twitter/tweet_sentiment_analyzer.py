@@ -11,18 +11,25 @@ import pandas as pd
 import numpy as np
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import re
-from textblob import TextBlob
 import os
 import translators as ts
 import warnings
 warnings.filterwarnings('ignore')
+from logger.logger import Logger
 ########## GIVING A RESULT OF ANY TURKISH EXCHANGE ADD A TRANSLATE TO ENGLISH FOR SENTIMENT ANALYSIS WITH TWITTER
 
 class TweetSentimentAnalyzer():
-    def __init__(self, lang: str='en'):
+    def __init__(self, lang: str='en', logger: Logger=None):
         #self.df_tweets = df_twitter.copy()
         self.lang = lang
+        self.logger = logger
         self.sid = SentimentIntensityAnalyzer()
+
+    def log(self, text):
+        if self.logger:
+            self.logger.append_log(text)
+        else:
+            print(text)
 
     def create_sentiment_scores(self, df_tweets: pd.DataFrame()) -> pd.DataFrame():
         df = self.cleaning_tweet_data(df_tweets)
@@ -38,8 +45,10 @@ class TweetSentimentAnalyzer():
             df_tweets.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
         if 'source' in df_tweets.columns:
             df_tweets.drop(columns=['source', 'name', 'location', 'verified', 'description'], axis=1, inplace=True)
+            self.log(f'Extracted unnecassary columns for tweets')
         
         df_tweets = df_tweets.apply(lambda x: x.astype(str).str.lower()).drop_duplicates(subset=['text', 'username'], keep='first')
+        self.log(f'Extracted uDuplicates rows from tweets')
 
         df_tweets['text'] = df_tweets['text'].apply(lambda x: re.split('https:\/\/.*', str(x))[0])
         df_tweets['text'] = df_tweets['text'].str.lower()
@@ -61,6 +70,7 @@ class TweetSentimentAnalyzer():
 
         df_tweets['tweet_without_stopwords'] = df_tweets['text'].apply(lambda x: ' '.join([word for word in str(x).split() if word not in (stop)]))
         df_tweets['words'] = df_tweets['text'].apply(lambda x:str(x.lower()).split())
+        self.log(f'Cleaning Tweets for blanks tweets and hastag username values')
 
         return df_tweets
     
@@ -71,6 +81,7 @@ class TweetSentimentAnalyzer():
         df_temp['Date'] = df_temp.created_at.apply(lambda x: x.date())
         df_temp['hour'] = df_temp.created_at.apply(lambda x: x.hour)
         df_temp['minute'] = df_temp.created_at.apply(lambda x: x.minute)
+        self.log(f'Added Datetime fatures for tweets to df (date, hour, minute)')
         return df_temp
     
     def get_vader_sentiment(self, score):    
@@ -84,7 +95,7 @@ class TweetSentimentAnalyzer():
     
     def get_sentiment_scores(self, df: pd.DataFrame()):
         df_temp = df.copy()
-        if self.lang == 'tr':
+        if self.lang == 'tr':  ######### for the translate not exact solution yet!!!!
             for i in df_temp.index:
                 print(f'translate start: {i}')
             #############################
@@ -93,6 +104,7 @@ class TweetSentimentAnalyzer():
         df_temp['scores'] = df_temp['text'].apply(lambda review: self.sid.polarity_scores(review))
         df_temp['compound']  = df_temp['scores'].apply(lambda score_dict: score_dict['compound'])
         df_temp['comp_score'] = df_temp['compound'].apply(lambda score: self.get_vader_sentiment(score))
+        self.log(f'Created Sentiment Polarity Scores columns (comp_score, compound, scores)')
         return df_temp
     
     def get_most_common_words(self, df: pd.DataFrame(), number_of_words=20):
@@ -120,6 +132,7 @@ class TweetSentimentAnalyzer():
                 df_result.loc[i, 'compound_total'] = sub_df.loc[(sub_df.Date.unique()[i] == sub_df.Date), 'compound'].mean()
             df_result.set_index('Date', inplace=True)
             df_result = df_result.sort_values('Date')
+            self.log(f'Daily sentiment score Calculated')
         elif interval == '1h':
             df_result['Datetime'] = df_tweets.Datetime.unique()
             df_result['compound_total'] = 0
@@ -128,11 +141,13 @@ class TweetSentimentAnalyzer():
                 df_result.loc[i, 'compound_total'] = sub_df.loc[(sub_df.Datetime.unique()[i] == sub_df.Datetime), 'compound'].mean()
             df_result.set_index('Datetime', inplace=True)
             df_result = df_result.sort_values('Datetime')
+            self.log(f'Hourly sentiment score Calculated')
         return df_result
     
     def concat_ohlc_compound_score(self, ohlc: pd.DataFrame(), result_sent_df: pd.DataFrame()) -> pd.DataFrame():
         result = ohlc.merge(result_sent_df, how='inner', left_index=True, right_index=True)
         result['compound_total'] = result['compound_total'].fillna(0)
+        self.log(f'Concantenation for sentiment score tweets and indicator MAtrix data')
         return result
 
     def create_sent_results_df(self, symbol: str, df_tweets: pd.DataFrame(), path_df: str, saved: bool=True) -> tuple:
@@ -149,6 +164,7 @@ class TweetSentimentAnalyzer():
             if saved:
                 df_result_day.to_csv(os.path.join(path_df, sent_day_file_df))
                 df_result_hour.to_csv(os.path.join(path_df, sent_hour_file_df))
+                self.log(f'Sentiment scores Writed to file {sent_day_file_df} {sent_hour_file_df}')
         else:
             sent_day_df = pd.read_csv(os.path.join(path_df, sent_day_file_df), index_col=[0], parse_dates=True)
             sent_hour_df = pd.read_csv(os.path.join(path_df, sent_hour_file_df), index_col=[0], parse_dates=True)
@@ -166,6 +182,7 @@ class TweetSentimentAnalyzer():
             if saved:
                 sent_tweets_d.to_csv(os.path.join(path_df, sent_day_file_df))
                 sent_tweets_h.to_csv(os.path.join(path_df, sent_hour_file_df))
+                self.log(f'Sentiment scores Writed to file {sent_day_file_df} {sent_hour_file_df}')
 
         return df_result_day, df_result_hour
     

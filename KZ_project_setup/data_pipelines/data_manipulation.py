@@ -223,7 +223,7 @@ class DataManipulation():
 
         sample['st_mfi'] = df["mfi_15"].apply(lambda x: helper_divide_three(x, params=[75, 25]))
         sample['st_fishert'] = df["fishert"].apply(lambda x: helper_divide_three(x, params=[2.5, -2.5]))
-        self.log(f'SHisse strategy, mfi and fischer scoring is finished')
+        self.log(f'Hisse strategy, mfi and fischer scoring is finished')
 
         return sample
 

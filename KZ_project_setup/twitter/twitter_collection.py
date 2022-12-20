@@ -1,12 +1,12 @@
-import re, tweepy, datetime, time, json, csv
+import tweepy, datetime
 from tweepy import OAuthHandler
 import tweepy
 import pandas as pd
 import os
 from dotenv import load_dotenv
 import datetime
-from datetime import datetime as dt 
 from datetime import timedelta as td
+from logger.logger import Logger
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -20,23 +20,30 @@ MY_BEARER_TOKEN=os.getenv('TW_BEARER_TOKEN')
 
 class TwitterCollection():
     def __init__(self, access_token=access_token, access_token_secret=access_token_secret,
-                    consumer_key=consumer_key, consumer_secret=consumer_secret, bearer_token=MY_BEARER_TOKEN):
+                    consumer_key=consumer_key, consumer_secret=consumer_secret, bearer_token=MY_BEARER_TOKEN, logger: Logger=None):
         self.access_token = access_token
         self.access_token_secret=access_token_secret
         self.consumer_key=consumer_key
         self.consumer_secret=consumer_secret
         self.bearer_token=bearer_token
+        self.logger = logger
         self.connect_twitter()
         self.client = tweepy.Client(bearer_token=self.bearer_token)
+
+    def log(self, text):
+        if self.logger:
+            self.logger.append_log(text)
+        else:
+            print(text)
 
     def connect_twitter(self):
         try:
             auth = OAuthHandler(self.consumer_key, self.consumer_secret)
             auth.set_access_token(self.access_token, self.access_token_secret)
             api = tweepy.API(auth, wait_on_rate_limit=True)
-            print("Authentication Successfull")
+            self.log("Authentication Successfull")
         except:
-            print("Error: Authentication Failed")
+            self.log("Error: Authentication Failed")
 
     def get_tweets(self, search_query: str, lang: str, start_time: str, end_time: str):
         query = f"#{search_query} lang:{lang} -is:retweet"
@@ -77,6 +84,7 @@ class TwitterCollection():
             finish_time = now
         end_time = start_time + td(hours=interval)
 
+        self.log(f'For hashtag {hashtag.upper()} with language {lang.upper()} start time: {start_time}, end time: {end_time}')
         result_tweets = pd.DataFrame()
         while end_time <= finish_time - td(hours=interval):
             temp_tweets = self.get_tweets(hashtag, lang, start_time.isoformat(), end_time.isoformat())
@@ -84,6 +92,7 @@ class TwitterCollection():
             result_tweets = pd.concat([df_temp_tweets, result_tweets], ignore_index=True)
             start_time = start_time + td(hours=interval)
             end_time = end_time + td(hours=interval)
+        self.log(f'For hashtag {hashtag.upper()} tweeets colected')
         return result_tweets
 
     def cleaning_tweet_data(self, df: pd.DataFrame()):
@@ -98,7 +107,7 @@ class TwitterCollection():
             if type(text)==str:            
                 if text.isspace():         
                     blanks.append(i)    
-
+    
         df_tweets.drop(blanks, inplace=True)
 
     def write_tweets_csv(self, df: pd.DataFrame(), pathdf: str, filedf: str) -> None:
@@ -106,26 +115,22 @@ class TwitterCollection():
             os.makedirs(pathdf, exist_ok=True)
             with open(os.path.join(pathdf, filedf), mode='a'): pass
             df.to_csv(os.path.join(pathdf, filedf))
+            self.log(f'Tweeets writes to File to first time: {pathdf} {filedf}')
         else:
-            print('burda')
             chunksize = 1000
             list_of_dataframes = []
-            for df_read in pd.read_csv(os.path.join(pathdf, filedf), chunksize=chunksize):
+            for df_read in pd.read_csv(os.path.join(pathdf, filedf), chunksize=chunksize, index_col=[0]):
                 list_of_dataframes.append(df_read)
             temp_tweets = pd.concat(list_of_dataframes)
-            #temp_tweets = pd.read_csv(os.path.join(pathdf, filedf))
-            print('okudu')
-            temp_tweets = pd.concat([df, temp_tweets])  # extract ignore index
-            print('birlestirdi')
-            temp_tweets = self.throw_unnamed_cols(temp_tweets)
-            print('unanmed')
+            self.log(f'Read Tweets from File and Chunksized to {chunksize}')
+            temp_tweets = pd.concat([df, temp_tweets])
             self.cleaning_tweet_data(temp_tweets)
             temp_tweets.to_csv(os.path.join(pathdf, filedf))
-            print('yazdi')
+            self.log(f'Concantenated tweets writed to file {pathdf} {filedf}')
 
     def get_tweets_df(self, symbol: str, pathdf: str, filedf: str) -> pd.DataFrame():
         if not os.path.exists(os.path.join(pathdf, filedf)):
-            print(f'This symbols {symbol} tweet not have')
+            self.log(f'This symbols {symbol} tweet not have')
             return
         else:
             chunksized = 100000
@@ -133,8 +138,6 @@ class TwitterCollection():
             for df in pd.read_csv(os.path.join(pathdf, filedf), chunksize=chunksized, index_col=0, lineterminator='\n'):
                 list_of_dataframes.append(df)
             temp_tweets = pd.concat(list_of_dataframes)
-            #temp_tweets = pd.read_csv(os.path.join(pathdf, filedf))
-            #temp_tweets = self.throw_unnamed_cols(temp_tweets)
         return temp_tweets
 
     def throw_unnamed_cols(self, df_tweet) -> pd.DataFrame():
