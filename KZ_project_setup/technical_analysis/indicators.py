@@ -1,5 +1,6 @@
 import pandas as pd
 import pandas_ta as ta
+from logger.logger import Logger
 from technical_analysis.candlestick_features import *
 """
 @author: Ugur AKYEL
@@ -10,9 +11,16 @@ from technical_analysis.candlestick_features import *
 
 class Indicators():
 
-    def __init__(self, df: pd.DataFrame(), range_list: list):
+    def __init__(self, df: pd.DataFrame(), range_list: list, logger: Logger=None):
         self.range_list = range_list
+        self.logger = logger
         self.df = df.copy()
+
+    def log(self, text):
+        if self.logger:
+            self.logger.append_log(text)
+        else:
+            print(text)
 
     def create_indicators_columns(self) -> None:
         try:
@@ -121,6 +129,7 @@ class Indicators():
     def create_ind_with_ct(self, dft: pd.DataFrame(), ind: str, func_ta, range_list: list) -> None:
         for i in range_list:
             dft[ind+'_'+str(i)] = func_ta(dft['close'], timeperiod=i)
+        self.log(f'Calculated {ind.upper()} for range {range_list}')
 
     def create_ind_with_c_stoch(self, dft: pd.DataFrame(), func_ta) -> None:
         dft['stoch_k'], dft['stoch_d'] = func_ta(dft['close'], timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
@@ -138,25 +147,31 @@ class Indicators():
     def create_ind_with_hlcvt(self, dft: pd.DataFrame(), ind: str, func_ta, range_list: list) -> None:
         for i in range_list:
             dft[ind+'_'+str(i)] = func_ta(dft['high'], dft['low'], dft['close'], dft['volume'], timeperiod=i) 
+        self.log(f'Calculated {ind.upper()} for range {range_list}')
 
     def create_ind_with_hlct(self, dft: pd.DataFrame(), ind: str, func_ta, range_list: list) -> None:
         for i in range_list:
             dft[ind+'_'+str(i)] = func_ta(dft['high'], dft['low'], dft['close'], timeperiod=i)
+        self.log(f'Calculated {ind.upper()} for range {range_list}')
 
     def create_bband_t(self, dft: pd.DataFrame(), func_ta, range_list: list, nbdevup=1, nbdevdn=1, matype=0) -> None:
         for i in range_list:
             dft['upband_'+str(i)], dft['midband_'+str(i)], dft['lowband_'+str(i)] = \
                         func_ta(dft['close'], timeperiod=i, nbdevup=nbdevup, nbdevdn=nbdevdn, matype=matype)
+        self.log(f'Calculated BOLLINGERBAND for range {range_list}')
 
     def create_macd(self, dft: pd.DataFrame(), func_ta, fastperiod=12, slowperiod=26, signalperiod=9) -> None:
         dft['macd'], dft['macdsignal'], dft['macdhist'] = \
                 func_ta(dft['close'], fastperiod=fastperiod, slowperiod=slowperiod, signalperiod=signalperiod)
+        self.log(f'Calculated MACD')
     
     def create_ind_cv(self, dft: pd.DataFrame(), ind: str, func_ta):
         dft[ind] = func_ta(dft['close'], dft['volume'])
+        self.log(f'Calculated {ind.upper()}')
 
     def create_ind_hlcv(self, dft: pd.DataFrame(), ind: str, func_ta):
         dft[ind] = func_ta(dft['high'], dft['low'], dft['close'], dft['volume'])
+        self.log(f'Calculated {ind.upper()}')
 
     
     def compound_annual_growth_rate(self, df: pd.DataFrame(), close) -> float:
@@ -197,6 +212,7 @@ class Indicators():
         all_deltas = pd.concat(monthly_deltas).reset_index(drop=True)
         full_df = full_df.reset_index(drop=True)
         full_df['cvd'] = all_deltas
+        self.log(f'Calculated CUMULATIVE VOLUME DELTA')
 
         return full_df
 
