@@ -20,15 +20,18 @@ MY_BEARER_TOKEN=os.getenv('TW_BEARER_TOKEN')
 
 class TwitterCollection():
     def __init__(self, access_token=access_token, access_token_secret=access_token_secret,
-                    consumer_key=consumer_key, consumer_secret=consumer_secret, bearer_token=MY_BEARER_TOKEN, logger: Logger=None):
+                    consumer_key=consumer_key, consumer_secret=consumer_secret, 
+                    bearer_token=MY_BEARER_TOKEN, logger: Logger=None, connection: bool=True):
         self.access_token = access_token
         self.access_token_secret=access_token_secret
         self.consumer_key=consumer_key
         self.consumer_secret=consumer_secret
         self.bearer_token=bearer_token
         self.logger = logger
-        self.connect_twitter()
-        self.client = tweepy.Client(bearer_token=self.bearer_token)
+        self.connect = connection
+        if connection:
+            self.connect_twitter()
+            self.client = tweepy.Client(bearer_token=self.bearer_token)
 
     def log(self, text):
         if self.logger:

@@ -87,7 +87,7 @@ class DataManipulation():
                 self.write_file_data(self.df, pure_data, pure_file)
                 self.log(f'Write pure data file to {pure_data+pure_file}')
                 
-            indicators = Indicators(self.df, self.range_list)
+            indicators = Indicators(self.df, self.range_list, logger=self.logger)
             indicators.create_indicators_columns()
             self.df = indicators.df.copy()
             self.log(f'Created Indicator object and indicators columns')
@@ -129,6 +129,7 @@ class DataManipulation():
             sample = pd.read_csv(os.path.join(path_df, file_df))
             sample['Datetime'] = pd.to_datetime(sample['Datetime'])
             sample = sample.set_index('Datetime')
+            self.log(f'Get features matrix from {path_df} {file_df}')
         else:
             df = self.df.copy()
             sample = self.pattern_helper_for_extract_feature(df)        

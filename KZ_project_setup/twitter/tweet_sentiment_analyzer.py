@@ -2,7 +2,7 @@ import pandas as pd
 from collections import Counter
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-nltk.download('stopwords')
+#nltk.download('stopwords')
 from nltk.corpus import stopwords   # python -m nltk.downloader stopwords // from commandline
 
 stop = stopwords.words('english')
@@ -12,7 +12,6 @@ import numpy as np
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import re
 import os
-import translators as ts
 import warnings
 warnings.filterwarnings('ignore')
 from logger.logger import Logger
@@ -99,7 +98,7 @@ class TweetSentimentAnalyzer():
             for i in df_temp.index:
                 print(f'translate start: {i}')
             #############################
-                df_temp.loc[i, "text"] = ts.google(df_temp.loc[i, "text"], to_language='en')
+                #df_temp.loc[i, "text"] = ts.google(df_temp.loc[i, "text"], to_language='en')
                 #df_temp.loc[i, "text"] = str(TextBlob(df_temp.loc[i, "text"]).translate(to='en'))
         df_temp['scores'] = df_temp['text'].apply(lambda review: self.sid.polarity_scores(review))
         df_temp['compound']  = df_temp['scores'].apply(lambda score_dict: score_dict['compound'])
