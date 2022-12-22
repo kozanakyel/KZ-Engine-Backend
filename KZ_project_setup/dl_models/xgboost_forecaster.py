@@ -4,9 +4,12 @@ from sklearn.model_selection import cross_val_score, KFold
 from sklearn.metrics import mean_squared_error, accuracy_score
 from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
 from xgboost import XGBClassifier, XGBRegressor
+from xgboost import plot_importance
 
 from logger.logger import Logger
 import matplotlib.pyplot as plt
+import operator
+import itertools 
 import os
 
 
@@ -41,8 +44,11 @@ class XgboostForecaster():
         
 
     def create_train_test_data(self, x, y, test_size):
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(x, y, test_size=test_size, shuffle=False)  
-        self.evalset = [(self.X_train, self.y_train), (self.X_test, self.y_test)] 
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(x, y, test_size=test_size, shuffle=False)
+        if self.objective == 'binary':  
+            self.evalset = [(self.X_train, self.y_train), (self.X_test, self.y_test)] 
+        else: 
+            self.evalset = None
         self.log(f'Creating X_train, X_test, y_train, y_test, evalset') 
 
     def fit(self):
@@ -51,7 +57,7 @@ class XgboostForecaster():
             kfold = KFold(n_splits=self.cv, shuffle=False)
             self.kf_cv_scores = cross_val_score(self.model, self.X_train, self.y_train, cv=kfold)
             self.log(f'Kfold CV did with {self.cv} fold') 
-        if self.cv > 0:
+        elif self.cv > 0:
             self.cv_scores = cross_val_score(self.model, self.X_train, self.y_train, cv=self.cv)
             self.log(f'CV did with {self.cv} cv')
             
@@ -124,3 +130,15 @@ class XgboostForecaster():
             if f.endswith('.json'):
                 list_files.append(f)
         self.log(f'Existing model names are: {list_files}')
+
+    def get_n_importance_features(self, n: int):
+        col_list = self.X_train.columns.to_list()
+        dict_importance = {col_list[i]: self.model.feature_importances_[i] for i in range(len(col_list))}
+        sorted_d = dict( sorted(dict_importance.items(), key=operator.itemgetter(1), reverse=True))
+        n_features = dict(itertools.islice(sorted_d.items(), n)) 
+        return n_features
+
+    def plot_fature_importance(self):
+        fig, ax = plt.subplots(1,1,figsize=(20,30))
+        plot_importance(self.model, ax=ax)
+        plt.savefig('plot importance for xgboost model')
