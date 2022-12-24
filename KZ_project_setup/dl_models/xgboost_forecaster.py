@@ -64,10 +64,8 @@ class XgboostForecaster():
 
     def get_score(self):
         yhat = self.model.predict(self.X_test)
-        if self.objective == 'binary':
-            scr = accuracy_score(self.y_test, yhat)
-            self.log(f'Accuracy Score for binary classification is: {scr}')
-        elif self.objective == 'regression' and self.is_kfold:  
+        
+        if self.is_kfold:  
             scr = self.kf_cv_scores.mean()
             self.log(f'Score for Mean {self.cv} Kfold is: {self.kf_cv_scores.mean()}')
         elif self.objective == 'regression' and self.cv > 0:  
@@ -76,6 +74,9 @@ class XgboostForecaster():
         elif self.objective == 'regression':
             scr = self.model.score(self.X_train, self.y_train)  
             self.log(f'Score for Train set regression is: {scr}')
+        elif self.objective == 'binary':
+            scr = accuracy_score(self.y_test, yhat)
+            self.log(f'Accuracy Score for binary classification is: {scr}')
         return scr
 
     def plot_learning_curves(self):
@@ -123,8 +124,8 @@ class XgboostForecaster():
         return grid_result.best_params_
         
 
-    def get_model_names(self):
-        files = os.listdir('.')
+    def get_model_names(self, path_models: str):
+        files = os.listdir(path_models)
         list_files = []
         for f in files:
             if f.endswith('.json'):

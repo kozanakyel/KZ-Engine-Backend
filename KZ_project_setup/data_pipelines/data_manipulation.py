@@ -64,7 +64,7 @@ class DataManipulation():
         
         elif os.path.exists(os.path.join(pure_data, pure_file)):
             self.log('pure file exist')
-            df_download = pd.read_csv(os.path.join(pure_data, pure_file), index_col=True, parse_dates=True)
+            df_download = pd.read_csv(os.path.join(pure_data, pure_file), index_col=[0], parse_dates=True)
 
         elif source == 'yahoo' and period != None:
             df_download = yf.download(symbol, period=period, interval=interval)
@@ -156,7 +156,7 @@ class DataManipulation():
             sample['candle_label'] = df.candle_label
             sample['vol_delta'] = (sample['volume'].pct_change() > 0).astype(int)
             sample['log_return'] = df.log_return
-            self.add_lags(sample, df, 9)
+            self.add_lags(sample, df, 60)
             self.create_binary_feature_label(sample)
             self.log(f'Lags for features and log return vol_delta with binary label')
 
@@ -194,7 +194,7 @@ class DataManipulation():
     def add_lags(self, sampledf: pd.DataFrame(), df: pd.DataFrame(), lag_numbers: int) -> None:
         i = 2
         while i < lag_numbers:
-            sampledf[f'lag_{i}'] = (df.log_return.shift(i) > 0).astype(int)
+            sampledf[f'lag_{i}'] = (df.log_return.shift(-i) > 0).astype(int)
             i += 1
 
     def pattern_helper_for_extract_feature(self, df) -> pd.DataFrame():

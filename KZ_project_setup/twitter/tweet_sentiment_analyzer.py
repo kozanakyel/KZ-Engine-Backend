@@ -1,6 +1,5 @@
 import pandas as pd
 from collections import Counter
-import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 #nltk.download('stopwords')
 from nltk.corpus import stopwords   # python -m nltk.downloader stopwords // from commandline
@@ -15,6 +14,8 @@ import os
 import warnings
 warnings.filterwarnings('ignore')
 from logger.logger import Logger
+from googletrans import Translator
+
 ########## GIVING A RESULT OF ANY TURKISH EXCHANGE ADD A TRANSLATE TO ENGLISH FOR SENTIMENT ANALYSIS WITH TWITTER
 
 class TweetSentimentAnalyzer():
@@ -39,7 +40,6 @@ class TweetSentimentAnalyzer():
 
     def cleaning_tweet_data(self, df: pd.DataFrame()):
         df_tweets = df.copy()
-        df_tweets.dropna(inplace=True)
         if 'Unnamed: 0' in df_tweets.columns:
             df_tweets.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
         if 'source' in df_tweets.columns:
@@ -47,7 +47,7 @@ class TweetSentimentAnalyzer():
             self.log(f'Extracted unnecassary columns for tweets')
         
         df_tweets = df_tweets.apply(lambda x: x.astype(str).str.lower()).drop_duplicates(subset=['text', 'username'], keep='first')
-        self.log(f'Extracted uDuplicates rows from tweets')
+        self.log(f'Extracted Duplicates rows from tweets')
 
         df_tweets['text'] = df_tweets['text'].apply(lambda x: re.split('https:\/\/.*', str(x))[0])
         df_tweets['text'] = df_tweets['text'].str.lower()
@@ -69,6 +69,7 @@ class TweetSentimentAnalyzer():
 
         df_tweets['tweet_without_stopwords'] = df_tweets['text'].apply(lambda x: ' '.join([word for word in str(x).split() if word not in (stop)]))
         df_tweets['words'] = df_tweets['text'].apply(lambda x:str(x.lower()).split())
+        df_tweets.dropna(inplace=True)
         self.log(f'Cleaning Tweets for blanks tweets and hastag username values')
 
         return df_tweets
@@ -95,11 +96,10 @@ class TweetSentimentAnalyzer():
     def get_sentiment_scores(self, df: pd.DataFrame()):
         df_temp = df.copy()
         if self.lang == 'tr':  ######### for the translate not exact solution yet!!!!
-            for i in df_temp.index:
-                print(f'translate start: {i}')
-            #############################
-                #df_temp.loc[i, "text"] = ts.google(df_temp.loc[i, "text"], to_language='en')
-                #df_temp.loc[i, "text"] = str(TextBlob(df_temp.loc[i, "text"]).translate(to='en'))
+            self.log(f'Started en to tr translate')
+            translator = Translator()
+            df_temp['text'] = df_temp['text'].apply(lambda x: translator.translate(x, dest='en', src='tr').text)
+                
         df_temp['scores'] = df_temp['text'].apply(lambda review: self.sid.polarity_scores(review))
         df_temp['compound']  = df_temp['scores'].apply(lambda score_dict: score_dict['compound'])
         df_temp['comp_score'] = df_temp['compound'].apply(lambda score: self.get_vader_sentiment(score))
@@ -167,7 +167,7 @@ class TweetSentimentAnalyzer():
         else:
             sent_day_df = pd.read_csv(os.path.join(path_df, sent_day_file_df), index_col=[0], parse_dates=True)
             sent_hour_df = pd.read_csv(os.path.join(path_df, sent_hour_file_df), index_col=[0], parse_dates=True)
-
+            
             df = self.create_sentiment_scores(df_tweets)
 
             df_result_day = self.get_sent_with_mean_interval(df, interval='1d')
