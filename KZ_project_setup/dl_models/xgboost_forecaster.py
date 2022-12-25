@@ -48,7 +48,7 @@ class XgboostForecaster():
         if self.objective == 'binary':  
             self.evalset = [(self.X_train, self.y_train), (self.X_test, self.y_test)] 
         else: 
-            self.evalset = None
+            self.evalset = [(self.X_train, self.y_train), (self.X_test, self.y_test)] 
         self.log(f'Creating X_train, X_test, y_train, y_test, evalset') 
 
     def fit(self):
