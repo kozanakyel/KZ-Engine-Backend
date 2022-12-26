@@ -29,7 +29,7 @@ class XgboostForecaster():
         self.logger = logger
         if self.objective == 'binary':
             self.model = XGBClassifier(n_estimators=self.n_estimators, tree_method=self.tree_method, 
-                    eta=self.eta, max_depth=self.max_depth)
+                    eta=self.eta, max_depth=self.max_depth, early_stopping_rounds = 20)
         elif self.objective == 'regression':
             self.model = XGBRegressor(n_estimators=self.n_estimators, tree_method=self.tree_method, 
                     eta=self.eta, max_depth=self.max_depth)
