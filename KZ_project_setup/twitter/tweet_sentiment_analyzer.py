@@ -15,6 +15,8 @@ import warnings
 warnings.filterwarnings('ignore')
 from logger.logger import Logger
 from googletrans import Translator
+from tqdm import tqdm
+tqdm.pandas()
 
 ########## GIVING A RESULT OF ANY TURKISH EXCHANGE ADD A TRANSLATE TO ENGLISH FOR SENTIMENT ANALYSIS WITH TWITTER
 
@@ -66,16 +68,27 @@ class TweetSentimentAnalyzer():
         #df_tweets['text'] = df_tweets['text'].str.replace('\[.*?\]',' ')
         #df_tweets['text'] = df_tweets['text'].str.replace("[^a-z0-9]"," ")
         
-
-        df_tweets['tweet_without_stopwords'] = df_tweets['text'].apply(lambda x: ' '.join([word for word in str(x).split() if word not in (stop)]))
-        df_tweets['words'] = df_tweets['text'].apply(lambda x:str(x.lower()).split())
+        if self.lang == 'en':
+            df_tweets['tweet_without_stopwords'] = df_tweets['text'].apply(lambda x: ' '.join([word for word in str(x).split() if word not in (stop)]))
+            df_tweets['words'] = df_tweets['text'].apply(lambda x:str(x.lower()).split())
         df_tweets.dropna(inplace=True)
         self.log(f'Cleaning Tweets for blanks tweets and hastag username values')
 
         return df_tweets
     
     def preprocessing_tweet_datetime(self, df: pd.DataFrame()) -> pd.DataFrame():
+        """
+        For adding datetime groups Date, Hour, Minute to existing Dataframe.
+            It uses to copy of existing Dataframe
+        Args:
+            self (tsa) 
+            df (DataFrame)
+
+        Returns:
+            DataFrame
+        """
         df_temp = df.copy()
+        # Fixed for some blank tweets: 'tweets'. Interesting api result delete below with function
         df_temp.drop(df_temp[df_temp.created_at == 'twitter'].index, inplace=True)
         df_temp.created_at = pd.to_datetime(df_temp.created_at)
         df_temp['Date'] = df_temp.created_at.apply(lambda x: x.date())
@@ -84,7 +97,15 @@ class TweetSentimentAnalyzer():
         self.log(f'Added Datetime fatures for tweets to df (date, hour, minute)')
         return df_temp
     
-    def get_vader_sentiment(self, score):    
+    def get_vader_sentiment(self, score):   
+        """
+        Return to float sentiment score to with Positive, Neurtal and Negative label
+        Args:
+            self (tsa) 
+            score (float)
+
+        Returns: str
+        """ 
         if (score >= 0.05): 
             return "Positive"
         elif (score < 0.05 and score > -0.05):
@@ -92,13 +113,36 @@ class TweetSentimentAnalyzer():
         elif (score <= -0.05):    
             return "Negative"
         return score
+
+    def translate_text(self, text, src='tr', dest='en'):
+        """For translate sentences Checking task the input is None or not None,
+           Because mostly you can encounter the TypeError because of error inside the googletranslator
+           bug.
+
+        Args:
+            text (str): text
+            src (str, optional): language for source Defaults to 'tr'.
+            dest (str, optional): language for destination. Defaults to 'en'.
+
+        Returns:
+            str: translated text
+        """
+        if text is None or text.strip() == '':
+            return 'Please provide a valid string to translate.'
+
+        translator = Translator()
+        result = translator.translate(text, src=src, dest=dest)
+        return result.text
     
     def get_sentiment_scores(self, df: pd.DataFrame()):
         df_temp = df.copy()
+        tweet_col = 'text'
         if self.lang == 'tr':  ######### for the translate not exact solution yet!!!!
-            self.log(f'Started en to tr translate')
-            translator = Translator()
-            df_temp['text'] = df_temp['text'].apply(lambda x: translator.translate(x, dest='en', src='tr').text)
+            tweet_col = 'text_to_en'
+            self.log(f'Started en to tr translate')                       
+            #translator = Translator(service_urls=['translate.googleapis.com'])
+            df_temp['text'] = df_temp['text'].progress_apply(self.translate_text, src='tr', dest='en')
+            #df_temp[tweet_col] = df_temp['text'].apply(translator.translate,src='tr',dest='en').progress_apply(getattr,args=('text',))
                 
         df_temp['scores'] = df_temp['text'].apply(lambda review: self.sid.polarity_scores(review))
         df_temp['compound']  = df_temp['scores'].apply(lambda score_dict: score_dict['compound'])

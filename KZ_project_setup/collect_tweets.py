@@ -4,7 +4,7 @@ from twitter.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 if __name__ == '__main__':
 
     client_twitter = TwitterCollection()
-    tsa = TweetSentimentAnalyzer()
+    tsa = TweetSentimentAnalyzer(lang='tr')
 
     query_list = ['btc','eth','xrp','bnb']
     query_list_bist = ['sumas', 'orma', 'xu100', 'bist', 'sasa']
@@ -12,14 +12,14 @@ if __name__ == '__main__':
     new_query = ['shib', 'ada', 'doge'] 
 
     
-    for i in test_query:
+    for i in query_list_bist[2:]:
         symbol = i
-        df_tweets = client_twitter.get_tweets_with_interval(symbol, 'tr', hour=24*7, interval=4)
+        df_tweets = client_twitter.get_tweets_with_interval(symbol, 'tr', hour=24*7, interval=1)
         print(f'shape of {i} tweets df: {df_tweets.shape}')
         path_df = f'./KZ_project_setup/data/tweets_data/{symbol}/'
         file_df = f'{symbol}_tweets.csv'
         #df_tweets = client_twitter.get_tweets_df(symbol, path_df, file_df)
-        client_twitter.write_tweets_csv(df_tweets, path_df, file_df)
-        #x, y = tsa.create_sent_results_df(symbol, df_tweets, path_df)
+        #client_twitter.write_tweets_csv(df_tweets, path_df, file_df)
+        daily_sents, hourly_sents = tsa.create_sent_results_df(symbol, df_tweets, path_df)
 
   
