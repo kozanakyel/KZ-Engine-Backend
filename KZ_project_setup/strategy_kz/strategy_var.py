@@ -10,6 +10,49 @@ class StrategyVar():
     def __init__(self, name=None):
         self.name = name
 
+    def create_ema_labels(self, df: pd.DataFrame()):
+        df_temp = df.loc['2022-05-01':, :].copy()
+        for i in range(1,4):
+            df_temp[f'pct_{i}'] = -1 * df_temp.close.pct_change(-i).round(3)
+        df_temp['ema12_cross_ema50'] = (df_temp.ema_12 > df_temp.ema_50).astype(int)
+        df_temp['ema5_cross_ema10'] = (df_temp.ema_5 > df_temp.ema_10).astype(int)
+        df_temp['ema5_cross_ema20'] = (df_temp.ema_5 > df_temp.ema_20).astype(int)
+        df_temp['ema9_cross_ema26'] = (df_temp.ema_9 > df_temp.ema_26).astype(int)
+        df_temp['ema20_cross_ema50'] = (df_temp.ema_20 > df_temp.ema_50).astype(int)
+        df_temp['ema50_cross_ema200'] = (df_temp.ema_50 > df_temp.ema_200).astype(int)
+        df_temp['ema12_cross_ema26'] = (df_temp.ema_12 > df_temp.ema_26).astype(int)
+
+        df_result = df_temp[['close', 'volume', 'ema5_cross_ema10', 'ema5_cross_ema20', 'ema9_cross_ema26', 'ema20_cross_ema50',
+                                'ema12_cross_ema50', 'ema50_cross_ema200', 'ema12_cross_ema26', 'pct_1', 'pct_2', 'pct_3']].copy()
+        df_result.close = df_result.close.round(3)
+        df_result.dropna(inplace=True)
+        df_result.reset_index(inplace=True)    
+        return df_result
+
+    def find_best_cross_strategy(self, symbol: str, df_original: pd.DataFrame()):
+        all_strategies = ['ema5_cross_ema10', 'ema5_cross_ema20', 'ema9_cross_ema26', 'ema20_cross_ema50',
+                                'ema12_cross_ema50', 'ema50_cross_ema200', 'ema12_cross_ema26']
+        result_dict = {}
+        max_pct = 0
+        df = df_original.copy()
+        for k in all_strategies:
+            strategy_col = k
+            #print(f'\n######### {symbol} - {strategy_col.upper()}  ##########')
+            #print(f'Date--------1 gunluk degisim----2 gunluk degisim----3 gunluk degisim')
+            df[f'{strategy_col}_shift'] = df[strategy_col].shift()
+    
+            for i, row in enumerate(df.itertuples()):             
+                current = getattr(row, strategy_col)
+                prev = getattr(row, f'{strategy_col}_shift')      
+                if prev == 0 and current == 1:
+                    row_max = max([row.pct_1, row.pct_2, row.pct_3])
+                    if row_max > max_pct:
+                        max_pct = row_max
+                        result_dict[symbol] = (k, max_pct)
+                        print(result_dict)
+                    #print(f'{row.Datetime.date()}{row.pct_1:>10}{row.pct_2:>20}{row.pct_3:>20}')
+        return result_dict
+
     def kalman_strategy_filter(self, df1: pd.DataFrame(), symbol: str):
         
         df_sample1 = df1.copy()
@@ -96,4 +139,7 @@ class StrategyVar():
             results.to_csv(write_path_file)
 
         return results
+
+
+    
 

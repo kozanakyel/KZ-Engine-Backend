@@ -2,6 +2,7 @@ import pandas as pd
 import pandas_ta as ta
 from logger.logger import Logger
 from technical_analysis.candlestick_features import *
+from tqdm import tqdm
 """
 @author: Ugur AKYEL
 @description: For creating columns and Dataframes with related to technical analysis and indicators
@@ -11,7 +12,7 @@ from technical_analysis.candlestick_features import *
 
 class Indicators():
 
-    def __init__(self, df: pd.DataFrame(), range_list: list, logger: Logger=None):
+    def __init__(self, df: pd.DataFrame()=None, range_list: list=None, logger: Logger=None):
         self.range_list = range_list
         self.logger = logger
         self.df = df.copy()
@@ -73,7 +74,7 @@ class Indicators():
         self.df['log_return'] = self.df.ta.log_return()
 
     def create_ind_cols_ta(self) -> None:
-        for i in self.range_list:
+        for i in tqdm(self.range_list):
             self.df.ta.sma(length=i, append=True)
 
             bbands = self.df.ta.bbands(length=i).iloc[:, :3]
@@ -127,7 +128,7 @@ class Indicators():
         self.df['log_rt'] = self.df.ta.log_return()
 
     def create_ind_with_ct(self, dft: pd.DataFrame(), ind: str, func_ta, range_list: list) -> None:
-        for i in range_list:
+        for i in tqdm(range_list):
             dft[ind+'_'+str(i)] = func_ta(dft['close'], timeperiod=i)
         self.log(f'Calculated {ind.upper()} for range {range_list}')
 
@@ -179,8 +180,19 @@ class Indicators():
         cagr = (norm)**(1/((df.index[-1] - df.index[0]).days / 365.25)) - 1
         return cagr
 
-    def cvd(full_df):
-        full_df.index = full_df['Datetime'].apply(lambda x: pd.to_datetime(x, as_str=False))
+    def supertrend(self, df_temp: pd.DataFrame()):
+        sti = ta.supertrend(df_temp['high'], df_temp['low'], df_temp['close'], length=7, multiplier=3)
+        sti.drop(columns=['SUPERTd_7_3.0', 'SUPERTl_7_3.0'], inplace=True)
+        sti.columns = ['supertrend_support', 'supertrend_resistance']
+        return sti
+
+"""
+
+    ###### Not working good asnd has alot of probl;em for implemantation not recommended for using a strategy
+
+    def cumulative_volume_delta(self, df_original: pd.DataFrame()):
+        #full_df.index = full_df['Datetime'].apply(lambda x: pd.to_datetime(x, as_str=False))
+        full_df = df_original.copy()
         month_groups = full_df.groupby(pd.Grouper(freq='M'))
 
         monthly_deltas = []
@@ -210,9 +222,11 @@ class Indicators():
             monthly_deltas.append(pd.Series(np.cumsum(df.delta.values)))
     
         all_deltas = pd.concat(monthly_deltas).reset_index(drop=True)
-        full_df = full_df.reset_index(drop=True)
         full_df['cvd'] = all_deltas
         self.log(f'Calculated CUMULATIVE VOLUME DELTA')
 
         return full_df
+
+"""
+
 

@@ -32,7 +32,7 @@ class XgboostForecaster():
                     eta=self.eta, max_depth=self.max_depth, early_stopping_rounds = 20)
         elif self.objective == 'regression':
             self.model = XGBRegressor(n_estimators=self.n_estimators, tree_method=self.tree_method, 
-                    eta=self.eta, max_depth=self.max_depth)
+                    eta=self.eta, max_depth=self.max_depth, early_stopping_rounds = 20)
         else: 
             self.log(f'You must use objective BINARY or REGRESSION')
 
@@ -54,7 +54,7 @@ class XgboostForecaster():
     def fit(self):
         self.model.fit(self.X_train, self.y_train, eval_metric=self.eval_metric, eval_set=self.evalset)
         if self.cv > 0 and self.is_kfold:
-            kfold = KFold(n_splits=self.cv, shuffle=False)
+            kfold = KFold(n_splits=self.cv, shuffle=True)
             self.kf_cv_scores = cross_val_score(self.model, self.X_train, self.y_train, cv=kfold)
             self.log(f'Kfold CV did with {self.cv} fold') 
         elif self.cv > 0:
@@ -119,7 +119,7 @@ class XgboostForecaster():
                 plt.plot(n_estimators_list, scores[i], label='depth: ' + str(value))
                 plt.legend()
                 plt.savefig('estimator_best_param.png')
-                self.log('BEst estimator plot saved')
+                self.log('Best estimator plot saved')
         
         return grid_result.best_params_
         

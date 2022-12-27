@@ -155,7 +155,7 @@ class DataManipulation():
 
             sample['candle_label'] = df.candle_label
             sample['vol_delta'] = (sample['volume'].pct_change() > 0).astype(int)
-            sample['log_return'] = df.log_return
+            sample['log_return'] = df.log_return    #### sacma olmus duzelt
             self.add_lags(sample, df, 60)
             self.create_binary_feature_label(sample)
             self.log(f'Lags for features and log return vol_delta with binary label')
