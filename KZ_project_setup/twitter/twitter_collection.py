@@ -87,7 +87,7 @@ class TwitterCollection():
             finish_time = now
         end_time = start_time + td(hours=interval)
 
-        self.log(f'For hashtag {hashtag.upper()} with language {lang.upper()} start time: {start_time}, end time: {end_time}')
+        self.log(f'For hashtag {hashtag.upper()} with language {lang.upper()} start time: {start_time}, end time: {start_time + td(hours=hour)}')
         result_tweets = pd.DataFrame()
         while end_time <= finish_time - td(hours=interval):
             temp_tweets = self.get_tweets(hashtag, lang, start_time.isoformat(), end_time.isoformat())

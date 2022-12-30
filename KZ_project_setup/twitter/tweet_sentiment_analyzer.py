@@ -139,7 +139,7 @@ class TweetSentimentAnalyzer():
         tweet_col = 'text'
         if self.lang == 'tr':  ######### for the translate not exact solution yet!!!!
             tweet_col = 'text_to_en'
-            self.log(f'Started en to tr translate')                       
+            self.log(f'Started Turkish to English translate Process')                       
             #translator = Translator(service_urls=['translate.googleapis.com'])
             df_temp['text'] = df_temp['text'].progress_apply(self.translate_text, src='tr', dest='en')
             #df_temp[tweet_col] = df_temp['text'].apply(translator.translate,src='tr',dest='en').progress_apply(getattr,args=('text',))

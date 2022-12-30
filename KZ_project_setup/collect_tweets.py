@@ -10,11 +10,12 @@ if __name__ == '__main__':
     query_list_bist = ['sumas', 'orma', 'xu100', 'bist', 'sasa']
     test_query = ['agyo', 'sngyo']
     new_query = ['shib', 'ada', 'doge'] 
+    politics = ['ekremimamoglu', 'mansuryavas', 'kemalkilicdaroglu','receptayyiperdogan']
 
     
-    for i in query_list_bist[2:]:
+    for i in test_query:
         symbol = i
-        df_tweets = client_twitter.get_tweets_with_interval(symbol, 'tr', hour=24*7, interval=1)
+        df_tweets = client_twitter.get_tweets_with_interval(symbol, 'tr', hour=24*4, interval=1)
         print(f'shape of {i} tweets df: {df_tweets.shape}')
         path_df = f'./KZ_project_setup/data/tweets_data/{symbol}/'
         file_df = f'{symbol}_tweets.csv'
