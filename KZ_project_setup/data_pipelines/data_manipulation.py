@@ -7,6 +7,21 @@ import yfinance as yf
 import shutil
 from tqdm import tqdm
 
+"""
+@author: Kozan Ugur AKYEL
+@since: 07/08/2022
+
+This file main purpose is that getting finance data,
+Creating indicators column for Dataframe, 
+Cleaning the data, is necessary or if you want
+convert the data to featured extracted data with some specific strategies.
+Add lags, add, indicators specific strategis and 
+obtain nearly binary matrix, 
+some strategies need 3 level layer for labelling.
+But our main purposes is that matrix preparation for the
+our Forecaster model...
+"""
+
 class DataManipulation():
     def __init__(self, symbol: str, source: str, range_list: list, period=None, interval=None, 
                                 start_date=None, end_date=None, scale=1, prefix_path='.', 
@@ -33,18 +48,29 @@ class DataManipulation():
         self.df = self.create_data_one(self.symbol, self.source, self.period, 
                                         self.interval, self.start_date, 
                                         self.end_date, prefix_path=self.prefix_path)
-        
-
-    def log(self, text):
-        if self.logger:
-            self.logger.append_log(text)
-        else:
-            print(text)
 
     def create_data_one(self, symbol, source, period=None, 
                         interval=None, start_date=None, 
                         end_date=None, prefix_path='.'):
+        """Created file and checked if file exist or not. Then navigate to data file.
+           Download data selcting API Yahoo, Binance, or CTXC..
+           Create All the Indicators via the Indicator Class
+           Added some features for example JApanese Candlestick label
+           from Ta-lib if you have not Talib this features returns the all zeros
+           Cleaning the data.... if saved then saved file as .csv
 
+        Args:
+            symbol (str): Symbol for asset
+            source (str): API source yahoo, binance, ctxc
+            period (str, optional): '3m, 30d, 1y, max etc..'. Defaults to None.
+            interval (str, optional): 1h, 15m, 1d etc... Defaults to None.
+            start_date (str, optional): 2022-12-02 etc.. Defaults to None.
+            end_date (str, optional): '2023-02-23 etc... Defaults to None.
+            prefix_path (str, optional): '../..' etc.. Defaults to '.'.
+
+        Returns:
+            DataFrame: self.df
+        """
         path_df = prefix_path+self.main_path+symbol 
         pure_data = prefix_path+self.pure_path+symbol
 
@@ -66,12 +92,8 @@ class DataManipulation():
             self.log('pure file exist')
             df_download = pd.read_csv(os.path.join(pure_data, pure_file), index_col=[0], parse_dates=True)
 
-        elif source == 'yahoo' and period != None:
-            df_download = yf.download(symbol, period=period, interval=interval)
-            self.log(f'Get {symbol} data from yahoo period: {period} and interval: {interval}')
-        else:
-            df_download = yf.download(symbol, start=start_date, end=end_date, interval=interval)
-            self.log(f'Get {symbol} data from yahoo start date: {start_date} and {end_date} also interval: {interval}')
+        elif source == 'yahoo':            # Only yahoo download check this data got or not
+            df_download = self.yahoo_download(symbol, period=period, interval=interval)
 
         self.df = df_download.copy()
         self.df['Datetime'] = self.df.index
@@ -87,14 +109,14 @@ class DataManipulation():
                 self.write_file_data(self.df, pure_data, pure_file)
                 self.log(f'Write pure data file to {pure_data+pure_file}')
                 
-            indicators = Indicators(self.df, self.range_list, logger=self.logger)
-            indicators.create_indicators_columns()
+            indicators = Indicators(self.df, self.range_list, logger=self.logger)    # Create Indicator class fro calculating tech. indicators
+            indicators.create_indicators_columns()              
             self.df = indicators.df.copy()
             self.log(f'Created Indicator object and indicators columns')
             
-            self.df.columns = self.df.columns.str.lower()
-            self.df = self.df.reindex(sorted(self.df.columns), axis=1) 
-            self.create_binary_feature_label(self.df)
+            self.df.columns = self.df.columns.str.lower()              # Columns letters to LOWER
+            self.df = self.df.reindex(sorted(self.df.columns), axis=1) # sort Columns with to alphabetic order
+            self.create_binary_feature_label(self.df)                  # Add next Candle binary feature
             self.df.dropna(inplace= True, how='any')
             self.log(f'Created Feature label for next day and dropn NaN values')
                 
@@ -106,8 +128,30 @@ class DataManipulation():
             return None
             
         return self.df
+
+    def yahoo_download(self, symbol, period: str=None, interval: str=None, start:str=None, end:str=None) -> pd.DataFrame():
+        """For Yahoo API, get data with period interval and specific date.
+        you can check wheter yahoo api for getting finance data.
+
+        Returns:
+            DataFrame
+        """
+        if period != None:
+            download_df = yf.download(symbol, period=period, interval=interval)
+            self.log(f'Get {symbol} data from yahoo period: {period} and interval: {interval}')
+        elif start != None:
+            download_df = yf.download(symbol, start=start, end=end, interval=interval)
+            self.log(f'Get {symbol} data from yahoo start date: {start} and {end} also interval: {interval}')
+        else:
+            self.log(f'Inappropriate period, interval, start or end, Check please!')
+        return download_df
         
     def create_binary_feature_label(self, df: pd.DataFrame()) -> None:
+        """Next candle Binary feature actual reason forecasting to this label
+
+        Args:
+            df (pd.DataFrame):
+        """
         df['feature_label'] = (df['log_return'] > 0).astype(int)
         df['feature_label'] = df['feature_label'].shift(-1)
 
@@ -240,3 +284,8 @@ class DataManipulation():
         else:
             self.log(f'The path is not exist. {path}')
     
+    def log(self, text):
+        if self.logger:
+            self.logger.append_log(text)
+        else:
+            print(text)

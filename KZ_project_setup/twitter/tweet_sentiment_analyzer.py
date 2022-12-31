@@ -18,8 +18,6 @@ from googletrans import Translator
 from tqdm import tqdm
 tqdm.pandas()
 
-########## GIVING A RESULT OF ANY TURKISH EXCHANGE ADD A TRANSLATE TO ENGLISH FOR SENTIMENT ANALYSIS WITH TWITTER
-
 class TweetSentimentAnalyzer():
     def __init__(self, lang: str='en', logger: Logger=None):
         #self.df_tweets = df_twitter.copy()
