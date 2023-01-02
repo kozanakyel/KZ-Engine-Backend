@@ -242,6 +242,17 @@ class DataManipulation():
             i += 1
 
     def pattern_helper_for_extract_feature(self, df) -> pd.DataFrame():
+        """This method convert our strategy for hisses to binary and strategic values for modelling.
+         strategies include stoch_rsi, ichnmouku, ema5_ema10 crossover, DMI etc. and all this stuff
+         converting to binary matrix. But MFI and FISHERT indicators divided into 3 level like 1,2,3
+         Because we can think that two indicators like prefix for the prices...
+
+        Args:
+            df (DataFrame): Indicator data matrix
+
+        Returns:
+            df (DataFrame)
+        """
 
         self.log(f'Start helper function for Hisse strategy')
         sample  = df[['open','high','low','close','volume']].copy()
@@ -259,6 +270,15 @@ class DataManipulation():
                     & sample['st_macd'] & sample['st_ich_close'] & sample['st_dmi'] & sample['st_cut_sma10_close']
 
         def helper_divide_three(x, params: list):
+            """Divide 3 level for specific indicators 
+
+            Args:
+                x (pd column): float
+                params (list): bounded for indiocator values
+
+            Returns:
+                int: level 
+            """
             if x >= params[0]: 
                 return 3
             elif x >= params[1]:
