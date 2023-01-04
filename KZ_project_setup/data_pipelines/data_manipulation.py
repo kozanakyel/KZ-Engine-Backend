@@ -214,6 +214,16 @@ class DataManipulation():
         return sample
 
     def norm_features_ind(self, sampledf, df, ind, range_list, dividend=None) -> None:
+        """Calculate crossover strategies to convert 1 and 0 for featured ata matrix
+           for all average indicators. sma, ema, wma, t3 etc...
+
+        Args:
+            sampledf (dataframe)
+            df (dataframe)
+            ind (str): indicator name 
+            range_list (list)
+            dividend (_type_, optional): for normalizations
+        """
         k = 0
         self.log(f'Start {ind} normalized label')
         for i in tqdm(range_list):
@@ -228,6 +238,13 @@ class DataManipulation():
         self.log(f'Add {ind} normalized label')
 
     def norm_adx_ind(self, sampledf, df, range_list) -> None:
+        """Calculate ADX and DMI startegies for deatured data convert 1 and 0
+           Because DMI and DMP is important indicators for volatility and volume 
+        Args:
+            sampledf (_type_)
+            df (_type_)
+            range_list (_type_)
+        """
         for i in range_list:
             sampledf[f'st_adx_{i}'] = (100 - df[f'adx_{i}']) / 100
             pattern1 = df[f'adx_{i}'] < 50
@@ -236,6 +253,14 @@ class DataManipulation():
         self.log(f'Add ADX indicator normalized label')
 
     def add_lags(self, sampledf: pd.DataFrame(), df: pd.DataFrame(), lag_numbers: int) -> None:
+        """Add shifted days with list if you use + sign that means days runs the backs
+           but if you use - sign you can represent the future genaration for lags
+
+        Args:
+            sampledf (pd.DataFrame): extracted featured data
+            df (pd.DataFrame)
+            lag_numbers (int): how many days with increasing +1
+        """
         i = 2
         while i < lag_numbers:
             sampledf[f'lag_{i}'] = (df.log_return.shift(-i) > 0).astype(int)
@@ -294,6 +319,7 @@ class DataManipulation():
 
 
     def normalized_df(self, df: pd.DataFrame(), column:str):
+        # Normalized process for any specific column or feature
         df[column] = ((df[column] / df[column].mean()) > 1).astype(int)
 
 
