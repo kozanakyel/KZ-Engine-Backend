@@ -72,6 +72,7 @@ class Indicators():
         self.df = self.df.drop(columns=['candlestick_match_count'], axis=1)
         self.df['daily_return'] = self.df['close'].pct_change()
         self.df['log_return'] = self.df.ta.log_return()
+        self.df['volatility'] = self.volatility(self.df)
 
     def create_ind_cols_ta(self) -> None:
         for i in tqdm(self.range_list):
@@ -126,6 +127,7 @@ class Indicators():
         self.df['candlestick_pattern'] = 'NO_PATTERN'
         self.df['daily_return'] = self.df['close'].pct_change()
         self.df['log_rt'] = self.df.ta.log_return()
+        self.df['volatility'] = self.volatility(self.df)
 
     def create_ind_with_ct(self, dft: pd.DataFrame(), ind: str, func_ta, range_list: list) -> None:
         for i in tqdm(range_list):
@@ -185,10 +187,17 @@ class Indicators():
         sti.drop(columns=['SUPERTd_7_3.0', 'SUPERTl_7_3.0'], inplace=True)
         sti.columns = ['supertrend_support', 'supertrend_resistance']
         return sti
+    
+    def volatility(self, dft: pd.DataFrame()):
+        """
+        It needs firstly be calculated log_return columns
+        """
+        dft['volatility'] = dft['log_return'].std()*252**.5
+        self.log(f'Calculated Volatility')
 
 """
 
-    ###### Not working good asnd has alot of probl;em for implemantation not recommended for using a strategy
+    ###### Not working good and has alot of probl;em for implemantation not recommended for using a strategy
 
     def cumulative_volume_delta(self, df_original: pd.DataFrame()):
         #full_df.index = full_df['Datetime'].apply(lambda x: pd.to_datetime(x, as_str=False))

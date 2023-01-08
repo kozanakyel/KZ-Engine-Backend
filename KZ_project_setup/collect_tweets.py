@@ -12,9 +12,9 @@ if __name__ == '__main__':
     new_query = ['shib', 'ada', 'doge']
 
     
-    for i in query_list:
+    for i in new_query[2:]:
         symbol = i
-        df_tweets = client_twitter.get_tweets_with_interval(symbol, 'en', hour=24*3, interval=1)
+        df_tweets = client_twitter.get_tweets_with_interval(symbol, 'en', hour=24*6, interval=1)
         print(f'\n######## Shape of {i} tweets df: {df_tweets.shape}')
         path_df = f'./KZ_project_setup/data/tweets_data/{symbol}/'
         file_df = f'{symbol}_tweets.csv'

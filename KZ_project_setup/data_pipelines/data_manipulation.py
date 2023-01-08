@@ -200,7 +200,7 @@ class DataManipulation():
             sample['candle_label'] = df.candle_label
             sample['vol_delta'] = (sample['volume'].pct_change() > 0).astype(int)
             sample['log_return'] = df.log_return    #### sacma olmus duzelt
-            self.add_lags(sample, df, 60)
+            self.add_lags(sample, df, 24)
             self.create_binary_feature_label(sample)
             self.log(f'Lags for features and log return vol_delta with binary label')
 
@@ -263,7 +263,7 @@ class DataManipulation():
         """
         i = 2
         while i < lag_numbers:
-            sampledf[f'lag_{i}'] = (df.log_return.shift(-i) > 0).astype(int)
+            sampledf[f'lag_{i}'] = (df.log_return.shift(i) > 0).astype(int)
             i += 1
 
     def pattern_helper_for_extract_feature(self, df) -> pd.DataFrame():
