@@ -168,9 +168,14 @@ class TweetSentimentAnalyzer():
         if interval == '1d':
             df_result['Date'] = df_tweets.Date.unique()
             df_result['compound_total'] = 0
+            #self.log(f'subdf: {df_result}') 
+            #self.log(f'tweets: {df_tweets}') 
             for i, dt, com in df_result.itertuples():  
                 sub_df = df_tweets.loc[(df_tweets.comp_score != 'Neutral'), :]
+                # error for if the result df have one dataset with mean value
                 df_result.loc[i, 'compound_total'] = sub_df.loc[(sub_df.Date.unique()[i] == sub_df.Date), 'compound'].mean()
+               
+               
             df_result.set_index('Date', inplace=True)
             df_result = df_result.sort_values('Date')
             self.log(f'Daily sentiment score Calculated')
@@ -179,6 +184,7 @@ class TweetSentimentAnalyzer():
             df_result['compound_total'] = 0
             for i, dt, com in df_result.itertuples():  
                 sub_df = df_tweets.copy()
+                
                 df_result.loc[i, 'compound_total'] = sub_df.loc[(sub_df.Datetime.unique()[i] == sub_df.Datetime), 'compound'].mean()
             df_result.set_index('Datetime', inplace=True)
             df_result = df_result.sort_values('Datetime')
