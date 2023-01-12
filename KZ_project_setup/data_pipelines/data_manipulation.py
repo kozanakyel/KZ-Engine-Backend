@@ -162,6 +162,14 @@ class DataManipulation():
             df.to_csv(os.path.join(pathdf, filedf))
 
     def extract_features(self) -> pd.DataFrame():
+        """Create strategies with features and convert it into a 0, 1 range or
+           1,2,3 level, for example mfi and adx goes to 1,2,3 also some strategies like
+           rsi and others goes to 1 and 0 for 30  level is buy signal and 70 level is sell signal
+           so we can seperate 1 and 0 for our mdoel.  
+
+        Returns:
+            sample: Dataframe
+        """
         path_df = self.prefix_path+self.feature_path+self.symbol
         
         if self.period != None:
