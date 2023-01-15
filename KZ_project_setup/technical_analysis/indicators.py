@@ -72,7 +72,7 @@ class Indicators():
         self.df = self.df.drop(columns=['candlestick_match_count'], axis=1)
         self.df['daily_return'] = self.df['close'].pct_change()
         self.df['log_return'] = self.df.ta.log_return()
-        self.df['volatility'] = self.volatility(self.df)
+        #self.df['volatility'] = self.volatility(self.df)
 
     def create_ind_cols_ta(self) -> None:
         for i in tqdm(self.range_list):
@@ -127,7 +127,7 @@ class Indicators():
         self.df['candlestick_pattern'] = 'NO_PATTERN'
         self.df['daily_return'] = self.df['close'].pct_change()
         self.df['log_rt'] = self.df.ta.log_return()
-        self.df['volatility'] = self.volatility(self.df)
+        #self.df['volatility'] = self.volatility(self.df)
 
     def create_ind_with_ct(self, dft: pd.DataFrame(), ind: str, func_ta, range_list: list) -> None:
         for i in tqdm(range_list):

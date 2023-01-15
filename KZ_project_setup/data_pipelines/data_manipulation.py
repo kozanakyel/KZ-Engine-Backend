@@ -45,11 +45,11 @@ class DataManipulation():
         self.logger = logger
         if logger != None:
             self.logger = logger
-        self.df = self.create_data_one(self.symbol, self.source, self.period, 
+        self.df = self.create_data_with_indicators(self.symbol, self.source, self.period, 
                                         self.interval, self.start_date, 
                                         self.end_date, prefix_path=self.prefix_path)
 
-    def create_data_one(self, symbol, source, period=None, 
+    def create_data_with_indicators(self, symbol, source, period=None, 
                         interval=None, start_date=None, 
                         end_date=None, prefix_path='.'):
         """Created file and checked if file exist or not. Then navigate to data file.
@@ -107,10 +107,9 @@ class DataManipulation():
             self.pure_df = self.df.copy() 
             if self.saved_to_csv:
                 self.write_file_data(self.df, pure_data, pure_file)
-                self.log(f'Write pure data file to {pure_data+pure_file}')
-                
+                self.log(f'Write pure data file to {pure_data+pure_file}') 
             indicators = Indicators(self.df, self.range_list, logger=self.logger)    # Create Indicator class fro calculating tech. indicators
-            indicators.create_indicators_columns()              
+            indicators.create_indicators_columns()        
             self.df = indicators.df.copy()
             self.log(f'Created Indicator object and indicators columns')
             
@@ -222,7 +221,7 @@ class DataManipulation():
         return sample
 
     def norm_features_ind(self, sampledf, df, ind, range_list, dividend=None) -> None:
-        """Calculate crossover strategies to convert 1 and 0 for featured ata matrix
+        """Calculate crossover strategies to convert 1 and 0 for featured data matrix
            for all average indicators. sma, ema, wma, t3 etc...
 
         Args:
