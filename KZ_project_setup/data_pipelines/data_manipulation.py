@@ -21,31 +21,8 @@ obtain nearly binary matrix,
 some strategies need 3 level layer for labelling.
 But our main purposes is that matrix preparation for the
 our Forecaster model...
-"""
-
-class DataSaver(ABC):
+"""            
     
-    @abstractmethod
-    def save_data(self):
-        pass
-    
-class CSVDataSaver(DataSaver):
-    """ this class save pure, output ind, and features,
-        get main, pure and featured path,
-        MAybe you can use default path,
-        if not exist the others ways
-    """
-    def __init__(self, main_path: str, pure_path: str, feature_path: str, prefix_path: str):
-        self.prefix_path = prefix_path
-        self.main_path = main_path
-        self.pure_path = pure_path
-        self.feature_path = feature_path
-        
-    
-    def save_data(self):
-        
-        return super().save_data()
-
 
 class DataManipulation():
     def __init__(self, symbol: str, source: str, range_list: list, period=None, interval=None, 
