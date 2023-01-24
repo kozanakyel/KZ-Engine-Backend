@@ -2,17 +2,13 @@ import os
 from data_checker import DataChecker
 
 class FolderDataChecker(DataChecker):
-    def __init__(self, symbol: str, main_path: str, pure_path: str, feature_path: str, prefix_path: str,
-                 period: str, interval: str, start_date: str, end_date: str):
+    def __init__(self, symbol: str, main_path: str, pure_path: str, feature_path: str, prefix_path: str):
         super().__init__(symbol=symbol, 
                          prefix_path=prefix_path,
                          main_path=main_path, 
                          pure_path=pure_path, 
                          feature_path=feature_path)
         
-        self.main_path_df = prefix_path + self.main_path
-        self.pure_path_df = prefix_path + self.pure_path
-        self.feature_path_df = prefix_path + self.feature_path
         
     def create_pure(self) -> str:
         return os.path.join(self.pure_path_df, self.symbol)
@@ -34,6 +30,18 @@ class FolderDataChecker(DataChecker):
     @property
     def is_feature_exist(self):
         return os.path.exists(self.create_feature())
+    
+    @property
+    def main_path_df(self) -> str:
+        return self.prefix_path + self.main_path
+    
+    @property
+    def pure_path_df(self) -> str:
+        return self.prefix_path + self.pure_path
+    
+    @property
+    def feature_path_df(self) -> str:
+        return self.prefix_path + self.feature_path
         
 
 if __name__ == '__main__':
@@ -43,8 +51,7 @@ if __name__ == '__main__':
     PREFIX_PATH = './KZ_project_setup'
     SYMBOL = 'BTC-USD' 
     
-    d = FolderDataChecker(symbol=SYMBOL, period=None, interval=None, 
-                    start_date=None, end_date=None, prefix_path=PREFIX_PATH, 
+    d = FolderDataChecker(symbol=SYMBOL, prefix_path=PREFIX_PATH, 
                     main_path=MAIN_PATH, pure_path=PURE_PATH,
                     feature_path=FEATURE_PATH)  
     
