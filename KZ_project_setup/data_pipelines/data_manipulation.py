@@ -6,7 +6,8 @@ from logger.logger import Logger
 import yfinance as yf
 import shutil
 from tqdm import tqdm
-from abc import ABC, abstractmethod
+from .file_data_checker import FileDataChecker
+from .data_saver import factory_data_saver
 
 """
 @author: Kozan Ugur AKYEL
@@ -25,10 +26,10 @@ our Forecaster model...
     
 
 class DataManipulation():
-    def __init__(self, symbol: str, source: str, range_list: list, period=None, interval=None, 
-                                start_date=None, end_date=None, scale=1, prefix_path='.', 
-                                main_path='/data/outputs/data_ind/', pure_path='/data/pure_data/',
-                                feature_path='/data/outputs/feature_data/', saved_to_csv=True,
+    def __init__(self, symbol: str, source: str, range_list: list, period: str=None, interval: str=None, 
+                                start_date: str=None, end_date: str=None, scale: int=1, prefix_path: str='.', 
+                                main_path: str='/data/outputs/data_ind/', pure_path: str='/data/pure_data/',
+                                feature_path: str='/data/outputs/feature_data/', saved_to_csv: bool=True,
                                 logger: Logger=None):
         self.symbol = symbol
         self.source = source
@@ -42,7 +43,17 @@ class DataManipulation():
         self.main_path = main_path
         self.pure_path = pure_path
         self.feature_path = feature_path
+        
+        # DataChecker for file and folder for checking
+        # any file or coin info is exist or not
+        self.file_data_checker = FileDataChecker(symbol=self.symbol, period=self.period, interval=self.interval, 
+                    start_date=self.start_date, end_date=self.end_date, prefix_path=self.prefix_path, 
+                    main_path=self.main_path, pure_path=self.pure_path,
+                    feature_path=self.feature_path)
         self.saved_to_csv = saved_to_csv
+        
+        # Factory method for DataSaver CSV ot NO saver
+        self.data_saver = factory_data_saver(self.saved_to_csv)
         self.pure_df = None
         self.logger = logger
         if logger != None:
@@ -51,9 +62,9 @@ class DataManipulation():
                                         self.interval, self.start_date, 
                                         self.end_date, prefix_path=self.prefix_path)
 
-    def create_data_with_indicators(self, symbol, source, period=None, 
-                        interval=None, start_date=None, 
-                        end_date=None, prefix_path='.'):
+    def create_data_with_indicators(self, symbol: str, source: str, period: str=None, 
+                        interval: str=None, start_date: str=None, 
+                        end_date: str=None, prefix_path: str='.'):
         """Created file and checked if file exist or not. Then navigate to data file.
            Download data selcting API Yahoo, Binance, or CTXC..
            Create All the Indicators via the Indicator Class
@@ -73,26 +84,27 @@ class DataManipulation():
         Returns:
             DataFrame: self.df
         """
-        path_df = prefix_path+self.main_path+symbol 
-        pure_data = prefix_path+self.pure_path+symbol
+        #path_df = prefix_path+self.main_path+symbol 
+        #pure_data = prefix_path+self.pure_path+symbol
 
-        if period != None:
-            pure_file = f'{symbol}_{period}_{interval}.csv'
-            file = f'{symbol}_df_{period}_{interval}.csv'
-        else:
-            pure_file = f'{symbol}_{start_date}_{end_date}_{interval}.csv'
-            file = f'{symbol}_df_{start_date}_{end_date}_{interval}.csv'
+        #if period != None:
+        #    pure_file = f'{symbol}_{period}_{interval}.csv'
+        #    file = f'{symbol}_df_{period}_{interval}.csv'
+        #else:
+        #    pure_file = f'{symbol}_{start_date}_{end_date}_{interval}.csv'
+        #    file = f'{symbol}_df_{start_date}_{end_date}_{interval}.csv'
         
-        if os.path.exists(os.path.join(path_df, file)):
-            self.df = pd.read_csv(os.path.join(path_df, file))
+        #for main indicator file
+        if self.file_data_checker.is_main_exist:
+            self.df = pd.read_csv(self.file_data_checker.create_main())
             self.df['Datetime'] = pd.to_datetime(self.df['Datetime'])
             self.df = self.df.set_index('Datetime')
-            self.log(f'Get data from local file {os.path.join(path_df, file)}')
+            self.log(f'Get data from local file {self.file_data_checker.create_main()}')
             return self.df
         
-        elif os.path.exists(os.path.join(pure_data, pure_file)):
+        elif self.file_data_checker.is_pure_exist:
             self.log('pure file exist')
-            df_download = pd.read_csv(os.path.join(pure_data, pure_file), index_col=[0], parse_dates=True)
+            df_download = pd.read_csv(self.file_data_checker.create_pure(), index_col=[0], parse_dates=True)
 
         elif source == 'yahoo':            # Only yahoo download check this data got or not
             df_download = self.yahoo_download(symbol, period=period, interval=interval)
@@ -108,8 +120,9 @@ class DataManipulation():
                 self.df = self.df.rename(columns={'adj close': 'adj_close'})  
             self.pure_df = self.df.copy() 
             if self.saved_to_csv:
-                self.write_file_data(self.df, pure_data, pure_file)
-                self.log(f'Write pure data file to {pure_data+pure_file}') 
+                self.data_saver.save_data(self.df, self.file_data_checker.pure_folder, 
+                                          self.file_data_checker.pure_file)
+                self.log(f'Write pure data file to {self.file_data_checker.create_pure()}') 
             indicators = Indicators(self.df, self.range_list, logger=self.logger)    # Create Indicator class fro calculating tech. indicators
             indicators.create_indicators_columns()        
             self.df = indicators.df.copy()
@@ -122,8 +135,9 @@ class DataManipulation():
             self.log(f'Created Feature label for next day and dropn NaN values')
                 
             if self.saved_to_csv:
-                self.write_file_data(self.df, path_df, file) 
-                self.log(f'Write indicator and featured data file to {path_df+file}')
+                self.data_saver.save_data(self.df, self.file_data_checker.main_folder, 
+                                          self.file_data_checker.main_file) 
+                self.log(f'Write indicator and featured data file to {self.file_data_checker.create_main()}')
         else:
             self.log(f'{self.symbol} shape size not sufficient from download')
             return None
@@ -344,3 +358,22 @@ class DataManipulation():
             self.logger.append_log(text)
         else:
             print(text)
+            
+            
+if __name__ == '__main__':
+    MAIN_PATH = '/data/outputs/data_ind/'
+    PURE_PATH = '/data/pure_data/'
+    FEATURE_PATH = '/data/outputs/feature_data/'
+    PREFIX_PATH = './KZ_project_setup'
+    SYMBOL = 'BTC-USD' 
+    PERIOD = None
+    INTERVAL = '1h'
+    START_DATE = '2020-06-30'
+    END_DATE = '2022-07-01'
+    
+    d = DataManipulation(symbol=SYMBOL, period=PERIOD, interval=INTERVAL, 
+                    start_date=START_DATE, end_date=END_DATE, prefix_path=PREFIX_PATH, 
+                    main_path=MAIN_PATH, pure_path=PURE_PATH,
+                    feature_path=FEATURE_PATH)  
+    
+    print(os.getcwd())

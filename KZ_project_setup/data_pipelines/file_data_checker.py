@@ -1,5 +1,5 @@
 import os
-from folder_data_checker import FolderDataChecker
+from .folder_data_checker import FolderDataChecker
 
 class FileDataChecker(FolderDataChecker):
     def __init__(self, symbol: str, main_path: str, pure_path: str, feature_path: str, prefix_path: str,
@@ -46,6 +46,18 @@ class FileDataChecker(FolderDataChecker):
     @property
     def is_feature_exist(self):
         return os.path.exists(self.create_feature())
+    
+    @property
+    def pure_folder(self):
+        return super().create_pure()
+    
+    @property
+    def main_folder(self):
+        return super().create_main()
+    
+    @property
+    def feature_folder(self):
+        return super().create_feature()
         
 
 if __name__ == '__main__':

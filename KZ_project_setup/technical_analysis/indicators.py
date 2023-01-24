@@ -3,6 +3,9 @@ import pandas_ta as ta
 from logger.logger import Logger
 from technical_analysis.candlestick_features import *
 from tqdm import tqdm
+import warnings
+warnings.filterwarnings('ignore')
+warnings.simplefilter(action = 'ignore', category = pd.errors.PerformanceWarning)
 """
 @author: Ugur AKYEL
 @description: For creating columns and Dataframes with related to technical analysis and indicators
