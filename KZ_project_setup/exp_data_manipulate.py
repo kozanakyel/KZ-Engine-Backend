@@ -14,8 +14,6 @@ if __name__ == '__main__':
     INTERVAL = '1h'
     START_DATE = '2020-06-30'
     END_DATE = '2022-07-01'
-    SYMBOL = 'ETH-USD'
-    PERIOD = '1mo' 
     
     
     d = DataManipulation(symbol=SYMBOL, source=SOURCE, range_list=RANGE_LIST, 
@@ -24,4 +22,4 @@ if __name__ == '__main__':
                          main_path=MAIN_PATH, pure_path=PURE_PATH,
                          feature_path=FEATURE_PATH, saved_to_csv=True)  
     
-    print(d.df)
+    print(d.df["wma_15"][-1])

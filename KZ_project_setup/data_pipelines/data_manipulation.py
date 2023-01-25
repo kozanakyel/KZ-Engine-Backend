@@ -108,7 +108,7 @@ class DataManipulation():
 
         elif source == 'yahoo':            # Only yahoo download check this data got or not
             df_download = self.yahoo_download(symbol, period=period, interval=interval)
-
+        
         self.df = df_download.copy()
         self.df['Datetime'] = self.df.index
         self.df = self.df.set_index('Datetime')
