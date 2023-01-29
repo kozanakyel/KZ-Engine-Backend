@@ -12,7 +12,7 @@ if __name__ == '__main__':
     new_query = ['shib', 'ada', 'doge']
 
     
-    for i in test_query[1:]:
+    for i in query_list_bist:
         symbol = i
         print(f'\n############## SYMBOL - {i}')
         df_tweets = client_twitter.get_tweets_with_interval(symbol, 'tr', hour=24*7, interval=1)
