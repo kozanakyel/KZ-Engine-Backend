@@ -117,6 +117,7 @@ class TwitterCollection():
         if not os.path.exists(os.path.join(pathdf, filedf)):
             os.makedirs(pathdf, exist_ok=True)
             with open(os.path.join(pathdf, filedf), mode='a'): pass
+            print
             df.to_csv(os.path.join(pathdf, filedf))
             self.log(f'Tweeets writes to File to first time: {pathdf} {filedf}')
         else:
