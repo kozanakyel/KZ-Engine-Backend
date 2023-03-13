@@ -135,7 +135,7 @@ class XgboostForecaster():
     def get_n_importance_features(self, n: int):
         col_list = self.X_train.columns.to_list()
         dict_importance = {col_list[i]: self.model.feature_importances_[i] for i in range(len(col_list))}
-        sorted_d = dict(sorted(dict_importance.items(), key=operator.itemgetter(1), reverse=True))
+        sorted_d = dict(sorted(dict_importance.items(), key=operator.itemgetter(1), reverse=False))
         n_features = dict(itertools.islice(sorted_d.items(), n)) 
         return n_features
 

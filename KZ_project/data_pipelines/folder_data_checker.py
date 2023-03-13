@@ -48,7 +48,7 @@ if __name__ == '__main__':
     MAIN_PATH = '/data/outputs/data_ind/'
     PURE_PATH = '/data/pure_data/'
     FEATURE_PATH = '/data/outputs/feature_data/'
-    PREFIX_PATH = './KZ_project_setup'
+    PREFIX_PATH = './KZ_project'
     SYMBOL = 'BTC-USD' 
     
     d = FolderDataChecker(symbol=SYMBOL, prefix_path=PREFIX_PATH, 
