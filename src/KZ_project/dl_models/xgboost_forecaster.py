@@ -118,7 +118,7 @@ class XgboostForecaster():
             for i, value in enumerate(max_depth_list):
                 plt.plot(n_estimators_list, scores[i], label='depth: ' + str(value))
                 plt.legend()
-                plt.savefig('estimator_best_param.png')
+                plt.savefig('./data/plots/estimator_best_param.png')
                 self.log('Best estimator plot saved')
         
         return grid_result.best_params_
@@ -134,14 +134,9 @@ class XgboostForecaster():
 
     def get_n_importance_features(self, n: int):
         col_list = self.X_train.columns.to_list()
-        print(f'col list: {col_list}')
-        print(f'model feature importance {self.model.feature_importances_}')
         dict_importance = {col_list[i]: self.model.feature_importances_[i] for i in range(len(col_list))}
-        print(dict_importance)
         sorted_d = dict(sorted(dict_importance.items(), key=operator.itemgetter(1), reverse=True))
-        print(sorted_d)
         n_features = dict(itertools.islice(sorted_d.items(), n)) 
-        print(n_features)
         return n_features
 
     def plot_fature_importance(self):

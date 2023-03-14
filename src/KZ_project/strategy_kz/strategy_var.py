@@ -3,7 +3,7 @@ from pykalman import KalmanFilter
 import warnings
 import pandas as pd
 import numpy as np
-from data_pipelines.data_manipulation import DataManipulation
+from KZ_project.data_pipelines.data_manipulation import DataManipulation
 
 class StrategyVar():
 
