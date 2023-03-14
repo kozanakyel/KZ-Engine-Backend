@@ -174,6 +174,7 @@ class DataManipulation():
         """
         df['feature_label'] = (df['log_return'] > 0).astype(int)
         df['feature_label'] = df['feature_label'].shift(-1)
+        df["feature_label"][df.index[-1]] = df["feature_label"][df.index[-2]]
 
     def write_file_data(self, df: pd.DataFrame(), pathdf: str, filedf: str) -> None:
         if not os.path.exists(os.path.join(pathdf, filedf)):

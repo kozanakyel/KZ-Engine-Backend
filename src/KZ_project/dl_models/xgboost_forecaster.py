@@ -142,4 +142,4 @@ class XgboostForecaster():
     def plot_fature_importance(self):
         fig, ax = plt.subplots(1,1,figsize=(20,30))
         plot_importance(self.model, ax=ax)
-        plt.savefig('plot importance for xgboost model')
+        plt.savefig('./data/plots/importance_feature_params.png')

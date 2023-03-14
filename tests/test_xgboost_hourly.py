@@ -13,10 +13,12 @@ warnings.simplefilter(action = 'ignore', category = pd.errors.PerformanceWarning
 
 import config
 
+INTERVAL = '1h'
+
 logger = Logger(config.LOG_PATH, config.LOG_FILE_NAME_PREFIX)
 tsa = TweetSentimentAnalyzer()
 data = DataManipulation(config.SYMBOL, config.source, config.range_list, start_date=config.start_date, 
-                        end_date=config.end_date, interval='1h', scale=config.SCALE, 
+                        end_date=config.end_date, interval=INTERVAL, scale=config.SCALE, 
                         prefix_path='.', saved_to_csv=False,
                         logger=logger)
 df_price = data.df.copy()
@@ -24,6 +26,7 @@ df_price = data.df.copy()
 def test_get_tweet_sentiment_hourly():
     sent_tweets = pd.read_csv('./data/archieve_data/btc_archieve/btc_hourly_sent_score.csv')
     #sent_tweets = pd.read_csv('../data/tweets_data/btc/btc_hour.csv')  
+    print(sent_tweets)
     sent_tweets.Datetime = pd.to_datetime(sent_tweets.Datetime)
     sent_tweets.set_index('Datetime', inplace=True, drop=True)
 
@@ -52,7 +55,7 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
                     tree_method='gpu_hist', eval_metric='logloss')
     xgb.create_train_test_data(X, y, test_size=0.2)
     xgb.fit()
-    xgb.save_model(f'./src/KZ_project/dl_models/model_stack/{config.SYMBOL}_model_price_{config.interval}_feature_numbers_{X.shape[1]}.json')
+    xgb.save_model(f'./src/KZ_project/dl_models/model_stack/{config.SYMBOL}_model_price_{INTERVAL}_feature_numbers_{X.shape[1]}.json')
     score = xgb.get_score()
 
     print(f'first score: {score}')
@@ -70,6 +73,8 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
     print(n_feat)
     
     xgb.plot_fature_importance()
+       
+
     
 def test_daily_model_train_save_tweet_composite_get_result_for_fetaure_importance():
     sent_tweets = test_get_tweet_sentiment_hourly()

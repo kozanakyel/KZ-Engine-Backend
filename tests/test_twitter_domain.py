@@ -12,7 +12,7 @@ def test_construct_twittercollection_and_tsentimentanalyser(lang: str='en'):
 def test_get_sentiment_daily_hourly_scores(symbol: str, 
                                            twitter_client: TwitterCollection,
                                            tsa: TweetSentimentAnalyzer):
-    df_tweets = twitter_client.get_tweets_with_interval(symbol, 'en', hour=24*3, interval=1)
+    df_tweets = twitter_client.get_tweets_with_interval(symbol, 'en', hour=24*1, interval=1)
     print(f'######## Shape of {symbol} tweets df: {df_tweets.shape}')
     path_df = f'./data/tweets_data/{symbol}/'
     file_df = f'{symbol}_tweets.csv'
