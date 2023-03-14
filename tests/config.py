@@ -12,3 +12,5 @@ end_date = '2022-07-01'
 source = 'yahoo'
 LOG_PATH = './src/KZ_project/logger' + os.sep + "logs"
 LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
+
+

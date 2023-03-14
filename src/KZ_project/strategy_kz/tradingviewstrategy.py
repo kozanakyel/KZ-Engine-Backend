@@ -82,6 +82,7 @@ class TradingViewStrategy():
                     result_list.append(temp_symbol)
         except AttributeError:
             print(f"There is no such attribute for {k}")
+            pass
         return result_list
 
     def ind_st_buy_signal(self, stock_ind: dict, symbol_pair: dict, symbol: str) -> None:

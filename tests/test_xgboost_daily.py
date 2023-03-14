@@ -30,6 +30,7 @@ def test_get_tweet_sentiment_daily():
     #sent_tweets.index = sent_tweets.index.tz_convert(None)   for only hourly
     return sent_tweets
 
+
 def test_composite_tweet_sentiment_and_data_manipulation(data: DataManipulation,
                                                          sent_tweets: pd.DataFrame()):
 

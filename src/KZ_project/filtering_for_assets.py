@@ -4,19 +4,19 @@ warnings.simplefilter(action = 'ignore', category = pd.errors.PerformanceWarning
 warnings.filterwarnings('ignore')
 
 
-from strategy_kz.tradingviewstrategy import TradingViewStrategy
-from strategy_kz.strategy_var import StrategyVar
-from data_pipelines.data_manipulation import DataManipulation
-from technical_analysis.backtest_kz import *
+from KZ_project.strategy_kz.tradingviewstrategy import TradingViewStrategy
+from KZ_project.strategy_kz.strategy_var import StrategyVar
+from KZ_project.data_pipelines.data_manipulation import DataManipulation
+from KZ_project.technical_analysis.backtest_kz import *
 
-screener="turkey"
-exchange="BIST"
-path_symbol = './data/symbol_data/ana_market.csv'
-index = 'Order'
-#screener="crypto"
-#exchange="BINANCE"
-#path_symbol = './data/symbol_data/usdtcoins.csv'
+#screener="turkey"
+#exchange="BIST"
+#path_symbol = './data/symbol_data/ana_market.csv'
 #index = 'Order'
+screener="crypto"
+exchange="BINANCE"
+path_symbol = './data/symbol_data/usdtcoins.csv'
+index = 'Order'
 
 SYMBOL = ''
 scale = 1
@@ -39,12 +39,14 @@ if __name__ == '__main__':
             r = i[-4:]
             r = f'{i[:-4]}-{r[:-1]}'
             filtre.append(r)
-        print(len(filter_list))
+        print(filter_list)
     elif screener == 'turkey':
         for i in filter_list:
             filtre.append(f'{i}.IS')
-        print(len(filter_list))
+        print(filter_list)
 
+
+    """
     df_filter_list = []
     for i in filtre:
         SYMBOL = f'{i}'
@@ -54,7 +56,13 @@ if __name__ == '__main__':
             kalman_out = StrategyVar().kalman_strategy_filter(df1=data.df, symbol=data.symbol)
             if kalman_out[7] and kalman_out[8] and kalman_out[11]:
                 df_filter_list.append(i)
-                bt_plot_indicators(data.df[-24*5:], i)
+                #bt_plot_indicators(data.df[-24*5:], i)
+                
+    print(df_filter_list)
+    
+    
+    """
+    
 
 
     
