@@ -6,7 +6,7 @@ from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
 from xgboost import XGBClassifier, XGBRegressor
 from xgboost import plot_importance
 
-from logger.logger import Logger
+from KZ_project.logger.logger import Logger
 import matplotlib.pyplot as plt
 import operator
 import itertools 
@@ -134,9 +134,14 @@ class XgboostForecaster():
 
     def get_n_importance_features(self, n: int):
         col_list = self.X_train.columns.to_list()
+        print(f'col list: {col_list}')
+        print(f'model feature importance {self.model.feature_importances_}')
         dict_importance = {col_list[i]: self.model.feature_importances_[i] for i in range(len(col_list))}
-        sorted_d = dict(sorted(dict_importance.items(), key=operator.itemgetter(1), reverse=False))
+        print(dict_importance)
+        sorted_d = dict(sorted(dict_importance.items(), key=operator.itemgetter(1), reverse=True))
+        print(sorted_d)
         n_features = dict(itertools.islice(sorted_d.items(), n)) 
+        print(n_features)
         return n_features
 
     def plot_fature_importance(self):

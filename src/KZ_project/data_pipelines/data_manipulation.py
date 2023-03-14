@@ -1,13 +1,13 @@
 import pandas as pd
 import numpy as np
 import os
-from technical_analysis.indicators import Indicators
-from logger.logger import Logger
+from KZ_project.technical_analysis.indicators import Indicators
+from KZ_project.logger.logger import Logger
 import yfinance as yf
 import shutil
 from tqdm import tqdm
-from .file_data_checker import FileDataChecker
-from .data_saver import factory_data_saver
+from KZ_project.data_pipelines.file_data_checker import FileDataChecker
+from KZ_project.data_pipelines.data_saver import factory_data_saver
 
 """
 @author: Kozan Ugur AKYEL
@@ -106,8 +106,11 @@ class DataManipulation():
             self.log('pure file exist')
             df_download = pd.read_csv(self.file_data_checker.create_pure(), index_col=[0], parse_dates=True)
 
-        elif source == 'yahoo':            # Only yahoo download check this data got or not
+        elif source == 'yahoo' and period:            # Only yahoo download check this data got or not
             df_download = self.yahoo_download(symbol, period=period, interval=interval)
+            
+        elif source == 'yahoo' and start_date:            # Only yahoo download check this data got or not
+            df_download = self.yahoo_download(symbol, start=start_date, end=end_date, interval=interval)
         
         self.df = df_download.copy()
         self.df['Datetime'] = self.df.index
@@ -152,14 +155,16 @@ class DataManipulation():
             DataFrame
         """
         if period != None:
-            download_df = yf.download(symbol, period=period, interval=interval)
+            download_dfy = yf.download(symbol, period=period, interval=interval)
             self.log(f'Get {symbol} data from yahoo period: {period} and interval: {interval}')
         elif start != None:
-            download_df = yf.download(symbol, start=start, end=end, interval=interval)
+            download_dfy = yf.download(symbol, start=start, end=end, interval=interval)
             self.log(f'Get {symbol} data from yahoo start date: {start} and {end} also interval: {interval}')
         else:
             self.log(f'Inappropriate period, interval, start or end, Check please!')
-        return download_df
+            raise ValueError('inappropriate period')
+        
+        return download_dfy
         
     def create_binary_feature_label(self, df: pd.DataFrame()) -> None:
         """Next candle Binary feature actual reason forecasting to this label
@@ -364,14 +369,18 @@ if __name__ == '__main__':
     MAIN_PATH = '/data/outputs/data_ind/'
     PURE_PATH = '/data/pure_data/'
     FEATURE_PATH = '/data/outputs/feature_data/'
-    PREFIX_PATH = './KZ_project'
+    PREFIX_PATH = './src/KZ_project'
     SYMBOL = 'BTC-USD' 
-    PERIOD = None
+    PERIOD = "1y"
     INTERVAL = '1h'
     START_DATE = '2020-06-30'
     END_DATE = '2022-07-01'
+    scale = 1
+    range_list = [5,6,7,8,10,12,14,15,20]
+    range_list = [i*scale for i in range_list]
+    source='yahoo'
     
-    d = DataManipulation(symbol=SYMBOL, period=PERIOD, interval=INTERVAL, 
+    d = DataManipulation(symbol=SYMBOL, source=source, range_list=range_list, period=PERIOD, interval=INTERVAL, 
                     start_date=START_DATE, end_date=END_DATE, prefix_path=PREFIX_PATH, 
                     main_path=MAIN_PATH, pure_path=PURE_PATH,
                     feature_path=FEATURE_PATH)  

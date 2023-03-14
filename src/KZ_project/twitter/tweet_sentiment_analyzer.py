@@ -13,7 +13,7 @@ import re
 import os
 import warnings
 warnings.filterwarnings('ignore')
-from logger.logger import Logger
+from KZ_project.logger.logger import Logger
 from googletrans import Translator
 from tqdm import tqdm
 tqdm.pandas()

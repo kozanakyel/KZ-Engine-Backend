@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 import datetime
 from datetime import timedelta as td
-from logger.logger import Logger
+from KZ_project.logger.logger import Logger
 import warnings
 warnings.filterwarnings('ignore')
 

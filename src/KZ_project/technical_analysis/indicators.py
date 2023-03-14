@@ -1,7 +1,7 @@
 import pandas as pd
 import pandas_ta as ta
-from logger.logger import Logger
-from technical_analysis.candlestick_features import *
+from KZ_project.logger.logger import Logger
+from KZ_project.technical_analysis.candlestick_features import *
 from tqdm import tqdm
 import warnings
 warnings.filterwarnings('ignore')
