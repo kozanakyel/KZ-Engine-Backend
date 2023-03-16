@@ -4,10 +4,10 @@ import random
 import matplotlib.pyplot as plt
 import pandas_ta as ta
 
-from technical_analysis.indicators import Indicators
-import technical_analysis.backtest_kz as bt
-from data_pipelines.data_manipulation import DataManipulation
-from strategy_kz.strategy_var import StrategyVar
+from KZ_project.technical_analysis.indicators import Indicators
+import KZ_project.technical_analysis.backtest_kz as bt
+from KZ_project.data_pipelines.data_manipulation import DataManipulation
+from KZ_project.strategy_kz.strategy_var import StrategyVar
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -15,16 +15,16 @@ warnings.simplefilter(action = 'ignore', category = pd.errors.PerformanceWarning
 
 
 interval = 'hour'
-df_m = pd.read_csv(f'../data/tweets_data/sasa/sasa_{interval}.csv', index_col=[0])
-df_e = pd.read_csv(f'../data/tweets_data/bist/bist_{interval}.csv', index_col=[0])
-df_k = pd.read_csv(f'../data/tweets_data/xu100/xu100_{interval}.csv', index_col=[0])
-df_r = pd.read_csv(f'../data/tweets_data/sumas/sumas_{interval}.csv', index_col=[0])
+df_m = pd.read_csv(f'./data/tweets_data/btc/btc_{interval}.csv', index_col=[0])
+df_e = pd.read_csv(f'./data/tweets_data/eth/eth_{interval}.csv', index_col=[0])
+df_k = pd.read_csv(f'./data/tweets_data/bnb/bnb_{interval}.csv', index_col=[0])
+df_r = pd.read_csv(f'./data/tweets_data/ada/ada_{interval}.csv', index_col=[0])
 
 df_com = df_m.copy()
-df_com.columns = [f'sasa']
-df_com[f'bist'] = df_e['compound_total']
-df_com[f'xu100'] = df_k['compound_total']
-df_com[f'sumas'] = df_r['compound_total']
+df_com.columns = [f'btc']
+df_com[f'eth'] = df_e['compound_total']
+df_com[f'bnb'] = df_k['compound_total']
+df_com[f'ada'] = df_r['compound_total']
 df_com.dropna(inplace=True)
 df_com.plot(figsize=(18,5), color=['y', 'b', 'r', 'k'])
 
@@ -50,7 +50,7 @@ for i in ['TCELL.IS', 'BIMAS.IS', 'AKSA.IS']:   #, 'CCOLA.IS', 'CIMSA.IS', 'EREG
     
 res_dict
 
-symbols = pd.read_csv('../data/symbol_data/bist100.csv', index_col=[0])
+symbols = pd.read_csv('./data/symbol_data/bist100.csv', index_col=[0])
 
 for i in range(1, 3):
     rnd = random.randint(1, len(symbols))
@@ -75,7 +75,7 @@ for i in range(1, 3):
     ax1.plot(df_temp.close, label='Close', linewidth=3)
     ax1.set_title(f'{SYMBOL}')
     ax1.legend()
-    fig.savefig(f'./plots/ema_strategy_{SYMBOL}.png')
+    fig.savefig(f'./data/plots/ema_strategy_{SYMBOL}.png')
 
     # PLOT THE SUPERTREND
     fig, ax = plt.subplots(figsize=(20,7))
@@ -83,5 +83,5 @@ for i in range(1, 3):
     ax.plot(df_temp.close, label='Close')
     ax.set_title(f'{SYMBOL} SUPERTREND INDICATOR')
     ax.legend()
-    fig.savefig(f'./plots/supertrend_{SYMBOL}.png')
+    fig.savefig(f'./data/plots/supertrend_{SYMBOL}.png')
     

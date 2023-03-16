@@ -24,9 +24,16 @@ def test_trading_filter_strategyu_hisse_result(interval: str):
         for i in filter_list:
             filtre.append(f'{i}.IS')
     return filter_list
+
+def test_listen_live_signal():
+    st_main_market = TradingViewStrategy(exchange, screener, path_symbol)
+    st_main_market.listen_live_signal('1h')
+    
     
 
 if __name__ == '__main__':
 
-    result_list = test_trading_filter_strategyu_hisse_result('1h')
-    print(result_list)
+    #result_list = test_trading_filter_strategyu_hisse_result('1h')
+    #print(result_list)
+    
+    test_listen_live_signal()

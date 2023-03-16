@@ -116,7 +116,11 @@ class TradingViewStrategy():
             analysis = self.get_all_analysis(self.intervals[interval])
             print(f'Time: {repeat*30} minute')
             repeat += 1
-            for k in analysis:
-                dict_ind = analysis[k].indicators
-                self.ind_st_buy_signal(dict_ind, self.symbols_dict, k)
+            try:
+                for k in analysis:
+                    dict_ind = analysis[k].indicators
+                    self.ind_st_buy_signal(dict_ind, self.symbols_dict, k)
+            except AttributeError:
+                print(f"There is no such attribute for {k}")
+                pass
             time.sleep(sleep_time)  

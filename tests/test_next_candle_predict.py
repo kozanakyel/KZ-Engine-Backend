@@ -15,7 +15,7 @@ def test_construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger() -> 
     daily, hourly = twt_test.test_get_sentiment_daily_hourly_scores('btc', client_twt, tsa)
 
     logger = Logger(config.LOG_PATH, config.LOG_FILE_NAME_PREFIX)
-    data = DataManipulation(config.SYMBOL, config.source, config.range_list, period='2mo',
+    data = DataManipulation(config.SYMBOL, config.source, config.range_list, period='1mo',
                         interval=INTERVAL, scale=config.SCALE, 
                         prefix_path='.', saved_to_csv=False,
                         logger=logger)
@@ -51,7 +51,7 @@ def test_predict_last_day_and_next_hour():
     X = df_final.drop(columns=['feature_label'], axis=1)
 
     ypred_reg = xgb.model.predict(X)
-    print(f'prediction for 20 hours: {ypred_reg}')
+    print(f'prediction for 5 hours: {ypred_reg}')
     return ypred_reg[-1]
 
 if __name__ == '__main__':
