@@ -22,10 +22,32 @@ class BinanceClient():
         self.client = Client(api_key = self.api_key, 
                              api_secret = self.api_secret_key, 
                              tld = "com")
-        
+    
+    def account_balances(self) -> pd.DataFrame():
+        account = self.client.get_account()
+        df = pd.DataFrame(account["balances"])
+        df.free = pd.to_numeric(df.free, errors="coerce")   
+        return df.loc[df.free > 0]
+    
+    
+    def get_exchange_info(self) -> dict:
+        return self.client.get_exchange_info() 
+    
+    def get_trade_fee(self, symbol: str) -> list:
+        """
+        example symbol: "BTCEUR"
+        return [dict]  only one dict element
+        """
+        return self.client.get_trade_fee(symbol = symbol)
+    
+    def ticker(self, symbol: str):
+        """
+        {'symbol': 'BTCUSDT', 'price': '25121.99000000'}
+        """
+        return float(self.client.get_symbol_ticker(symbol=symbol)["price"])    
+
     
 if __name__ == '__main__':
     client = Client(api_key = api_key, api_secret = api_secret_key, tld = "com")
-    account = client.get_account()
-
-    print(account.keys())
+        
+    print( client.get_symbol_ticker(symbol = "BTCUSDT"))
