@@ -7,6 +7,7 @@ from KZ_project.logger.logger import Logger
 
 from sklearn.metrics import accuracy_score, confusion_matrix
 
+import os
 import warnings
 warnings.filterwarnings('ignore')
 warnings.simplefilter(action = 'ignore', category = pd.errors.PerformanceWarning)
@@ -15,22 +16,32 @@ import config
 
 INTERVAL = '1h'
 
+from dotenv import load_dotenv
+from KZ_project.binance_domain.binance_client import BinanceClient
+
+load_dotenv()
+api_key = os.getenv('BINANCE_API_KEY')
+api_secret_key = os.getenv('BINANCE_SECRET_KEY')
+
+client = BinanceClient(api_key, api_secret_key)
+
 logger = Logger(config.LOG_PATH, config.LOG_FILE_NAME_PREFIX)
 tsa = TweetSentimentAnalyzer()
 data = DataManipulation(config.SYMBOL, config.source, config.range_list, start_date=config.start_date, 
                         end_date=config.end_date, interval=INTERVAL, scale=config.SCALE, 
                         prefix_path='.', saved_to_csv=False,
-                        logger=logger)
+                        logger=logger, client=client)
 df_price = data.df.copy()
 
 def test_get_tweet_sentiment_hourly():
-    sent_tweets = pd.read_csv('./data/archieve_data/btc_archieve/btc_hourly_sent_score.csv')
+    #sent_tweets = pd.read_csv('./data/archieve_data/btc_archieve/btc_hourly_sent_score.csv')
+    sent_tweets = pd.read_csv('./data/tweets_data/btc/btc_hour.csv')
     #sent_tweets = pd.read_csv('../data/tweets_data/btc/btc_hour.csv')  
     print(sent_tweets)
     sent_tweets.Datetime = pd.to_datetime(sent_tweets.Datetime)
     sent_tweets.set_index('Datetime', inplace=True, drop=True)
 
-    sent_tweets.index = sent_tweets.index.tz_convert(None) # only hourly
+    #sent_tweets.index = sent_tweets.index.tz_convert(None) # only hourly
     return sent_tweets
 
 def test_composite_tweet_sentiment_and_data_manipulation(data: DataManipulation,
@@ -55,7 +66,7 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
                     tree_method='gpu_hist', eval_metric='logloss')
     xgb.create_train_test_data(X, y, test_size=0.2)
     xgb.fit()
-    xgb.save_model(f'./src/KZ_project/dl_models/model_stack/{config.SYMBOL}_model_price_{INTERVAL}_feature_numbers_{X.shape[1]}.json')
+    xgb.save_model(f'./src/KZ_project/dl_models/model_stack/{config.SYMBOL}_{config.source}_model_price_{INTERVAL}_feature_numbers_{X.shape[1]}.json')
     score = xgb.get_score()
 
     print(f'first score: {score}')

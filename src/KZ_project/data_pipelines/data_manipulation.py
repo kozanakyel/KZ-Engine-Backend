@@ -8,6 +8,7 @@ import shutil
 from tqdm import tqdm
 from KZ_project.data_pipelines.file_data_checker import FileDataChecker
 from KZ_project.data_pipelines.data_saver import factory_data_saver
+from KZ_project.binance_domain.binance_client import BinanceClient
 
 """
 @author: Kozan Ugur AKYEL
@@ -30,7 +31,7 @@ class DataManipulation():
                                 start_date: str=None, end_date: str=None, scale: int=1, prefix_path: str='.', 
                                 main_path: str='/data/outputs/data_ind/', pure_path: str='/data/pure_data/',
                                 feature_path: str='/data/outputs/feature_data/', saved_to_csv: bool=True,
-                                logger: Logger=None):
+                                logger: Logger=None, client: BinanceClient=None):
         self.symbol = symbol
         self.source = source
         self.scale = scale
@@ -43,6 +44,8 @@ class DataManipulation():
         self.main_path = main_path
         self.pure_path = pure_path
         self.feature_path = feature_path
+        self.client = client
+
         
         # DataChecker for file and folder for checking
         # any file or coin info is exist or not
@@ -111,6 +114,11 @@ class DataManipulation():
             
         elif source == 'yahoo' and start_date:            # Only yahoo download check this data got or not
             df_download = self.yahoo_download(symbol, start=start_date, end=end_date, interval=interval)
+            
+        elif source == 'binance':
+            df_download = self.client.get_history(symbol = self.symbol, 
+                                                  interval = self.interval,
+                                                  start = self.start_date, end = self.end_date)
         
         self.df = df_download.copy()
         self.df['Datetime'] = self.df.index
