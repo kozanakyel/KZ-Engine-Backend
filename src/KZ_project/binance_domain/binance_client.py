@@ -40,11 +40,51 @@ class BinanceClient():
         """
         return self.client.get_trade_fee(symbol = symbol)
     
-    def ticker(self, symbol: str):
+    def ticker_price(self, symbol: str):
         """
         {'symbol': 'BTCUSDT', 'price': '25121.99000000'}
         """
-        return float(self.client.get_symbol_ticker(symbol=symbol)["price"])    
+        return float(self.client.get_symbol_ticker(symbol=symbol)["price"])  
+    
+    def ticker_filter(self, filter_keys: list=[]) -> pd.DataFrame():
+        # use for list ["USD", "BTC", etc]
+        prices = self.client.get_all_tickers()
+        df_tickers = pd.DataFrame(prices)
+        
+        if len(filter_keys) != 0:
+            index_list = []
+            for i in filter_keys:
+                conditions = df_tickers.symbol.str.contains(i)
+                index_list.append(df_tickers[conditions].index)
+            final_index = set.intersection(*map(set, index_list))
+            return df_tickers.loc[final_index]
+        else:
+            return df_tickers  
+        
+    def ticker_daily(self, symbol: str) -> dict:
+        # pd.to_datetime(last24["closeTime"], unit = "ms") 
+        return self.client.get_ticker(symbol=symbol)
+    
+    def get_history(self, symbol, interval, start, end = None):
+        bars = self.client.get_historical_klines(symbol = symbol, interval = interval,
+                                        start_str = start, end_str = end, limit = 1000)
+        df = pd.DataFrame(bars)
+        df["Datetime"] = pd.to_datetime(df.iloc[:,0], unit = "ms")
+        df['Datetime'] = df['Datetime'].dt.tz_localize('UTC')
+
+        # Format the datetime column to your desired format
+        df['Datetime'] = df['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S+00:00')
+        
+        df.columns = ["Open Time", "open", "high", "low", "close", "volume",
+                  "Clos Time", "Quote Asset Volume", "Number of Trades",
+                  "Taker Buy Base Asset Volume", "Taker Buy Quote Asset Volume", "Ignore", "Datetime"]
+        df = df[["Datetime", "open", "high", "low", "close", "volume"]].copy()
+        df["adj_close"] = df["close"]
+        df.set_index("Datetime", inplace = True)
+        for column in df.columns:
+            df[column] = pd.to_numeric(df[column], errors = "coerce")
+    
+        return df
 
     
 if __name__ == '__main__':
