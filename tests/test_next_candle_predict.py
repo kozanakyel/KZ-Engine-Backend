@@ -3,7 +3,7 @@ import test_twitter_domain as twt_test
 from KZ_project.twitter.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 from KZ_project.data_pipelines.data_manipulation import DataManipulation
 from KZ_project.dl_models.xgboost_forecaster import XgboostForecaster
-from KZ_project.logger.logger import Logger
+
 
 import config
 import pandas as pd
@@ -15,12 +15,11 @@ def test_construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger() -> 
     client_twt, tsa = twt_test.test_construct_twittercollection_and_tsentimentanalyser('en')
     daily, hourly = twt_test.test_get_sentiment_daily_hourly_scores('btc', client_twt, tsa)
 
-    logger = Logger(config.BinanceConfig.LOG_PATH, config.BinanceConfig.LOG_FILE_NAME_PREFIX)
     data = DataManipulation(config.BinanceConfig.SYMBOL, config.BinanceConfig.source, 
                             config.BinanceConfig.range_list, start_date='2023-02-18',
                             interval=INTERVAL, scale=config.BinanceConfig.SCALE, 
                             prefix_path='.', saved_to_csv=False,
-                            logger=logger, client=config.BinanceConfig.client)
+                            logger=config.BinanceConfig.logger, client=config.BinanceConfig.client)
     return client_twt, tsa, daily, hourly, data
 
 def test_get_tweet_sentiment_hourly(sent_tweets_hourly: pd.DataFrame()):

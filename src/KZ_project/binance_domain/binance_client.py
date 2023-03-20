@@ -1,32 +1,35 @@
-import os
-from dotenv import load_dotenv
-
 import pandas as pd
 from binance.client import Client
 import pandas as ta
+
+from KZ_project.logger.logger import Logger
 
 # binance API icin zaman sorunsalini wsl2 da cozer
 # sudo apt install ntpdate
 # sudo ntpdate -sb time.nist.gov
 
-load_dotenv()
-
-api_key = os.getenv('BINANCE_API_KEY')
-api_secret_key = os.getenv('BINANCE_SECRET_KEY')
 
 class BinanceClient():
     
-    def __init__(self, api_key: str, api_secret_key: str):
+    def __init__(self, api_key: str, api_secret_key: str, logger: Logger=None):
         self.api_key = api_key
         self.api_secret_key = api_secret_key
+        self.logger = logger
         self.client = Client(api_key = self.api_key, 
                              api_secret = self.api_secret_key, 
                              tld = "com")
+        
+    def log(self, text):
+        if self.logger:
+            self.logger.append_log(text)
+        else:
+            print(text)
     
     def account_balances(self) -> pd.DataFrame():
         account = self.client.get_account()
         df = pd.DataFrame(account["balances"])
-        df.free = pd.to_numeric(df.free, errors="coerce")   
+        df.free = pd.to_numeric(df.free, errors="coerce")  
+        self.log(f'Get account balances for {self}') 
         return df.loc[df.free > 0]
     
     
@@ -66,6 +69,10 @@ class BinanceClient():
         return self.client.get_ticker(symbol=symbol)
     
     def get_history(self, symbol, interval, start, end = None):
+        """
+        valid intervals - 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M
+        example: start = "2021-10-01 10:00:00"
+        """
         bars = self.client.get_historical_klines(symbol = symbol, interval = interval,
                                         start_str = start, end_str = end, limit = 1000)
         df = pd.DataFrame(bars)
@@ -86,10 +93,10 @@ class BinanceClient():
         for column in df.columns:
             df[column] = pd.to_numeric(df[column], errors = "coerce")
     
+        self.log(f'Fetch data from Binance API with OHLC from {start} and inbterval {interval}')
         return df
-
     
-if __name__ == '__main__':
-    client = Client(api_key = api_key, api_secret = api_secret_key, tld = "com")
-        
-    print( client.get_symbol_ticker(symbol = "BTCUSDT"))
+    
+    
+
+
