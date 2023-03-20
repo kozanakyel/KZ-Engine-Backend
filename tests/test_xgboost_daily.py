@@ -13,12 +13,11 @@ warnings.simplefilter(action = 'ignore', category = pd.errors.PerformanceWarning
 
 import config
 
-logger = Logger(config.LOG_PATH, config.LOG_FILE_NAME_PREFIX)
 tsa = TweetSentimentAnalyzer()
-data = DataManipulation(config.SYMBOL, config.source, config.range_list, start_date=config.start_date, 
-                        end_date=config.end_date, interval=config.interval, scale=config.SCALE, 
+data = DataManipulation(config.YahooConfig.SYMBOL, config.YahooConfig.source, config.YahooConfig.range_list, start_date=config.start_date, 
+                        end_date=config.YahooConfig.end_date, interval=config.YahooConfig.interval, scale=config.YahooConfig.SCALE, 
                         prefix_path='..', saved_to_csv=False,
-                        logger=logger)
+                        logger=config.YahooConfig.logger)
 df_price = data.df.copy()
 
 def test_get_tweet_sentiment_daily():

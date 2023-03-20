@@ -1,6 +1,7 @@
 import pandas as pd
 from binance.client import Client
 import pandas as ta
+from binance import ThreadedWebsocketManager
 
 from KZ_project.logger.logger import Logger
 
@@ -15,9 +16,11 @@ class BinanceClient():
         self.api_key = api_key
         self.api_secret_key = api_secret_key
         self.logger = logger
+        
         self.client = Client(api_key = self.api_key, 
                              api_secret = self.api_secret_key, 
                              tld = "com")
+        self.twm = ThreadedWebsocketManager() 
         
     def log(self, text):
         if self.logger:
@@ -94,8 +97,26 @@ class BinanceClient():
             df[column] = pd.to_numeric(df[column], errors = "coerce")
     
         self.log(f'Fetch data from Binance API with OHLC from {start} and inbterval {interval}')
-        return df
+        return df  
     
+    def stream_data(self, msg):
+        ''' define how to process incoming WebSocket messages '''
+        print(msg)
+        
+    def start_ws(self):
+        print(self.twm)
+        self.twm.start()
+        
+    def start_kline_ws(self, callback, symbol):
+        self.twm.start_kline_socket(callback=callback, symbol=symbol)
+                
+    def stop_ws(self):
+        self.twm.stop()
+    
+    def start_mini_ticker(self, callback, symbol):
+        self.twm.start_symbol_miniticker_socket(callback = callback, symbol = symbol)
+        
+        
     
     
 

@@ -16,7 +16,7 @@ class YahooConfig:
     SCALE = 1
     range_list = [i for i in range(5,21)]
     range_list = [i*1 for i in range_list]
-    interval = '1d'
+    interval = '1h'
     #start_date = '2020-06-30'
     #end_date = '2022-07-01'
     start_date = '2022-06-17'

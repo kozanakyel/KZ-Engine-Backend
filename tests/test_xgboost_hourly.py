@@ -6,6 +6,8 @@ from KZ_project.dl_models.xgboost_forecaster import XgboostForecaster
 from KZ_project.logger.logger import Logger
 
 from sklearn.metrics import accuracy_score, confusion_matrix
+import numpy as np
+import matplotlib.pyplot as plt
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -47,6 +49,22 @@ def test_composite_tweet_sentiment_and_data_manipulation(data: DataManipulation,
     df_final.dropna(inplace=True)
     return df_final
 
+def test_backtest_prediction(X_pd, y_pred):
+    X_pd["position"] = [y_pred[i] for i, _ in enumerate(X_pd.index)]
+    
+    print(X_pd[["log_return", "position"]]) 
+    
+    X_pd["strategy"] = X_pd.position.shift(1) * X_pd["log_return"]
+    X_pd[["log_return", "strategy"]].sum().apply(np.exp)
+    X_pd["cstrategy"] = X_pd["strategy"].cumsum().apply(np.exp) 
+    X_pd["creturns"] = X_pd.log_return.cumsum().apply(np.exp) 
+
+    X_pd.creturns.plot(figsize = (12, 8), title = "BTC/USDT - Buy and Hold", fontsize = 12)
+    plt.show()
+
+    X_pd[["creturns", "cstrategy"]].plot(figsize = (12 , 8), fontsize = 12)
+    plt.show()
+
 
 def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFrame()):
     y = df_final.feature_label
@@ -58,7 +76,7 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
                     tree_method='gpu_hist', eval_metric='logloss')
     xgb.create_train_test_data(X, y, test_size=0.2)
     xgb.fit()
-    xgb.save_model(f'./src/KZ_project/dl_models/model_stack/{binance_config.SYMBOL}_{binance_config.source}_model_price_{INTERVAL}_feature_numbers_{X.shape[1]}.json')
+    xgb.save_model(f'./src/KZ_project/dl_models/model_stack/test_{binance_config.SYMBOL}_{binance_config.source}_model_price_{INTERVAL}_feature_numbers_{X.shape[1]}.json')
     score = xgb.get_score()
 
     print(f'first score: {score}')
@@ -76,6 +94,8 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
     print(n_feat)
     
     xgb.plot_fature_importance()
+    
+    test_backtest_prediction(xgb.X_test, ypred_reg)
        
 
     
