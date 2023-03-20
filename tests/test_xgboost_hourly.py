@@ -7,30 +7,22 @@ from KZ_project.logger.logger import Logger
 
 from sklearn.metrics import accuracy_score, confusion_matrix
 
-import os
 import warnings
 warnings.filterwarnings('ignore')
 warnings.simplefilter(action = 'ignore', category = pd.errors.PerformanceWarning)
 
 import config
+binance_config = config.BinanceConfig()
 
 INTERVAL = '1h'
 
-from dotenv import load_dotenv
-from KZ_project.binance_domain.binance_client import BinanceClient
-
-load_dotenv()
-api_key = os.getenv('BINANCE_API_KEY')
-api_secret_key = os.getenv('BINANCE_SECRET_KEY')
-
-client = BinanceClient(api_key, api_secret_key)
-
-logger = Logger(config.LOG_PATH, config.LOG_FILE_NAME_PREFIX)
+logger = Logger(binance_config.LOG_PATH, binance_config.LOG_FILE_NAME_PREFIX)
 tsa = TweetSentimentAnalyzer()
-data = DataManipulation(config.SYMBOL, config.source, config.range_list, start_date=config.start_date, 
-                        end_date=config.end_date, interval=INTERVAL, scale=config.SCALE, 
+data = DataManipulation(binance_config.SYMBOL, binance_config.source, 
+                        binance_config.range_list, start_date=binance_config.start_date, 
+                        end_date=binance_config.end_date, interval=INTERVAL, scale=binance_config.SCALE, 
                         prefix_path='.', saved_to_csv=False,
-                        logger=logger, client=client)
+                        logger=logger, client=binance_config.client)
 df_price = data.df.copy()
 
 def test_get_tweet_sentiment_hourly():
@@ -66,7 +58,7 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
                     tree_method='gpu_hist', eval_metric='logloss')
     xgb.create_train_test_data(X, y, test_size=0.2)
     xgb.fit()
-    xgb.save_model(f'./src/KZ_project/dl_models/model_stack/{config.SYMBOL}_{config.source}_model_price_{INTERVAL}_feature_numbers_{X.shape[1]}.json')
+    xgb.save_model(f'./src/KZ_project/dl_models/model_stack/{binance_config.SYMBOL}_{binance_config.source}_model_price_{INTERVAL}_feature_numbers_{X.shape[1]}.json')
     score = xgb.get_score()
 
     print(f'first score: {score}')

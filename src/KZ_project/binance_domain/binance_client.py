@@ -75,11 +75,13 @@ class BinanceClient():
         # Format the datetime column to your desired format
         df['Datetime'] = df['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S+00:00')
         
+        
         df.columns = ["Open Time", "open", "high", "low", "close", "volume",
                   "Clos Time", "Quote Asset Volume", "Number of Trades",
                   "Taker Buy Base Asset Volume", "Taker Buy Quote Asset Volume", "Ignore", "Datetime"]
         df = df[["Datetime", "open", "high", "low", "close", "volume"]].copy()
         df["adj_close"] = df["close"]
+        df["Datetime"] = pd.to_datetime(df["Datetime"])
         df.set_index("Datetime", inplace = True)
         for column in df.columns:
             df[column] = pd.to_numeric(df[column], errors = "coerce")
