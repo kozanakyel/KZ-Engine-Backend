@@ -100,8 +100,9 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
 
     
 def test_daily_model_train_save_tweet_composite_get_result_for_fetaure_importance():
-    sent_tweets = test_get_tweet_sentiment_hourly()
-    df_final = test_composite_tweet_sentiment_and_data_manipulation(data, sent_tweets)
+    #sent_tweets = test_get_tweet_sentiment_hourly()
+    #df_final = test_composite_tweet_sentiment_and_data_manipulation(data, sent_tweets)
+    df_final = data.extract_features()
     test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final)
 
 
