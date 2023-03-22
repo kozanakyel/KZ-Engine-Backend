@@ -28,15 +28,15 @@ class YahooConfig:
     logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
 
 class BinanceConfig:
-    SYMBOL = 'BTCUSDT'
-    SYMBOL_NAME = 'Bitcoin'
-    SYMBOL_CUT = 'btc'
+    SYMBOL = 'BNBUSDT'
+    SYMBOL_NAME = 'Binance'
+    SYMBOL_CUT = 'bnb'
     SCALE = 1
     range_list = [i for i in range(5,21)]
     range_list = [i*1 for i in range_list]
-    interval = '1d'
-    start_date = '2018-06-30'
-    end_date = '2023-03-20'
+    interval = '1h'
+    start_date = '2022-06-17'
+    end_date = '2023-03-22'
     #start_date = '2022-06-17'
     #end_date = '2023-02-17'
     source = 'binance'

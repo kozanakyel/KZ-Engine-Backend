@@ -29,7 +29,7 @@ df_price = data.df.copy()
 
 def test_get_tweet_sentiment_hourly():
     #sent_tweets = pd.read_csv('./data/archieve_data/btc_archieve/btc_hourly_sent_score.csv')
-    sent_tweets = pd.read_csv('./data/tweets_data/btc/btc_hour.csv')
+    sent_tweets = pd.read_csv('./data/tweets_data/bnb/bnb_hour.csv')
     #sent_tweets = pd.read_csv('../data/tweets_data/btc/btc_hour.csv')  
     print(sent_tweets)
     sent_tweets.Datetime = pd.to_datetime(sent_tweets.Datetime)
@@ -59,10 +59,28 @@ def test_backtest_prediction(X_pd, y_pred):
     X_pd["cstrategy"] = X_pd["strategy"].cumsum().apply(np.exp) 
     X_pd["creturns"] = X_pd.log_return.cumsum().apply(np.exp) 
 
-    X_pd.creturns.plot(figsize = (12, 8), title = "BTC/USDT - Buy and Hold", fontsize = 12)
+    X_pd.creturns.plot(figsize = (12, 8), title = "BNB/USDT - Buy and Hold", fontsize = 12)
     plt.show()
 
     X_pd[["creturns", "cstrategy"]].plot(figsize = (12 , 8), fontsize = 12)
+    plt.show()
+    
+def test_trade_fee_net_returns(X_pd: pd.DataFrame()):
+    val_counts = X_pd.position.value_counts()
+    print(f'val counts: {val_counts}')
+    
+    X_pd["trades"] = X_pd.position.diff().fillna(0).abs()
+    trade_val_count = X_pd.trades.value_counts()
+    print(f'trade val counts: {trade_val_count}')
+    
+    commissions = 0.00075 # reduced Binance commission 0.075%
+    other = 0.0001 # proportional costs for bid-ask spread & slippage (more detailed analysis required!)
+    ptc = np.log(1 - commissions) + np.log(1 - other)
+    
+    X_pd["strategy_net"] = X_pd.strategy + X_pd.trades * ptc # strategy returns net of costs
+    X_pd["cstrategy_net"] = X_pd.strategy_net.cumsum().apply(np.exp)
+    
+    X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(figsize = (12 , 8))
     plt.show()
 
 
@@ -95,14 +113,16 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
     
     xgb.plot_fature_importance()
     
-    test_backtest_prediction(xgb.X_test, ypred_reg)
+    ypr = xgb.model.predict(X)
+    test_backtest_prediction(X, ypr)
+    test_trade_fee_net_returns(X)
        
 
     
 def test_daily_model_train_save_tweet_composite_get_result_for_fetaure_importance():
-    #sent_tweets = test_get_tweet_sentiment_hourly()
-    #df_final = test_composite_tweet_sentiment_and_data_manipulation(data, sent_tweets)
-    df_final = data.extract_features()
+    sent_tweets = test_get_tweet_sentiment_hourly()
+    df_final = test_composite_tweet_sentiment_and_data_manipulation(data, sent_tweets)
+    #df_final = data.extract_features()
     test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final)
 
 
