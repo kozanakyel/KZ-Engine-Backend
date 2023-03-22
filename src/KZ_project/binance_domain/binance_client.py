@@ -99,22 +99,8 @@ class BinanceClient():
         self.log(f'Fetch data from Binance API with OHLC from {start} and inbterval {interval}')
         return df  
     
-    def stream_data(self, msg):
-        ''' define how to process incoming WebSocket messages '''
-        print(msg)
-        
-    def start_ws(self):
-        print(self.twm)
-        self.twm.start()
-        
-    def start_kline_ws(self, callback, symbol):
-        self.twm.start_kline_socket(callback=callback, symbol=symbol)
-                
-    def stop_ws(self):
-        self.twm.stop()
-    
-    def start_mini_ticker(self, callback, symbol):
-        self.twm.start_symbol_miniticker_socket(callback = callback, symbol = symbol)
+ 
+
         
         
     
