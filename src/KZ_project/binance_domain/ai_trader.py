@@ -41,7 +41,7 @@ class AITrader():
         complete=       msg["k"]["x"]
     
         # print out
-        print("Time: {} | Price: {} | Complete: {}".format(event_time, close, complete))
+        print("Time: {} | Price: {} | Complete: {}".format(event_time.strftime('%Y-%m-%d'), close, complete))
     
         # feed df (add new bar / update latest bar)
         self.data.loc[start_time] = [first, high, low, close, volume, complete]
