@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from KZ_project.webapi.resources.user import UserRegister, User, UserLogin,UserLogout, TokenRefresh
 from KZ_project.webapi.resources.asset import Asset, AssetList
 from KZ_project.webapi.resources.ai_model import AIModel, AIModelList
+from KZ_project.webapi.resources.tracker import Tracker, TrackerList
 
 
 load_dotenv()
@@ -102,6 +103,8 @@ api.add_resource(User, '/user/<int:user_id>')
 api.add_resource(UserLogin, '/login')
 api.add_resource(UserLogout, '/logout')
 api.add_resource(TokenRefresh, '/refresh')  
+api.add_resource(Tracker, '/tracker')
+api.add_resource(TrackerList, 'trackers')
 
     
 if __name__ == '__main__':
