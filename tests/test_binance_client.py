@@ -31,7 +31,7 @@ def test_get_history():
 def test_web_socket_bnb():
     trader = AITrader("BNBUSDT", "1m", client)
     trader.start_trading()
-    time.sleep(60*3)
+    time.sleep(60*2)
     trader.stop_trading()
     
 test_web_socket_bnb()

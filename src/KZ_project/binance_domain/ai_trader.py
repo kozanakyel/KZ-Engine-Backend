@@ -7,6 +7,7 @@ from datetime import timedelta
 from KZ_project.logger.logger import Logger
 from KZ_project.binance_domain.binance_client import BinanceClient
 
+
 class AITrader():
     
     def __init__(self, symbol, bar_length, client: BinanceClient, logger: Logger=None):
@@ -42,7 +43,9 @@ class AITrader():
     
         # print out
         print("Time: {} | Price: {} | Complete: {}".format(event_time.strftime('%Y-%m-%d'), close, complete))
-    
+        
+        if complete:
+            print(f'Write logic for prediction in this area')
         # feed df (add new bar / update latest bar)
         self.data.loc[start_time] = [first, high, low, close, volume, complete]
         

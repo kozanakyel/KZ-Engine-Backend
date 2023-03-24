@@ -4,7 +4,6 @@ import yfinance as yf
 import os
 
 
-
 """
     standart deviation ve log return un ve mean in 
     window rolling sma ve ema ortalamalri ile fiyati 
@@ -64,3 +63,4 @@ def calc_eff_ann_rate_exp(r, m=1):
 
 def create_log_return(df: pd.DataFrame(), close: str) -> None:
     df["log_ret"] = np.log(df[close] / df[close].shift())
+    
