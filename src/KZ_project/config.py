@@ -28,9 +28,9 @@ class YahooConfig:
     logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
 
 class BinanceConfig:
-    SYMBOL = 'BTCUSDT'
-    SYMBOL_NAME = 'Bitcoin'
-    SYMBOL_CUT = 'btc'
+    SYMBOL = 'BNBUSDT'
+    SYMBOL_NAME = 'Binance'
+    SYMBOL_CUT = 'bnb'
     SCALE = 1
     range_list = [i for i in range(5,21)]
     range_list = [i*1 for i in range_list]
@@ -43,6 +43,6 @@ class BinanceConfig:
     LOG_PATH = './src/KZ_project/logger' + os.sep + "logs"
     LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
     
-    logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
-    client = BinanceClient(api_key, api_secret_key, logger=logger)
+    #logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
+    #client = BinanceClient(api_key, api_secret_key, logger=logger)
 

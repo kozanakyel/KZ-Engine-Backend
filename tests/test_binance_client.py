@@ -29,10 +29,12 @@ def test_get_history():
     print(dff)
 
 def test_web_socket_bnb():
-    trader = AITrader("BNBUSDT", "1m", client)
-    trader.start_trading()
-    time.sleep(60*2)
-    trader.stop_trading()
+    trader_btc = AITrader(symbol="BTCUSDT", name="btc", bar_length="3m", client=client)
+    trader_bnb = AITrader(symbol="BNBUSDT", name="bnb", bar_length="3m", client=client)
+    trader_btc.start_trading()
+    trader_bnb.start_trading()
+    time.sleep(60*20)
+    trader_btc.stop_trading()
     
 test_web_socket_bnb()
 

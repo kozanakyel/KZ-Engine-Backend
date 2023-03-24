@@ -29,9 +29,8 @@ df_price = data.df.copy()
 
 def test_get_tweet_sentiment_hourly():
     #sent_tweets = pd.read_csv('./data/archieve_data/btc_archieve/btc_hourly_sent_score.csv')
-    sent_tweets = pd.read_csv('./data/tweets_data/bnb/bnb_hour.csv')
+    sent_tweets = pd.read_csv('./data/tweets_data/btc/btc_hour.csv')
     #sent_tweets = pd.read_csv('../data/tweets_data/btc/btc_hour.csv')  
-    print(sent_tweets)
     sent_tweets.Datetime = pd.to_datetime(sent_tweets.Datetime)
     sent_tweets.set_index('Datetime', inplace=True, drop=True)
 
@@ -87,6 +86,9 @@ def test_trade_fee_net_returns(X_pd: pd.DataFrame()):
 def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFrame()):
     y = df_final.feature_label
     X = df_final.drop(columns=['feature_label'], axis=1)
+    
+    X["twitter_sent_score"] = X["twitter_sent_score"].shift(1)
+    X["twitter_sent_score"][X.index[0]] = 0
 
     eval_metric = 'logloss'
     eval_metric = None
@@ -94,7 +96,7 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
                     tree_method='gpu_hist', eval_metric='logloss')
     xgb.create_train_test_data(X, y, test_size=0.2)
     xgb.fit()
-    xgb.save_model(f'./src/KZ_project/dl_models/model_stack/test_{binance_config.SYMBOL}_{binance_config.source}_model_price_{INTERVAL}_feature_numbers_{X.shape[1]}.json')
+    xgb.save_model(f'./src/KZ_project/dl_models/model_stack/btc/test_{binance_config.SYMBOL}_{binance_config.source}_model_price_{INTERVAL}_feature_numbers_{X.shape[1]}.json')
     score = xgb.get_score()
 
     print(f'first score: {score}')

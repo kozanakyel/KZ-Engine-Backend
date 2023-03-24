@@ -225,6 +225,8 @@ class TweetSentimentAnalyzer():
             df_result_hour = self.get_sent_with_mean_interval(df, interval='1h')
             df_result_hour.index = pd.to_datetime(df_result_hour.index)
             sent_tweets_h = pd.concat([sent_hour_df, df_result_hour[df_result_hour.index>sent_hour_df.index[-1]]])
+            
+            #print(f'snet_tweets_h : {sent_tweets_h}\nsen_hour_df {sent_hour_df}\ndf_result_hour {df_result_hour}')
 
             if saved:
                 sent_tweets_d.to_csv(os.path.join(path_df, sent_day_file_df))

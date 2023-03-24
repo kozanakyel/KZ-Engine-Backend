@@ -13,10 +13,10 @@ ITEM_DELETED = "'{}' has been deleted successfully!"
 LOGIN_TO_VIEW_DATA = "Please first login to view more data!"
 
 asset_parser = reqparse.RequestParser()
-asset_parser.add_argument("price",
-    type=float,
+asset_parser.add_argument("filepath",
+    type=str,
     required=True,
-    help= FIELD_BLANK_ERROR.format("price")
+    help= FIELD_BLANK_ERROR.format("filepath")
   )
 asset_parser.add_argument("aimodel_id",
     type=int,
@@ -90,7 +90,7 @@ class Asset(Resource):
       asset = AssetCollection(name, **data)
     # if item exists, update it
     else:
-      asset.price = data['price']
+      asset.filepath = data['filepath']
       asset.aimodel_id = data['aimodel_id']
     
     # whether item is changed or inserted, it has to be saved to db

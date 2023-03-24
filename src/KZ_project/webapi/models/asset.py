@@ -10,14 +10,14 @@ class AssetCollection(db.Model):    # tells SQLAlchemy that it is something that
   # Columns
   id = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String(80), unique= True)
-  price = db.Column(db.Float(precision=2))  # precision: numbers after decimal point
+  filepath = db.Column(db.String(300))  # precision: numbers after decimal point
 
   aimodel_id = db.Column(db.Integer, db.ForeignKey("aimodels.id"))
   #store = db.relationship("StoreModel")
 
-  def __init__(self, name: str, price: float, aimodel_id: int):
+  def __init__(self, name: str, filepath: str, aimodel_id: int):
     self.name = name
-    self.price = price
+    self.filepath = filepath
     self.aimodel_id = aimodel_id
 
   def json(self) -> AssetJSON:
@@ -25,7 +25,7 @@ class AssetCollection(db.Model):    # tells SQLAlchemy that it is something that
       "id": self.id,
       "aimodel_id":self.aimodel_id,
       "name": self.name, 
-      "price": self.price
+      "filepath": self.filepath
       }
 
   # searches the database for items using name
