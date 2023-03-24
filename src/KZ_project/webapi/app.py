@@ -1,18 +1,15 @@
-from flask import Flask, jsonify, request, session
+from flask import Flask, jsonify
 from flask_restful import Api
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
-from blacklist import BLACKLIST
-from database import db
-import os, requests
+from KZ_project.webapi.blacklist import BLACKLIST
+from KZ_project.webapi.database import db
+import os
 from dotenv import load_dotenv
-from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room
-from flask_socketio import close_room, rooms, disconnect
-from threading import Lock
 
 from KZ_project.webapi.resources.user import UserRegister, User, UserLogin,UserLogout, TokenRefresh
-from KZ_project.webapi.resources.item import Item, ItemList
-from KZ_project.webapi.resources.store import Store, StoreList
+from KZ_project.webapi.resources.asset import Asset, AssetList
+from KZ_project.webapi.resources.ai_model import AIModel, AIModelList
 
 
 load_dotenv()
@@ -40,21 +37,11 @@ def create_tables():
     db.init_app(app)
     with app.app_context(): 
         db.create_all()
-  #db.create_all()
-  # above function creates all the tables before the 1st request is made
-  # unless they exist alraedy
 
-# JWT() creates a new endpoint: /auth
-# we send an username and password to /auth
-# JWT() gets the username and password, and sends it to authenticate function
-# the authenticate function maps the username and checks the password
-# if all goes well, the authenticate function returns user
-# which is the identity or jwt(or token)
-# jwt = JWT(app, authenticate, identity)
-jwt = JWTManager(app)   # JwtManager links up to the application, doesn't create /auth point
+jwt = JWTManager(app) 
 
 
-@jwt.additional_claims_loader   # modifies the below function, and links it with JWTManager, which in turn is linked with our app
+@jwt.additional_claims_loader 
 def add_claims_to_jwt(identity):
   if identity == 1:   # insted of hardcoding this, we should read it from a config file or database
     return {"is_admin": True}
@@ -106,10 +93,10 @@ def revoked_token_callback(self, callback):
   }), 401
 
 
-api.add_resource(Item, '/item')
-api.add_resource(Store, '/store')
-api.add_resource(ItemList, '/items')
-api.add_resource(StoreList, '/stores')
+api.add_resource(Asset, '/asset')
+api.add_resource(AIModel, '/aimodel')
+api.add_resource(AssetList, '/assets')
+api.add_resource(AIModelList, '/aimodels')
 api.add_resource(UserRegister, '/register')
 api.add_resource(User, '/user/<int:user_id>')
 api.add_resource(UserLogin, '/login')
@@ -118,6 +105,5 @@ api.add_resource(TokenRefresh, '/refresh')
 
     
 if __name__ == '__main__':
-  #port = int(os.getenv("PORT"))
   app.run(port=5000, host='0.0.0.0')
         

@@ -1,5 +1,5 @@
 from flask_restful import Resource, reqparse
-from models.store import StoreModel
+from KZ_project.webapi.models.ai_model import AIModelCollection
 
 STORE_ALREADY_EXISTS = "'{}' store already exists!"
 ERROR_CREATING_STORE = "An error occurred while creating the store '{}'."
@@ -14,12 +14,12 @@ _store_parser.add_argument(
   help= ERROR_CREATING_STORE.format("name")
 )
 
-class Store(Resource):
+class AIModel(Resource):
   
   @classmethod
   def get(cls):
     name = _store_parser.parse_args()["name"]
-    store = StoreModel.find_store_by_name(name)
+    store = AIModelCollection.find_model_by_name(name)
     if store:
       return store.json()
     return {"message" : STORE_NOT_FOUND.format(name)}, 404
@@ -30,10 +30,10 @@ class Store(Resource):
 
     # find user in database
     print(name)
-    if StoreModel.find_store_by_name(name):
+    if AIModelCollection.find_model_by_name(name):
       return {"message": STORE_ALREADY_EXISTS.format(name)}, 400
 
-    store = StoreModel(name)
+    store = AIModelCollection(name)
 
     try:
       store.save_to_database()
@@ -45,7 +45,7 @@ class Store(Resource):
 
   @classmethod
   def delete(cls, name:str):
-    store = StoreModel.find_store_by_name(name)
+    store = AIModelCollection.find_model_by_name(name)
     if store:
       store.delete_from_database()
       return {"message": STORE_DELETED.format(name)}
@@ -53,8 +53,8 @@ class Store(Resource):
     return {"message": STORE_NOT_FOUND.format(name)}
 
 
-class StoreList(Resource):
+class AIModelList(Resource):
   @classmethod
   def get(cls):
     # return {"item": list(map(lambda x: x.json(), ItemModel.query.all()))}
-    return {"stores": [store.json() for store in StoreModel.find_all()]}
+    return {"stores": [store.json() for store in AIModelCollection.find_all()]}

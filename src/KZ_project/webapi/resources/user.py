@@ -7,9 +7,8 @@ from flask_jwt_extended import (
   get_jwt_identity,
   get_jwt
 )
-from models.user import UserModel
+from KZ_project.webapi.models.user import UserCollection
 from blacklist import BLACKLIST
-import hmac
 
 def safe_str_cmp(a, b):
     if len(a) != len(b):
@@ -50,12 +49,12 @@ class UserRegister(Resource):
   def post(cls):
     data = _user_parser.parse_args()
     # First check if that user is present or not
-    if UserModel.find_by_username(data["username"]):
+    if UserCollection.find_by_username(data["username"]):
       # if exists, then don't add
       return {"message": USER_ALREADY_EXISTS.format(data["username"])}, 400
     
     # user = UserModel(data["username"], data["password"])
-    user = UserModel(**data)  # since parser only takes in username and password, only those two will be added.
+    user = UserCollection(**data)  # since parser only takes in username and password, only those two will be added.
     user.save_to_database()
 
     return {"messege": USER_CREATED}, 201
@@ -66,7 +65,7 @@ class User(Resource):
   @classmethod
   def get(cls, user_id: int):
 
-    user = UserModel.find_by_id(user_id)
+    user = UserCollection.find_by_id(user_id)
     if not user:
       return {"message": USER_NOT_FOUND}, 404
   
@@ -74,7 +73,7 @@ class User(Resource):
   
   @classmethod
   def delete(cls, user_id: int):
-    user = UserModel.find_by_id(user_id)
+    user = UserCollection.find_by_id(user_id)
     if not user:
       return {"message": USER_NOT_FOUND}, 404
 
@@ -89,7 +88,7 @@ class UserLogin(Resource):
     data = _user_parser.parse_args()
 
     # find user in database
-    user = UserModel.find_by_username(data["username"])
+    user = UserCollection.find_by_username(data["username"])
 
     # check password
     # this here is what authenticate() function used to do

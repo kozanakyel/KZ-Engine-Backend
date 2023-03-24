@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 
-from models.item import ItemModel
+from KZ_project.webapi.models.asset import AssetCollection
 
 FIELD_BLANK_ERROR = "'{}' field cannot be left blank."
 ITEM_NOT_FOUND = "Item not found! Please enter a valid item."
@@ -12,32 +12,32 @@ ADMIN_PRIVILEDGES_REQUIRED = "Admin privilages required for this action!"
 ITEM_DELETED = "'{}' has been deleted successfully!"
 LOGIN_TO_VIEW_DATA = "Please first login to view more data!"
 
-item_parser = reqparse.RequestParser()
-item_parser.add_argument("price",
+asset_parser = reqparse.RequestParser()
+asset_parser.add_argument("price",
     type=float,
     required=True,
     help= FIELD_BLANK_ERROR.format("price")
   )
-item_parser.add_argument("store_id",
+asset_parser.add_argument("aimodel_id",
     type=int,
     required=True,
-    help= FIELD_BLANK_ERROR.format("store_id")
+    help= FIELD_BLANK_ERROR.format("aimodel_id")
   )
-item_parser.add_argument("name",
+asset_parser.add_argument("name",
     type=str,
     help= "name required for get"
   )
 
-class Item(Resource):
+class Asset(Resource):
   
   # TO GET ITEM WITH NAME
   @classmethod
   @jwt_required()
   def get(cls):
     name = request.args.get("name")
-    item = ItemModel.find_item_by_name(name)
-    if item:
-      return item.json(), 200
+    asset = AssetCollection.find_item_by_name(name)
+    if asset:
+      return asset.json(), 200
     
     return {"message": ITEM_NOT_FOUND}, 404
 
@@ -47,19 +47,19 @@ class Item(Resource):
   def post(cls):
     name = request.args.get("name")
     # if there already exists an item with "name", show a messege, and donot add the item
-    if ItemModel.find_item_by_name(name):
+    if AssetCollection.find_item_by_name(name):
       return {"message": ITEM_NAME_ALREADY_EXISTS.format(name)} , 400
 
-    data = item_parser.parse_args()
+    data = asset_parser.parse_args()
     # data = request.get_json()   # get_json(force=True) means, we don't need a content type header
-    item = ItemModel(**data)
+    asset = AssetCollection(**data)
 
     try:
-      item.save_to_database()
+      asset.save_to_database()
     except:
       return {"message": ERROR_INSERTING_ITEM}, 500
     
-    return item.json(), 201  # 201 is for CREATED status
+    return asset.json(), 201  # 201 is for CREATED status
 
   # TO DELETE AN ITEM
   @classmethod
@@ -70,9 +70,9 @@ class Item(Resource):
     if not claims["is_admin"]:
       return {"message": ADMIN_PRIVILEDGES_REQUIRED}, 401
 
-    item = ItemModel.find_item_by_name(name)
-    if item:
-      item.delete_from_database()
+    asset = AssetCollection.find_item_by_name(name)
+    if asset:
+      asset.delete_from_database()
       return {"message": ITEM_DELETED.format(name)}, 200
 
     # if doesn't exist, skip deleting 
@@ -81,36 +81,36 @@ class Item(Resource):
   # TO ADD OR UPDATE AN ITEM
   @classmethod
   def put(cls, name: str):
-    data = Item.parser.parse_args()
+    data = Asset.parser.parse_args()
     # data = request.get_json()
-    item = ItemModel.find_item_by_name(name)
+    asset = AssetCollection.find_item_by_name(name)
 
     # if item is not available, add it
-    if item is None:
-      item = ItemModel(name, **data)
+    if asset is None:
+      asset = AssetCollection(name, **data)
     # if item exists, update it
     else:
-      item.price = data['price']
-      item.store_id = data['store_id']
+      asset.price = data['price']
+      asset.aimodel_id = data['aimodel_id']
     
     # whether item is changed or inserted, it has to be saved to db
-    item.save_to_database()
-    return item.json()
+    asset.save_to_database()
+    return asset.json()
 
 
-class ItemList(Resource):
+class AssetList(Resource):
   @classmethod
   @jwt_required(optional=True)
   def get(cls):
     user_id = get_jwt_identity()
-    items = [item.json() for item in ItemModel.find_all()]
+    assets = [asset.json() for asset in AssetCollection.find_all()]
 
     # if user id is given, then display full details
     if user_id:
-      return {"items": items}, 200
+      return {"assets": assets}, 200
 
     # else display only item name
     return {
-      "items": [item["name"] for item in items],
+      "assets": [asset["name"] for asset in assets],
       "message": LOGIN_TO_VIEW_DATA
     }, 200

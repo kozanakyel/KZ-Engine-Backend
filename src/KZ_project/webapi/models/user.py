@@ -1,9 +1,9 @@
 from typing import Dict, Union, List
-from database import db
+from KZ_project.webapi.database import db
 
 UserJSON = Dict[str, Union[int, str]]
 
-class UserModel(db.Model):
+class UserCollection(db.Model):
 
   __tablename__ = "users"   # will be used to tell sqlalchemy the table name for users
 
@@ -21,11 +21,11 @@ class UserModel(db.Model):
             "name": self.username}
 
   @classmethod
-  def find_by_username(cls, username: str) -> "UserModel":
+  def find_by_username(cls, username: str) -> "UserCollection":
     return cls.query.filter_by(username=username).first()
 
   @classmethod
-  def find_by_id(cls, _id: int) -> "UserModel":
+  def find_by_id(cls, _id: int) -> "UserCollection":
     return cls.query.filter_by(id=_id).first()
 
   def save_to_database(self) -> None:
