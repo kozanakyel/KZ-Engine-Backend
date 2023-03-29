@@ -4,8 +4,18 @@ from KZ_project.binance_domain.binance_client import BinanceClient
 from KZ_project.logger.logger import Logger
 
 load_dotenv()
+
 api_key = os.getenv('BINANCE_API_KEY')
 api_secret_key = os.getenv('BINANCE_SECRET_KEY')
+
+PSQL_USER = os.getenv('PSQL_USER')
+PSQL_PWD = os.getenv('PSQL_PWD')
+PSQL_HOST = os.getenv('PSQL_HOST')
+PSQL_PORT = os.getenv('PSQL_PORT')
+PSQL_DB_NAME = os.getenv('PSQL_DB_NAME')
+
+API_PORT = os.getenv('API_PORT')
+API_HOST = os.getenv('API_HOST')
 
 
 
@@ -46,15 +56,6 @@ class BinanceConfig:
     #logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
     #client = BinanceClient(api_key, api_secret_key, logger=logger)
 
-
-PSQL_USER = os.getenv('PSQL_USER')
-PSQL_PWD = os.getenv('PSQL_PWD')
-PSQL_HOST = os.getenv('PSQL_HOST')
-PSQL_PORT = os.getenv('PSQL_PORT')
-PSQL_DB_NAME = os.getenv('PSQL_DB_NAME')
-
-API_PORT = os.getenv('API_PORT')
-API_HOST = os.getenv('API_HOST')
 
 def get_postgres_uri():
     host = PSQL_HOST
