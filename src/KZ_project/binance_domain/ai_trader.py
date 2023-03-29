@@ -20,7 +20,7 @@ import KZ_project.config as config
 
 class AITrader():
     
-    def __init__(self, symbol: str, name: str, bar_length, client: BinanceClient, logger: Logger=None):
+    def __init__(self, symbol: str, name: str, bar_length, client: BinanceClient, units, logger: Logger=None):
         self.symbol = symbol
         self.name = name
         self.bar_length = bar_length
@@ -28,6 +28,9 @@ class AITrader():
         self.available_intervals = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "8h", "12h", "1d", "3d", "1w", "1M"]   
         self.client = client
         self.postion = 0
+        self.trades = 0
+        self.trade_values = []
+        self.units = units
         self.logger = logger
       
     def start_trading(self):
@@ -52,7 +55,7 @@ class AITrader():
         close   = float(msg["k"]["c"])
         volume  = float(msg["k"]["v"])
         complete=       msg["k"]["x"]
-        
+         
         start_date = (event_time - timedelta(days=10)).strftime('%Y-%m-%d')
     
         # print out
@@ -127,7 +130,7 @@ class AITrader():
     def get_sentiment_daily_hourly_scores(self, name: str, 
                                            twitter_client: TwitterCollection,
                                            tsa: TweetSentimentAnalyzer,
-                                           hour: int=24*1):
+                                           hour: int=24*6):
         #print(f'attribuites get interval: {name} {hour} ')
         df_tweets = twitter_client.get_tweets_with_interval(name, 'en', hour=hour, interval=1)
         #print(f'######## Shape of {name} tweets df: {df_tweets.shape}')
