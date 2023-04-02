@@ -5,11 +5,11 @@ from sqlalchemy.orm import sessionmaker
 from flask_sqlalchemy import SQLAlchemy
 
 from KZ_project.Infrastructure.orm_mapper import orm
-from KZ_project.service_layer import services
+from KZ_project.webapi.service_layer import services
 import KZ_project.Infrastructure.config as config
 
-from KZ_project.adapters.tracker_repository import TrackerRepository
-from KZ_project.adapters.asset_repository import AssetRepository
+from KZ_project.Infrastructure.adapters.tracker_repository import TrackerRepository
+from KZ_project.Infrastructure.adapters.asset_repository import AssetRepository
 
 
 orm.start_mappers()

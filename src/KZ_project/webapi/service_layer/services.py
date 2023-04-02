@@ -1,7 +1,7 @@
 from __future__ import annotations
 from KZ_project.domain.asset import Asset, allocate_tracker
 from KZ_project.domain.aimodel import AIModel
-from KZ_project.adapters.repository import AbstractBaseRepository
+from KZ_project.Infrastructure.adapters.repository import AbstractBaseRepository
 from KZ_project.domain.tracker import Tracker
 from KZ_project.domain.asset import InvalidSymbol
 

@@ -1,6 +1,6 @@
 import abc
 from KZ_project.domain.tracker import Tracker
-from KZ_project.adapters.repository import AbstractBaseRepository
+from KZ_project.Infrastructure.adapters.repository import AbstractBaseRepository
 
 from sqlalchemy import desc
 

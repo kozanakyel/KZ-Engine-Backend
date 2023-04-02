@@ -1,6 +1,6 @@
 import abc
 from KZ_project.domain.asset import Asset
-from KZ_project.adapters.repository import AbstractBaseRepository
+from KZ_project.Infrastructure.adapters.repository import AbstractBaseRepository
 
 class AbstractAssetRepository(AbstractBaseRepository):
     @abc.abstractmethod
