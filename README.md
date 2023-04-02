@@ -1,4 +1,4 @@
-# Algorithmic-Trading-with-ML-DL-Twitter-Sentiment-Analysis
+# KZ Forecasting Engine with Sentiment Analysis and Decision Trees
 This is my project. That is an Algoritmic Trading Bot at CryptoCurrencies and Analysis for Financial Data Science. Additionally it includes Twitter Sentiment analysis and functionalities. The other side i add XGboost, LightGBM, DecisitonTree, Random Walk strategies and also LSTM modelling..
 
 Example: Bitcoin sentiment analysis with 2 million tweets from 2022-10 and 2022-11
