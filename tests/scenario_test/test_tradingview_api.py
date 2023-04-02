@@ -1,5 +1,5 @@
-from KZ_project.tradingview_strategy.tradingview_strategy import TradingViewStrategy
-from KZ_project.technical_analysis.backtest_kz import *
+from KZ_project.core.strategies.tradingview_strategy.tradingview_strategy import TradingViewStrategy
+from KZ_project.core.strategies.technical_analysis.backtest_kz import *
 
 #screener="turkey"
 #exchange="BIST"

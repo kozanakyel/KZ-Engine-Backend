@@ -1,4 +1,4 @@
-from KZ_project.domain.tracker import Tracker
+from KZ_project.core.domain.tracker import Tracker
 from typing import Optional, List, Set
 
 

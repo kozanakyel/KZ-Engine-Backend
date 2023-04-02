@@ -4,10 +4,10 @@ import random
 import matplotlib.pyplot as plt
 import pandas_ta as ta
 
-from KZ_project.technical_analysis.indicators import Indicators
-import KZ_project.technical_analysis.backtest_kz as bt
+from KZ_project.core.strategies.technical_analysis.indicators import Indicators
+import KZ_project.core.strategies.technical_analysis.backtest_kz as bt
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
-from KZ_project.strategy_kz.kalman_strategy import KalmanStrategy
+from KZ_project.core.strategies.kalman_strategy.kalman_strategy import KalmanStrategy
 
 import warnings
 warnings.filterwarnings('ignore')

@@ -1,5 +1,5 @@
-from twitter.twitter_collection import TwitterCollection
-from twitter.tweet_sentiment_analyzer import TweetSentimentAnalyzer
+from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
+from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 
 if __name__ == '__main__':
 

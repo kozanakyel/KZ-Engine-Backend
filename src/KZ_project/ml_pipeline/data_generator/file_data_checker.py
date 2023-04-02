@@ -1,5 +1,5 @@
 import os
-from .folder_data_checker import FolderDataChecker
+from KZ_project.ml_pipeline.data_generator.folder_data_checker import FolderDataChecker
 
 class FileDataChecker(FolderDataChecker):
     def __init__(self, symbol: str, main_path: str, pure_path: str, feature_path: str, prefix_path: str,

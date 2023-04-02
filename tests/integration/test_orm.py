@@ -1,6 +1,6 @@
-from KZ_project.domain.tracker import Tracker
-from KZ_project.domain.asset import Asset
-from KZ_project.domain.aimodel import AIModel
+from KZ_project.core.domain.tracker import Tracker
+from KZ_project.core.domain.asset import Asset
+from KZ_project.core.domain.aimodel import AIModel
 from datetime import date
 from sqlalchemy import text
 

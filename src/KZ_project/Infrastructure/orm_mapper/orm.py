@@ -2,9 +2,9 @@ from sqlalchemy import Table, MetaData, Column, Integer, String, Date, ForeignKe
 from sqlalchemy.orm import relationship, registry
 from sqlalchemy.sql import func
 
-from KZ_project.domain.tracker import Tracker
-from KZ_project.domain.asset import Asset
-from KZ_project.domain.aimodel import AIModel
+from KZ_project.core.domain.tracker import Tracker
+from KZ_project.core.domain.asset import Asset
+from KZ_project.core.domain.aimodel import AIModel
 
 mapper_registry = registry()
 

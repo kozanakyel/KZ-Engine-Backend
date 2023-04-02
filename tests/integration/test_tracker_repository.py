@@ -1,8 +1,8 @@
-from KZ_project.domain.tracker import Tracker
-from KZ_project.domain.asset import Asset
+from KZ_project.core.domain.tracker import Tracker
+from KZ_project.core.domain.asset import Asset
 
-from KZ_project.adapters.asset_repository import AssetRepository
-from KZ_project.adapters.tracker_repository import TrackerRepository
+from KZ_project.core.adapters.asset_repository import AssetRepository
+from KZ_project.core.adapters.tracker_repository import TrackerRepository
 
 from sqlalchemy import text
 

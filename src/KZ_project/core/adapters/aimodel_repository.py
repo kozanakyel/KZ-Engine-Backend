@@ -1,6 +1,6 @@
 import abc
-from KZ_project.domain.aimodel import AIModel
-from KZ_project.Infrastructure.adapters.repository import AbstractBaseRepository
+from KZ_project.core.domain.aimodel import AIModel
+from KZ_project.core.adapters.repository import AbstractBaseRepository
 
 class AbstractAIModelRepository(AbstractBaseRepository):
     @abc.abstractmethod

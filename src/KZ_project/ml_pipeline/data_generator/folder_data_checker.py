@@ -1,5 +1,5 @@
 import os
-from .data_checker import DataChecker
+from KZ_project.ml_pipeline.data_generator.data_checker import DataChecker
 
 class FolderDataChecker(DataChecker):
     def __init__(self, symbol: str, main_path: str, pure_path: str, feature_path: str, prefix_path: str):

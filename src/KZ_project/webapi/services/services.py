@@ -1,11 +1,10 @@
 from __future__ import annotations
-from KZ_project.domain.asset import Asset, allocate_tracker
-from KZ_project.domain.aimodel import AIModel
-from KZ_project.Infrastructure.adapters.repository import AbstractBaseRepository
-from KZ_project.domain.tracker import Tracker
-from KZ_project.domain.asset import InvalidSymbol
+from KZ_project.core.domain.asset import Asset, allocate_tracker
+from KZ_project.core.domain.aimodel import AIModel
+from KZ_project.core.domain.tracker import Tracker
+from KZ_project.core.domain.asset import InvalidSymbol
 
-
+from KZ_project.core.adapters.repository import AbstractBaseRepository
 
 def add_asset(
     symbol: str, source: str,
