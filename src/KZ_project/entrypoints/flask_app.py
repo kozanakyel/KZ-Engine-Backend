@@ -4,9 +4,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from flask_sqlalchemy import SQLAlchemy
 
-from KZ_project.adapters import orm
+from KZ_project.Infrastructure.orm_mapper import orm
 from KZ_project.service_layer import services
-import KZ_project.config as config
+import KZ_project.Infrastructure.config as config
 
 from KZ_project.adapters.tracker_repository import TrackerRepository
 from KZ_project.adapters.asset_repository import AssetRepository

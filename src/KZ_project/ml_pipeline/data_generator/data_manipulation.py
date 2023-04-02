@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 from KZ_project.technical_analysis.indicators import Indicators
-from KZ_project.logger.logger import Logger
+from KZ_project.Infrastructure.logger.logger import Logger
 import yfinance as yf
 import shutil
 from tqdm import tqdm

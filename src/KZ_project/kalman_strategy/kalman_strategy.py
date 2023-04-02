@@ -3,9 +3,9 @@ from pykalman import KalmanFilter
 import warnings
 import pandas as pd
 import numpy as np
-from KZ_project.data_pipelines.data_manipulation import DataManipulation
+from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 
-class StrategyVar():
+class KalmanStrategy():
 
     def __init__(self, name=None):
         self.name = name

@@ -6,7 +6,7 @@ from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
 from xgboost import XGBClassifier, XGBRegressor
 from xgboost import plot_importance
 
-from KZ_project.logger.logger import Logger
+from KZ_project.Infrastructure.logger.logger import Logger
 import matplotlib.pyplot as plt
 import operator
 import itertools 

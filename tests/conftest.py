@@ -9,8 +9,8 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
-from KZ_project.adapters.orm import metadata, start_mappers
-from KZ_project import config
+from KZ_project.Infrastructure.orm_mapper.orm import metadata, start_mappers
+from KZ_project.Infrastructure import config
 
 
 @pytest.fixture

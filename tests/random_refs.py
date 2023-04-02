@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-from KZ_project import config
+from KZ_project.Infrastructure import config
 #from ..random_refs import random_sku, random_batchref, random_orderid
 import uuid
 

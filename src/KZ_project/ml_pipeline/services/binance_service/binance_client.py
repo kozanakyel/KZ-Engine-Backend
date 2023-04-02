@@ -2,7 +2,7 @@ import pandas as pd
 from binance.client import Client
 from binance import ThreadedWebsocketManager
 
-from KZ_project.logger.logger import Logger
+from KZ_project.Infrastructure.logger.logger import Logger
 
 # binance API icin zaman sorunsalini wsl2 da cozer
 # sudo apt install ntpdate

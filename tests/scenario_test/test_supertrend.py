@@ -7,7 +7,7 @@ import pandas_ta as ta
 from KZ_project.technical_analysis.indicators import Indicators
 import KZ_project.technical_analysis.backtest_kz as bt
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
-from KZ_project.strategy_kz.strategy_var import StrategyVar
+from KZ_project.strategy_kz.kalman_strategy import KalmanStrategy
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -40,7 +40,7 @@ source = 'yahoo'
 
 
 res_dict = []
-st = StrategyVar('emacross')
+st = KalmanStrategy('emacross')
 for i in ['TCELL.IS', 'BIMAS.IS', 'AKSA.IS']:   #, 'CCOLA.IS', 'CIMSA.IS', 'EREGL.IS', 'PETKM.IS'
     symbol = i
     data = DataManipulation(symbol, source, range_list, period=period, interval=interval, scale=scale, prefix_path='..', saved_to_csv=False)

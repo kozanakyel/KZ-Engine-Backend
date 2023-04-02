@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from binance import ThreadedWebsocketManager
 from datetime import timedelta
 
-from KZ_project.logger.logger import Logger
+from KZ_project.Infrastructure.logger.logger import Logger
 from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
 from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
@@ -15,7 +15,7 @@ from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipula
 from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
 
 
-import KZ_project.config as config
+import KZ_project.Infrastructure.config as config
 
 
 class AITrader():

@@ -1,4 +1,4 @@
-from KZ_project.strategy_kz.tradingviewstrategy import TradingViewStrategy
+from KZ_project.tradingview_strategy.tradingview_strategy import TradingViewStrategy
 from KZ_project.technical_analysis.backtest_kz import *
 
 #screener="turkey"
