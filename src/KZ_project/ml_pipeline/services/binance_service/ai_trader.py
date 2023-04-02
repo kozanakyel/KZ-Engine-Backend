@@ -8,10 +8,10 @@ from binance import ThreadedWebsocketManager
 from datetime import timedelta
 
 from KZ_project.logger.logger import Logger
-from KZ_project.binance_domain.binance_client import BinanceClient
-from KZ_project.twitter.twitter_collection import TwitterCollection
-from KZ_project.twitter.tweet_sentiment_analyzer import TweetSentimentAnalyzer
-from KZ_project.data_pipelines.data_manipulation import DataManipulation
+from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
+from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
+from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
+from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 from KZ_project.dl_models.xgboost_forecaster import XgboostForecaster
 
 

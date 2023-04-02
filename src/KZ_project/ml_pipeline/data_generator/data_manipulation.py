@@ -6,9 +6,9 @@ from KZ_project.logger.logger import Logger
 import yfinance as yf
 import shutil
 from tqdm import tqdm
-from KZ_project.data_pipelines.file_data_checker import FileDataChecker
-from KZ_project.data_pipelines.data_saver import factory_data_saver
-from KZ_project.binance_domain.binance_client import BinanceClient
+from KZ_project.ml_pipeline.data_generator.file_data_checker import FileDataChecker
+from KZ_project.ml_pipeline.data_generator.data_saver import factory_data_saver
+from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
 
 """
 @author: Kozan Ugur AKYEL

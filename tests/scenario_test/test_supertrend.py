@@ -6,7 +6,7 @@ import pandas_ta as ta
 
 from KZ_project.technical_analysis.indicators import Indicators
 import KZ_project.technical_analysis.backtest_kz as bt
-from KZ_project.data_pipelines.data_manipulation import DataManipulation
+from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 from KZ_project.strategy_kz.strategy_var import StrategyVar
 
 import warnings

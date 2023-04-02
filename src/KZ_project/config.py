@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from KZ_project.binance_domain.binance_client import BinanceClient
+from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
 from KZ_project.logger.logger import Logger
 
 load_dotenv()

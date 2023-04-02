@@ -1,7 +1,7 @@
 import test_twitter_domain as twt_test
 
-from KZ_project.twitter.tweet_sentiment_analyzer import TweetSentimentAnalyzer
-from KZ_project.data_pipelines.data_manipulation import DataManipulation
+from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
+from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 from KZ_project.dl_models.xgboost_forecaster import XgboostForecaster
 
 
@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from datetime import timedelta
 
-INTERVAL = '2h'
+INTERVAL = '1h'
 
 def test_construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger() -> tuple:
     client_twt, tsa = twt_test.test_construct_twittercollection_and_tsentimentanalyser('en')

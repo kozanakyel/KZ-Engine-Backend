@@ -1,6 +1,5 @@
 import pandas as pd
 from binance.client import Client
-import pandas as ta
 from binance import ThreadedWebsocketManager
 
 from KZ_project.logger.logger import Logger
