@@ -5,7 +5,7 @@ from KZ_project.ml_pipeline.services.binance_service.binance_client import Binan
 from KZ_project.ml_pipeline.services.binance_service.ai_trader import AITrader
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
-from KZ_project.dl_models.xgboost_forecaster import XgboostForecaster
+from KZ_project.ai_model_creator.xgboost_forecaster import XgboostForecaster
 from KZ_project.logger.logger import Logger
 import numpy as np
 import matplotlib.pyplot as plt

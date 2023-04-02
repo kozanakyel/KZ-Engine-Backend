@@ -2,7 +2,7 @@ import pandas as pd
 
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
-from KZ_project.dl_models.xgboost_forecaster import XgboostForecaster
+from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
 from KZ_project.logger.logger import Logger
 
 from sklearn.metrics import accuracy_score, confusion_matrix
@@ -96,12 +96,12 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
                     tree_method='gpu_hist', eval_metric='logloss')
     xgb.create_train_test_data(X, y, test_size=0.2)
     xgb.fit()
-    xgb.save_model(f'./src/KZ_project/dl_models/model_stack/btc/test_{binance_config.SYMBOL}_{binance_config.source}_model_price_{INTERVAL}_feature_numbers_{X.shape[1]}.json')
+    xgb.save_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/test_{binance_config.SYMBOL}_{binance_config.source}_model_price_{INTERVAL}_feature_numbers_{X.shape[1]}.json')
     score = xgb.get_score()
 
     print(f'first score: {score}')
     #xgb.plot_learning_curves()
-    xgb.get_model_names('./src/KZ_project/dl_models/model_stack/')
+    xgb.get_model_names('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/')
     #best_params = xgb.bestparams_gridcv([100, 200], [0.1], [1, 3], verbose=3)
 
     ytest = xgb.y_test

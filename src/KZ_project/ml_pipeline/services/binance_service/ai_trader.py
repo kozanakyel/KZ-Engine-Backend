@@ -12,7 +12,7 @@ from KZ_project.ml_pipeline.services.binance_service.binance_client import Binan
 from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
-from KZ_project.dl_models.xgboost_forecaster import XgboostForecaster
+from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
 
 
 import KZ_project.config as config
@@ -217,9 +217,9 @@ class AITrader():
         xgb = XgboostForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
                     tree_method='gpu_hist', eval_metric='logloss')
         if self.name == 'btc':
-            xgb.load_model('./src/KZ_project/dl_models/model_stack/btc/test_BTCUSDT_binance_model_price_1h_feature_numbers_225.json')
+            xgb.load_model('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/test_BTCUSDT_binance_model_price_1h_feature_numbers_225.json')
         elif self.name == 'bnb':
-            xgb.load_model('./src/KZ_project/dl_models/model_stack/bnb/test_BNBUSDT_binance_model_price_1h_feature_numbers_225.json')
+            xgb.load_model('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/bnb/test_BNBUSDT_binance_model_price_1h_feature_numbers_225.json')
 
         X = df_final.drop(columns=['feature_label'], axis=1)
         self.prepared_data = X
