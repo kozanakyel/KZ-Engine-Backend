@@ -32,7 +32,7 @@ class YahooConfig:
     start_date = '2022-06-17'
     end_date = '2023-02-17'
     source = 'yahoo'
-    LOG_PATH = './src/KZ_project/logger' + os.sep + "logs"
+    LOG_PATH = './src/KZ_project/Infrastructure/logger' + os.sep + "logs"
     LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
 
     logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
@@ -50,7 +50,7 @@ class BinanceConfig:
     #start_date = '2022-06-17'
     #end_date = '2023-02-17'
     source = 'binance'
-    LOG_PATH = './src/KZ_project/logger' + os.sep + "logs"
+    LOG_PATH = './src/KZ_project/Infrastructure/logger' + os.sep + "logs"
     LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
     
     #logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
