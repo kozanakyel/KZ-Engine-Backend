@@ -43,6 +43,7 @@ class AITrader():
                                         symbol = self.symbol, interval = self.bar_length)
         # "else" to be added later in the course 
     
+
     
     def stream_candles(self, msg):
         
@@ -143,7 +144,7 @@ class AITrader():
     
 
     def construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(self, start_date, name: str, symbol) -> tuple:
-        INTERVAL = '1h'
+        INTERVAL = '2h'
         client_twt, tsa = self.construct_twittercollection_and_tsentimentanalyser('en')
         daily, hourly = self.get_sentiment_daily_hourly_scores(name, client_twt, tsa)
 
