@@ -71,3 +71,23 @@ def start_mappers():
     mapper_registry.map_imperatively(
         AIModel, aimodels
     )
+    
+    """
+        mapper_registry.map_imperatively(
+        AIModel,
+        aimodels,
+        properties={
+            "allocations_tracker": relationship(
+                Tracker,
+                secondary=allocations_tracker,
+                backref="aimodels",
+                collection_class=set,
+            )
+        },
+    )
+
+    # Define foreign key constraints
+    allocations_tracker.append_constraint(
+        ForeignKeyConstraint(["ai_model_id"], ["aimodels.id"])
+    )
+    """

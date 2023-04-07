@@ -131,10 +131,10 @@ class AITrader():
     def get_sentiment_daily_hourly_scores(self, name: str, 
                                            twitter_client: TwitterCollection,
                                            tsa: TweetSentimentAnalyzer,
-                                           hour: int=24*6):
+                                           hour: int=10*1):
         #print(f'attribuites get interval: {name} {hour} ')
         df_tweets = twitter_client.get_tweets_with_interval(name, 'en', hour=hour, interval=1)
-        #print(f'######## Shape of {name} tweets df: {df_tweets.shape}')
+        print(f'######## Shape of {name} tweets df: {df_tweets.shape}')
         #print(f'pure tweets hourly: {df_tweets.iloc[-1]}')
         path_df = f'./data/tweets_data/{name}/'
         file_df = f'{name}_tweets.csv'
@@ -144,7 +144,7 @@ class AITrader():
     
 
     def construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(self, start_date, name: str, symbol) -> tuple:
-        INTERVAL = '2h'
+        INTERVAL = '1h'
         client_twt, tsa = self.construct_twittercollection_and_tsentimentanalyser('en')
         daily, hourly = self.get_sentiment_daily_hourly_scores(name, client_twt, tsa)
 

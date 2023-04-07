@@ -87,11 +87,9 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
     y = df_final.feature_label
     X = df_final.drop(columns=['feature_label'], axis=1)
     
-    X["twitter_sent_score"] = X["twitter_sent_score"].shift(1)
-    X["twitter_sent_score"][X.index[0]] = 0
+    #X["twitter_sent_score"] = X["twitter_sent_score"].shift(1)
+    #X["twitter_sent_score"][X.index[0]] = 0
 
-    eval_metric = 'logloss'
-    eval_metric = None
     xgb = XgboostForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
                     tree_method='gpu_hist', eval_metric='logloss')
     xgb.create_train_test_data(X, y, test_size=0.2)
