@@ -9,6 +9,15 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 import numpy as np
 import matplotlib.pyplot as plt
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from KZ_project.webapi.services import services
+import KZ_project.Infrastructure.config as configT
+from KZ_project.core.adapters.aimodel_repository import AIModelRepository
+from KZ_project.Infrastructure.orm_mapper import orm
+orm.start_mappers()
+get_session = sessionmaker(bind=create_engine(configT.get_postgres_uri()))
+
 import warnings
 warnings.filterwarnings('ignore')
 warnings.simplefilter(action = 'ignore', category = pd.errors.PerformanceWarning)
@@ -94,7 +103,10 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
                     tree_method='gpu_hist', eval_metric='logloss')
     xgb.create_train_test_data(X, y, test_size=0.2)
     xgb.fit()
-    xgb.save_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/test_{binance_config.SYMBOL}_{binance_config.source}_model_price_{INTERVAL}_feature_numbers_{X.shape[1]}.json')
+    
+    model_name = f'test_{binance_config.SYMBOL}_{binance_config.source}_model_price_{INTERVAL}_feature_numbers_{X.shape[1]}.json'
+    
+    xgb.save_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/{model_name}')
     score = xgb.get_score()
 
     print(f'first score: {score}')
@@ -105,8 +117,18 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
     ytest = xgb.y_test
     ypred_reg = xgb.model.predict(xgb.X_test)
     print(f'Last accuracy: {accuracy_score(ytest, ypred_reg)}')
+    acc_score = accuracy_score(ytest, ypred_reg)
     print(f'Confusion Matrix: {confusion_matrix(ytest, ypred_reg)}')
 
+    ### Services test
+    session = get_session()
+    repo = AIModelRepository(session)
+    services.add_aimodel(
+        binance_config.SYMBOL, binance_config.source,
+        X.shape[1], model_name, "xgboost_forecaster", 
+        binance_config.SYMBOL_CUT, acc_score,
+        repo, session
+    )
 
     n_feat = xgb.get_n_importance_features(10)
     print(n_feat)

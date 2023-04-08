@@ -17,4 +17,4 @@ class AIModel:
         return f"./src/KZ_project/dl_models/model_stack/{self.hashtag}/{self.model_name}"
                
     def __repr__(self):
-        return f"<AIModel {self.symbol}, source: {self.source}, model_name: {self.model_name}>"
+        return f"<AIModel {self.symbol}, type: {self.ai_type}, model_name: {self.model_name}>"

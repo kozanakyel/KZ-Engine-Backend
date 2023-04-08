@@ -10,6 +10,7 @@ import KZ_project.Infrastructure.config as config
 
 from KZ_project.core.adapters.tracker_repository import TrackerRepository
 from KZ_project.core.adapters.asset_repository import AssetRepository
+from KZ_project.core.adapters.aimodel_repository import AIModelRepository
 
 
 orm.start_mappers()
@@ -69,3 +70,19 @@ def get_position():
         return {"message": str(e)}, 400
 
     return {"trackref": trackref}, 201
+
+@app.route("/aimodel", methods=["POST"])
+def get_aimodel():
+    session = get_session()
+    repo = AIModelRepository(session)
+    try:
+        aimodelref = services.get_aimodel(
+            request.json["symbol"],
+            repo,
+            session
+        )
+        
+    except (services.InvalidSymbol) as e:
+        return {"message": str(e)}, 400
+
+    return {"data": aimodelref}, 201

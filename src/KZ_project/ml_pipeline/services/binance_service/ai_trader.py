@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from binance import ThreadedWebsocketManager
 from datetime import timedelta
+import requests
 
 from KZ_project.Infrastructure.logger.logger import Logger
 from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
@@ -228,8 +229,9 @@ class AITrader():
         ypred_reg = xgb.model.predict(X)
         self.backtest_prediction(X, ypred_reg)
         self.trade_fee_net_returns(X)
+        
     
-        return X, ypred_reg[-1]
+        return str(X.index[-1] + timedelta(hours=1)), int(ypred_reg[-1])
     
     def main_prediction(self, start_date, name, symbol):
         client_twt, tsa, daily, hourly, data = self.construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(start_date, name, symbol)
@@ -237,7 +239,13 @@ class AITrader():
         df_final = self.composite_tweet_sentiment_and_data_manipulation(data, hourly_tsa, tsa)
         Xt, next_candle_prediction = self.predict_last_day_and_next_hour(df_final)
         print(f'\n\nlast row: {Xt}\nNext Candle Hourly Prediction for {self.symbol} is: {next_candle_prediction}\n\n')
-    
+        url = config.get_api_url()
+        r = requests.post(
+            f"{url}/allocate_tracker", json={"symbol": symbol,
+                                             "datetime_t": Xt,
+                                             "position": next_candle_prediction}
+        )
+        print(r.status_code)
     
 
     

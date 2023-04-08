@@ -38,3 +38,21 @@ def get_position(
     result = repo.get(symbol)
     session.commit()
     return result.symbol, result.position, result.datetime_t
+
+
+def add_aimodel(
+    symbol: str, source: str, feature_counts: int,
+    model_name: str, ai_type: str, hashtag: str, accuracy_score: float,
+    repo: AbstractBaseRepository, session,
+):
+    repo.add(AIModel(symbol, source, feature_counts, model_name, 
+                     ai_type, hashtag, accuracy_score))
+    session.commit()
+    
+def get_aimodel(
+    symbol: str, 
+    repo: AbstractBaseRepository, session,
+):
+    r = repo.get(symbol)
+    session.commit()
+    return r.symbol, r.source, r.feature_counts, r.model_name, r.ai_type, r.hashtag, r.accuracy_score, r.created_at 
