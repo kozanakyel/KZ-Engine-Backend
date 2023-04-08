@@ -132,9 +132,9 @@ class AITrader():
     def get_sentiment_daily_hourly_scores(self, name: str, 
                                            twitter_client: TwitterCollection,
                                            tsa: TweetSentimentAnalyzer,
-                                           hour: int=10*1):
+                                           hour: int=24*1):
         #print(f'attribuites get interval: {name} {hour} ')
-        df_tweets = twitter_client.get_tweets_with_interval(name, 'en', hour=hour, interval=1)
+        df_tweets = twitter_client.get_tweets_with_interval(name, 'en', hour=hour, interval=2)
         print(f'######## Shape of {name} tweets df: {df_tweets.shape}')
         #print(f'pure tweets hourly: {df_tweets.iloc[-1]}')
         path_df = f'./data/tweets_data/{name}/'
@@ -151,7 +151,7 @@ class AITrader():
 
         data = DataManipulation(symbol, config.BinanceConfig.source, 
                             config.BinanceConfig.range_list, start_date=start_date,
-                            interval=INTERVAL, scale=config.BinanceConfig.SCALE, 
+                            interval=config.BinanceConfig.interval, scale=config.BinanceConfig.SCALE, 
                             prefix_path='.', saved_to_csv=False, client=self.client)
         #print(f'df shape: {data.df.iloc[-1]}')
         return client_twt, tsa, daily, hourly, data
@@ -231,7 +231,7 @@ class AITrader():
         self.trade_fee_net_returns(X)
         
     
-        return str(X.index[-1] + timedelta(hours=1)), int(ypred_reg[-1])
+        return str(X.index[-1] + timedelta(hours=2)), int(ypred_reg[-1])
     
     def main_prediction(self, start_date, name, symbol):
         client_twt, tsa, daily, hourly, data = self.construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(start_date, name, symbol)
