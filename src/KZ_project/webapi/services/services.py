@@ -37,7 +37,7 @@ def get_position(
 ):
     result = repo.get(symbol)
     session.commit()
-    return result.symbol, result.position, result.datetime_t
+    return result
 
 
 def add_aimodel(
@@ -53,6 +53,6 @@ def get_aimodel(
     symbol: str, 
     repo: AbstractBaseRepository, session,
 ):
-    r = repo.get(symbol)
+    result = repo.get(symbol)
     session.commit()
-    return r.symbol, r.source, r.feature_counts, r.model_name, r.ai_type, r.hashtag, r.accuracy_score, r.created_at 
+    return result 

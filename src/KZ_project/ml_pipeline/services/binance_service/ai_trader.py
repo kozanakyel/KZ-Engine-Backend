@@ -219,9 +219,9 @@ class AITrader():
         xgb = XgboostForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
                     tree_method='gpu_hist', eval_metric='logloss')
         if self.name == 'btc':
-            xgb.load_model('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/test_BTCUSDT_binance_model_price_1h_feature_numbers_225.json')
+            xgb.load_model('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/test_BTCUSDT_binance_model_price_2h_feature_numbers_225.json')
         elif self.name == 'bnb':
-            xgb.load_model('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/bnb/test_BNBUSDT_binance_model_price_1h_feature_numbers_225.json')
+            xgb.load_model('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/bnb/test_BNBUSDT_binance_model_price_2h_feature_numbers_225.json')
 
         X = df_final.drop(columns=['feature_label'], axis=1)
         self.prepared_data = X
@@ -243,8 +243,8 @@ class AITrader():
         r = requests.post(
             f"{url}/allocate_tracker", json={"symbol": symbol,
                                              "datetime_t": Xt,
-                                             "position": next_candle_prediction,
-                                             "created_at": datetime.now()}
+                                             "position": next_candle_prediction
+                                             }
         )
         print(r.status_code)
     

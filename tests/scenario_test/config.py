@@ -27,14 +27,14 @@ class YahooConfig:
 
     logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
 
-class BinanceConfig:
+class BitcoinConfig:
     SYMBOL = 'BTCUSDT'
     SYMBOL_NAME = 'Bitcoin'
     SYMBOL_CUT = 'btc'
     SCALE = 1
     range_list = [i for i in range(5,21)]
     range_list = [i*1 for i in range_list]
-    interval = '1h'
+    interval = '2h'
     start_date = '2022-06-17'
     end_date = '2023-03-22'
     #start_date = '2022-06-17'
@@ -42,7 +42,29 @@ class BinanceConfig:
     source = 'binance'
     LOG_PATH = './src/KZ_project/Infrastructure/logger' + os.sep + "logs"
     LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
+    tweet_file = './data/tweets_data/btc/btc_hour.csv'
     
     logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
     client = BinanceClient(api_key, api_secret_key, logger=logger)
 
+
+
+class BinanceConfig:
+    SYMBOL = 'BNBUSDT'
+    SYMBOL_NAME = 'Binance'
+    SYMBOL_CUT = 'bnb'
+    SCALE = 1
+    range_list = [i for i in range(5,21)]
+    range_list = [i*1 for i in range_list]
+    interval = '2h'
+    start_date = '2022-06-17'
+    end_date = '2023-03-22'
+    #start_date = '2022-06-17'
+    #end_date = '2023-02-17'
+    source = 'binance'
+    LOG_PATH = './src/KZ_project/Infrastructure/logger' + os.sep + "logs"
+    LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
+    tweet_file = './data/tweets_data/bnb/bnb_hour.csv'
+    
+    logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
+    client = BinanceClient(api_key, api_secret_key, logger=logger)

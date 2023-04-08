@@ -24,22 +24,20 @@ warnings.filterwarnings('ignore')
 warnings.simplefilter(action = 'ignore', category = pd.errors.PerformanceWarning)
 
 import config
-binance_config = config.BinanceConfig()
+asset_config = config.BitcoinConfig()
 
-INTERVAL = '1h'
-
-logger = Logger(binance_config.LOG_PATH, binance_config.LOG_FILE_NAME_PREFIX)
+logger = Logger(asset_config.LOG_PATH, asset_config.LOG_FILE_NAME_PREFIX)
 tsa = TweetSentimentAnalyzer()
-data = DataManipulation(binance_config.SYMBOL, binance_config.source, 
-                        binance_config.range_list, start_date=binance_config.start_date, 
-                        end_date=binance_config.end_date, interval=INTERVAL, scale=binance_config.SCALE, 
+data = DataManipulation(asset_config.SYMBOL, asset_config.source, 
+                        asset_config.range_list, start_date=asset_config.start_date, 
+                        end_date=asset_config.end_date, interval=asset_config.interval, scale=asset_config.SCALE, 
                         prefix_path='.', saved_to_csv=False,
-                        logger=logger, client=binance_config.client)
+                        logger=logger, client=asset_config.client)
 df_price = data.df.copy()
 
 def test_get_tweet_sentiment_hourly():
     #sent_tweets = pd.read_csv('./data/archieve_data/btc_archieve/btc_hourly_sent_score.csv')
-    sent_tweets = pd.read_csv('./data/tweets_data/btc/btc_hour.csv')
+    sent_tweets = pd.read_csv(asset_config.tweet_file)
     #sent_tweets = pd.read_csv('../data/tweets_data/btc/btc_hour.csv')  
     sent_tweets.Datetime = pd.to_datetime(sent_tweets.Datetime)
     sent_tweets.set_index('Datetime', inplace=True, drop=True)
@@ -68,7 +66,7 @@ def test_backtest_prediction(X_pd, y_pred):
     X_pd["cstrategy"] = X_pd["strategy"].cumsum().apply(np.exp) 
     X_pd["creturns"] = X_pd.log_return.cumsum().apply(np.exp) 
 
-    X_pd.creturns.plot(figsize = (12, 8), title = "BNB/USDT - Buy and Hold", fontsize = 12)
+    X_pd.creturns.plot(figsize = (12, 8), title = f"{asset_config.SYMBOL} - Buy and Hold", fontsize = 12)
     plt.show()
 
     X_pd[["creturns", "cstrategy"]].plot(figsize = (12 , 8), fontsize = 12)
@@ -105,9 +103,9 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
     xgb.create_train_test_data(X, y, test_size=0.2)
     xgb.fit()
     
-    model_name = f'test_{binance_config.SYMBOL}_{binance_config.source}_model_price_{INTERVAL}_feature_numbers_{X.shape[1]}.json'
+    model_name = f'test_{asset_config.SYMBOL}_{asset_config.source}_model_price_{asset_config.interval}_feature_numbers_{X.shape[1]}.json'
     
-    xgb.save_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/{model_name}')
+    xgb.save_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{asset_config.SYMBOL_CUT}/{model_name}')
     score = xgb.get_score()
 
     print(f'first score: {score}')
@@ -125,14 +123,14 @@ def test_get_accuracy_score_for_xgboost_fit_separate_dataset(df_final: pd.DataFr
     session = get_session()
     repo = AIModelRepository(session)
     services.add_aimodel(
-        binance_config.SYMBOL, binance_config.source,
-        X.shape[1], model_name, "xgboost_forecaster", 
-        binance_config.SYMBOL_CUT, acc_score,
+        asset_config.SYMBOL, asset_config.source,
+        X.shape[1], model_name, xgb.__class__.__name__, 
+        asset_config.SYMBOL_CUT, acc_score,
         repo, session
     )
 
     n_feat = xgb.get_n_importance_features(10)
-    print(n_feat)
+    print(f'importance: {n_feat}')
     
     xgb.plot_fature_importance()
     
