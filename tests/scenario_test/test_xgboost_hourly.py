@@ -18,6 +18,7 @@ from KZ_project.Infrastructure.orm_mapper import orm
 orm.start_mappers()
 get_session = sessionmaker(bind=create_engine(configT.get_postgres_uri()))
 
+
 import warnings
 warnings.filterwarnings('ignore')
 warnings.simplefilter(action = 'ignore', category = pd.errors.PerformanceWarning)

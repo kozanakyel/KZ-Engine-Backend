@@ -21,7 +21,8 @@ class TrackerRepository(AbstractTrackerRepository):
         self.session.add(tracker)
 
     def get(self, symbol):
-        return self.session.query(Tracker).filter_by(symbol=symbol).order_by(desc(Tracker.created_at)).first()
+        # why datetime_t and not created_at, we investigate them !!!
+        return self.session.query(Tracker).filter_by(symbol=symbol).order_by(desc(Tracker.datetime_t)).first()
     
     def list(self):
         return self.session.query(Tracker).all()

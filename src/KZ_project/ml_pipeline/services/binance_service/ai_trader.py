@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from binance import ThreadedWebsocketManager
-from datetime import timedelta
+from datetime import datetime, timedelta
 import requests
 
 from KZ_project.Infrastructure.logger.logger import Logger
@@ -243,7 +243,8 @@ class AITrader():
         r = requests.post(
             f"{url}/allocate_tracker", json={"symbol": symbol,
                                              "datetime_t": Xt,
-                                             "position": next_candle_prediction}
+                                             "position": next_candle_prediction,
+                                             "created_at": datetime.now()}
         )
         print(r.status_code)
     
