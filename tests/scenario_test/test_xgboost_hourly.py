@@ -16,7 +16,7 @@ import KZ_project.Infrastructure.config as configT
 from KZ_project.core.adapters.aimodel_repository import AIModelRepository
 from KZ_project.Infrastructure.orm_mapper import orm
 orm.start_mappers()
-get_session = sessionmaker(bind=create_engine(configT.get_postgres_uri()))
+get_session = sessionmaker(bind=create_engine(configT.get_postgres_uri(), pool_size=50, pool_timeout=60, max_overflow=0))
 
 
 import warnings

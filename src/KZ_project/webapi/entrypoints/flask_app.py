@@ -15,7 +15,7 @@ from KZ_project.core.adapters.aimodel_repository import AIModelRepository
 
 
 orm.start_mappers()
-get_session = sessionmaker(bind=create_engine(config.get_postgres_uri()))
+get_session = sessionmaker(bind=create_engine(config.get_postgres_uri(), pool_size=50, pool_timeout=60, max_overflow=0))
 app = Flask(__name__)
 
 CORS(app)   # CORs policy from local development problem
