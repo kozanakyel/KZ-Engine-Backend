@@ -61,7 +61,7 @@ class AITrader():
         start_date = (event_time - timedelta(days=10)).strftime('%Y-%m-%d')
     
         # print out
-        print("Time: {} | Price: {} | Complete: {}".format(event_time, close, complete))
+        print("Time: {} | Price: {} | Complete: {} | Symbol {}".format(event_time, close, complete, self.symbol))
         
         if complete:
             #print(f'Write logic for prediction in this area')
@@ -73,7 +73,9 @@ class AITrader():
         
     def stop_trading(self):
         self.twm.stop()
-        
+
+
+       
     def execute_trades(self): 
         if self.prepared_data["position"].iloc[-1] == 1: # if position is long -> go/stay long
             if self.position == 0:

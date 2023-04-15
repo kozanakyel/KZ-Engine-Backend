@@ -2,7 +2,8 @@ from datetime import datetime
 
 class AIModel:
     def __init__(self, symbol: str, source: str, feature_counts: int,
-                 model_name: str, ai_type: str, hashtag: str, accuracy_score: float, created_at=datetime.now()):
+                 model_name: str, ai_type: str, hashtag: str, 
+                 accuracy_score: float, created_at=datetime.now()):
         self.symbol = symbol
         self.source = source
         self.feature_counts = feature_counts
@@ -11,6 +12,7 @@ class AIModel:
         self.hashtag = hashtag
         self.accuracy_score = accuracy_score
         self.created_at = created_at
+   
         
     @property    
     def get_filepath(self):
@@ -18,3 +20,4 @@ class AIModel:
                
     def __repr__(self):
         return f"<AIModel {self.symbol}, type: {self.ai_type}, model_name: {self.model_name}>"
+    

@@ -72,7 +72,25 @@ def start_mappers():
         AIModel, aimodels
     )
     
+
+    
     """
+        mapper_registry.map_imperatively(
+        AIModel,
+        aimodels,
+        properties={
+            "tracker": relationship(
+                Tracker,
+                backref="aimodel",
+                uselist=False
+            )
+        },
+    )
+    
+    
+
+    
+    
         mapper_registry.map_imperatively(
         AIModel,
         aimodels,

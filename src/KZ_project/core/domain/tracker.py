@@ -7,6 +7,7 @@ class Tracker:
         self.position = position
         self.created_at = created_at
         
+        
     def __eq__(self, other):
         if not isinstance(other, Tracker):
             return False

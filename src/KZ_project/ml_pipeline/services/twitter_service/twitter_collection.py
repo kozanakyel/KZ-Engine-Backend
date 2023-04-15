@@ -95,7 +95,7 @@ class TwitterCollection():
             result_tweets = pd.concat([df_temp_tweets, result_tweets], ignore_index=True)
             start_time = start_time + td(hours=interval)
             end_time = end_time + td(hours=interval)
-        self.log(f'For hashtag {hashtag.upper()} tweeets colected')
+        self.log(f'For hashtag {hashtag.upper()} {result_tweets.shape[0]} tweeets colected')
         return result_tweets
 
     def cleaning_tweet_data(self, df: pd.DataFrame()):
