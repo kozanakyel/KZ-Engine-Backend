@@ -36,6 +36,8 @@ class YahooConfig:
     LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
 
     logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
+    
+
 
 class BinanceConfig:
     SYMBOL = 'BNBUSDT'
@@ -55,6 +57,71 @@ class BinanceConfig:
     
     logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
     client = BinanceClient(api_key, api_secret_key, logger=logger)
+    
+class BitcoinConfig:
+    SYMBOL = 'BTCUSDT'
+    SYMBOL_NAME = 'Bitcoin'
+    SYMBOL_CUT = 'btc'
+    SCALE = 1
+    range_list = [i for i in range(5,21)]
+    range_list = [i*1 for i in range_list]
+    interval = '2h'
+    start_date = '2022-06-17'
+    end_date = '2023-03-22'
+    #start_date = '2022-06-17'
+    #end_date = '2023-02-17'
+    source = 'binance'
+    LOG_PATH = './src/KZ_project/Infrastructure/logger' + os.sep + "logs"
+    LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
+    tweet_file_hourly = './data/tweets_data/btc/btc_hour.csv'
+    tweet_file_daily = './data/tweets_data/btc/btc_day.csv'
+    
+    logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
+    client = BinanceClient(api_key, api_secret_key, logger=logger)
+    
+class RippleConfig:
+    SYMBOL = 'XRPUSDT'
+    SYMBOL_NAME = 'Ripple'
+    SYMBOL_CUT = 'xrp'
+    SCALE = 1
+    range_list = [i for i in range(5,21)]
+    range_list = [i*1 for i in range_list]
+    interval = '2h'
+    start_date = '2022-06-17'
+    end_date = '2023-03-22'
+    #start_date = '2022-06-17'
+    #end_date = '2023-02-17'
+    source = 'binance'
+    LOG_PATH = './src/KZ_project/Infrastructure/logger' + os.sep + "logs"
+    LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
+    tweet_file_hourly = './data/tweets_data/xrp/xrp_hour.csv'
+    tweet_file_daily = './data/tweets_data/xrp/xrp_day.csv'
+    
+    logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
+    client = BinanceClient(api_key, api_secret_key, logger=logger)
+    
+class DogeConfig:
+    SYMBOL = 'DOGEUSDT'
+    SYMBOL_NAME = 'Doge coin'
+    SYMBOL_CUT = 'doge'
+    SCALE = 1
+    range_list = [i for i in range(5,21)]
+    range_list = [i*1 for i in range_list]
+    interval = '1d'
+    start_date = '2022-06-17'
+    end_date = '2023-03-22'
+    #start_date = '2022-06-17'
+    #end_date = '2023-02-17'
+    source = 'binance'
+    LOG_PATH = './src/KZ_project/Infrastructure/logger' + os.sep + "logs"
+    LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
+    tweet_file_hourly = './data/tweets_data/doge/doge_hour.csv'
+    tweet_file_daily = './data/tweets_data/doge/doge_day.csv'
+    
+    logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
+    client = BinanceClient(api_key, api_secret_key, logger=logger)
+
+
 
 
 def get_postgres_uri():
