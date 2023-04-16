@@ -75,7 +75,8 @@ for i in range(1, 3):
     ax1.plot(df_temp.close, label='Close', linewidth=3)
     ax1.set_title(f'{SYMBOL}')
     ax1.legend()
-    fig.savefig(f'./data/plots/ema_strategy_{SYMBOL}.png')
+    fig.show()
+    #fig.savefig(f'./data/plots/ema_strategy_{SYMBOL}.png')
 
     # PLOT THE SUPERTREND
     fig, ax = plt.subplots(figsize=(20,7))
@@ -83,5 +84,6 @@ for i in range(1, 3):
     ax.plot(df_temp.close, label='Close')
     ax.set_title(f'{SYMBOL} SUPERTREND INDICATOR')
     ax.legend()
-    fig.savefig(f'./data/plots/supertrend_{SYMBOL}.png')
+    fig.show()
+    #fig.savefig(f'./data/plots/supertrend_{SYMBOL}.png')
     
