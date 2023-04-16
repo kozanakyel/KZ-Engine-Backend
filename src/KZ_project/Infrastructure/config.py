@@ -53,8 +53,8 @@ class BinanceConfig:
     LOG_PATH = './src/KZ_project/Infrastructure/logger' + os.sep + "logs"
     LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
     
-    #logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
-    #client = BinanceClient(api_key, api_secret_key, logger=logger)
+    logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
+    client = BinanceClient(api_key, api_secret_key, logger=logger)
 
 
 def get_postgres_uri():
