@@ -56,10 +56,11 @@ allocations_tracker = Table(
 )
 
 cryptos = Table(
-    "assets",
+    "cryptos",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("name", String(100), unique=True)   
+    Column("name", String(100), unique=True),
+    Column("description", String(500))
 )
 
 forecast_models = Table(
@@ -78,7 +79,7 @@ forecast_models = Table(
     Column("crypto_id", ForeignKey("cryptos.id"))
 )
 
-signals_tracker = Table(
+signal_trackers = Table(
     "signal_trackers",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
@@ -110,40 +111,15 @@ def start_mappers():
     )
     
     
-    crypto_mapper = mapper_registry.map_imperatively(
-        Crypto,
-        cryptos,
-        properties={
-            "_forecast_models": relationship(
-                ForecastModel, backref="_crypto"
-            )
-        }
-    )
-    
-    # Map the ForecastModel class to the forecast_models table
-    forecast_model_mapper = mapper_registry.map_imperatively(
-        ForecastModel,
-        forecast_models,
-        properties={
-            "_signals_tracker": relationship(
-                SignalTracker, backref="_forecast_model"
-            ),
-            "_crypto": relationship(
-                Crypto, back_populates="_forecast_models"
-            )
-        }
-    )
-    
-    # Map the SignalTracker class to the signal_tracker table
-    mapper_registry.map_imperatively(
-        SignalTracker,
-        signals_tracker,
-        properties={
-            "_forecast_model": relationship(
-                ForecastModel, backref="_signals_tracker"
-            )
-        }
-    )
+    crypto_mapper = mapper_registry.map_imperatively(Crypto, cryptos)
+    forecast_model_mapper = mapper_registry.map_imperatively(ForecastModel, forecast_models, 
+                                   properties={
+                                       'crypto': relationship(crypto_mapper)
+                                   })
+    mapper_registry.map_imperatively(SignalTracker, signal_trackers,
+           properties={
+               'forecast_model': relationship(forecast_model_mapper)
+           })
 
     
     """

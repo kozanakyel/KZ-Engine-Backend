@@ -2,7 +2,7 @@ from datetime import datetime
 
 class ForecastModel():
 
-    def __init__(self, symbol, source, feature_counts, model_name, interval, ai_type, hashtag=None, accuracy_score=None, created_at=datetime.now()):
+    def __init__(self, symbol, source, feature_counts, model_name, interval, ai_type, hashtag, accuracy_score, crypto, created_at=datetime.now()):
         self.symbol = symbol
         self.source = source
         self.feature_counts = feature_counts
@@ -12,18 +12,14 @@ class ForecastModel():
         self.hashtag = hashtag
         self.accuracy_score = accuracy_score
         self.created_at = created_at
-        self._crypto = None
-        self._signals_tracker = []
+        self.crypto = crypto
         
-    def add_signal_tracker(self, signals_tracker):
-        if signals_tracker not in self._signals_tracker:
-            self._signals_tracker.append(signals_tracker)
-            signals_tracker._forecast_model = self
-
-    def remove_signal_tracker(self, signals_tracker):
-        if signals_tracker in self._signals_tracker:
-            self._signals_tracker.remove(signals_tracker)
-            signals_tracker._forecast_model = None
+        def __eq__(self, other):
+            if not isinstance(other, ForecastModel):
+                return False
+            c1 = str(other) == str(self)
+            c2 = str(self.created_at) == str(other.created_at)
+            return c1 and c2
 
     def __repr__(self):
-        return f"<ForecastModel {self.model_name}, symbol: {self.symbol}, interval: {self.interval}>"
+        return f"<ForecastModel {self.model_name}, symbol: {self.symbol}, interval: {self.interval}, aitype: {self.ai_type}>"
