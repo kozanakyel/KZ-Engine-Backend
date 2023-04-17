@@ -60,6 +60,7 @@ cryptos = Table(
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("name", String(100), unique=True),
+    Column("ticker", String(25)),
     Column("description", String(500))
 )
 
@@ -75,8 +76,9 @@ forecast_models = Table(
     Column("ai_type", String(200)),
     Column("hashtag", String(100), nullable=True),
     Column("accuracy_score", Float()),
-    Column("created_at", DateTime()),
-    Column("crypto_id", ForeignKey("cryptos.id"))
+    Column("crypto_id", ForeignKey("cryptos.id")),
+    Column("created_at", DateTime())
+
 )
 
 signal_trackers = Table(
@@ -85,8 +87,11 @@ signal_trackers = Table(
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("datetime_t", String(200)),
     Column("signal", Integer, nullable=False),
-    Column("created_at", DateTime()),
-    Column("forecast_model_id", ForeignKey("forecast_models.id"))
+    Column("ticker", String(25)),
+    Column("tweet_counts", Integer),
+    Column("forecast_model_id", ForeignKey("forecast_models.id")),
+    Column("created_at", DateTime())
+    
 )
 
 
