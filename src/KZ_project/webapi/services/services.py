@@ -2,6 +2,7 @@ from __future__ import annotations
 from KZ_project.core.domain.asset import Asset, allocate_tracker
 from KZ_project.core.domain.aimodel import AIModel
 from KZ_project.core.domain.tracker import Tracker
+from KZ_project.core.domain.crypto import Crypto
 from KZ_project.core.domain.asset import InvalidSymbol
 
 from KZ_project.core.adapters.repository import AbstractBaseRepository
@@ -56,3 +57,11 @@ def get_aimodel(
     result = repo.get(symbol)
     session.commit()
     return result 
+
+
+def add_crypto(
+    name: str, ticker: str, description:str,
+    repo: AbstractBaseRepository, session,
+) -> None:
+    repo.add(Crypto(name, ticker, description))
+    session.commit()

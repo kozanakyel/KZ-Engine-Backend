@@ -4,8 +4,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask_migrate import Migrate
 
 from KZ_project.Infrastructure.orm_mapper import orm
+from KZ_project.core.adapters.crypto_repository import CryptoRepository
 from KZ_project.webapi.services import services
 import KZ_project.Infrastructure.config as config
 
@@ -15,7 +17,7 @@ from KZ_project.core.adapters.aimodel_repository import AIModelRepository
 
 
 orm.start_mappers()
-get_session = sessionmaker(bind=create_engine(config.get_postgres_uri(), pool_size=50, pool_timeout=60, max_overflow=0))
+get_session = sessionmaker(bind=create_engine(config.get_postgres_uri()))
 app = Flask(__name__)
 
 CORS(app)   # CORs policy from local development problem
@@ -24,6 +26,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = config.get_postgres_uri()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+####
+with app.app_context():
+    db.create_all()
+
 
 
 @app.route("/add_asset", methods=["POST"])
@@ -111,3 +118,19 @@ def get_aimodel():
         return {"message": str(e)}, 400
 
     return jsonify(response_data), 201
+
+
+###########################
+@app.route("/add_crypto", methods=["POST"])
+def add_crypto():
+    session = get_session()
+    repo = CryptoRepository(session)
+
+    services.add_crypto(
+        request.json["name"],
+        request.json["ticker"],
+        request.json["description"],
+        repo,
+        session,
+    )
+    return "OK", 201

@@ -10,3 +10,6 @@ class SignalTracker():
         self.ticker = ticker
         self.created_at = created_at
         self.forecast_model = forecast_model
+        
+    def __repr__(self):
+        return f"<SignalTracker {self.ticker}, datetime: {self.datetime_t}, position: {self.signal}, created_at: {self.created_at}>"
