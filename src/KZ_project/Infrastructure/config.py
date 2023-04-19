@@ -62,6 +62,8 @@ class BinanceConfig:
     source = 'binance'
     LOG_PATH = './src/KZ_project/Infrastructure/logger' + os.sep + "logs"
     LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
+    tweet_file_hourly = './data/tweets_data/bnb/bnb_hour.csv'
+    tweet_file_daily = './data/tweets_data/bnb/bnb_day.csv'
     
     logger = logger
     client = client
@@ -152,8 +154,8 @@ class EthereumConfig:
     source = 'binance'
     LOG_PATH = './src/KZ_project/Infrastructure/logger' + os.sep + "logs"
     LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
-    tweet_file_hourly = './data/tweets_data/doge/doge_hour.csv'
-    tweet_file_daily = './data/tweets_data/doge/doge_day.csv'
+    tweet_file_hourly = './data/tweets_data/eth/eth_hour.csv'
+    tweet_file_daily = './data/tweets_data/eth/eth_day.csv'
     
     logger = logger
     client = client

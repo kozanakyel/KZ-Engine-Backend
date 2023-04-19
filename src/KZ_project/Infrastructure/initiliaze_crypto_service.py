@@ -31,25 +31,26 @@ def add_cryptos(crypto):
         return f"errors: {e}"
     return f"Succes for {crypto.SYMBOL_NAME}"
             
-def create_all_models_2hourly():
+def create_all_models_2hourly(asset_config):
     tsa = TweetSentimentAnalyzer()
     
-    for asset_config in coin_list:
-        data = DataManipulation(asset_config.SYMBOL, asset_config.source, 
+    
+    data = DataManipulation(asset_config.SYMBOL, asset_config.source, 
                         asset_config.range_list, start_date=asset_config.start_date, 
                         end_date=asset_config.end_date, interval=asset_config.interval, scale=asset_config.SCALE, 
                         prefix_path='.', saved_to_csv=False,
                         logger=asset_config.logger, client=asset_config.client)
-        df_price = data.df.copy()
+    df_price = data.df.copy()
     
-        model_engine = ModelEngine(asset_config.SYMBOL, asset_config.SYMBOL_CUT, asset_config.source, asset_config.interval)
+    model_engine = ModelEngine(asset_config.SYMBOL, asset_config.SYMBOL_CUT, asset_config.source, asset_config.interval_model)
     
-        model_engine.start_model_engine(data, tsa, asset_config.tweet_file_hourly)
+    model_engine.start_model_engine(data, tsa, asset_config.tweet_file_hourly)
         
 if __name__ == '__main__':
     for i in coin_list:
-        res = add_cryptos(i)
-        print(res)
+        create_all_models_2hourly(i)
+        #print(res)
+    
         
     
 

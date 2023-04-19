@@ -5,38 +5,51 @@ import numpy as np
 import pandas as pd
 import requests
 from KZ_project.Infrastructure import config
+from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
+from KZ_project.core.adapters.signaltracker_repository import SignalTrackerRepository
 from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from KZ_project.webapi.services import services
+
+#orm.start_mappers()
+engine = create_engine(config.get_postgres_uri())
+get_session = sessionmaker(bind=engine)
+#orm.metadata.create_all(engine)
+
 
 class ForecastEngineHourly():
     
-    def __init__(self, name, symbol, lang: str="en"):
+    def __init__(self, hastag, symbol, lang: str="en"):
         self.client_twitter = TwitterCollection()
         self.tsa = TweetSentimentAnalyzer(lang=lang)
-        self.name = name
+        self.hastag = hastag
         self.symbol = symbol
      
-    def get_sentiment_daily_hourly_scores(self, name: str, 
+    def get_sentiment_daily_hourly_scores(self, hastag: str, 
                                            twitter_client: TwitterCollection,
                                            tsa: TweetSentimentAnalyzer,
                                            hour: int=24*1):
-        #print(f'attribuites get interval: {name} {hour} ')
-        df_tweets = twitter_client.get_tweets_with_interval(name, 'en', hour=hour, interval=2)
-        print(f'######## Shape of {name} tweets df: {df_tweets.shape}')
+        #print(f'attribuites get interval: {hastag} {hour} ')
+        df_tweets = twitter_client.get_tweets_with_interval(hastag, 'en', hour=hour, interval=2)
+        print(f'######## Shape of {hastag} tweets df: {df_tweets.shape}')
+        self.tweet_counts = df_tweets.shape[0]
         #print(f'pure tweets hourly: {df_tweets.iloc[-1]}')
-        path_df = f'./data/tweets_data/{name}/'
-        file_df = f'{name}_tweets.csv'
-        daily_sents, hourly_sents = tsa.create_sent_results_df(name, df_tweets, path_df, saved=False)
+        path_df = f'./data/tweets_data/{hastag}/'
+        file_df = f'{hastag}_tweets.csv'
+        daily_sents, hourly_sents = tsa.create_sent_results_df(hastag, df_tweets, path_df, saved=False)
         #print(f'tweets hourly: {hourly_sents.iloc[-1]}')
         return daily_sents, hourly_sents   
     
-    def construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(self, start_date, name: str, symbol) -> tuple:
+    def construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(self, start_date, hastag: str, symbol) -> tuple:
         INTERVAL = '1h'
         client_twt, tsa = self.client_twitter, self.tsa
-        daily, hourly = self.get_sentiment_daily_hourly_scores(name, client_twt, tsa)
+        daily, hourly = self.get_sentiment_daily_hourly_scores(hastag, client_twt, tsa)
 
         data = DataManipulation(symbol, config.BinanceConfig.source, 
                             config.BinanceConfig.range_list, start_date=start_date,
@@ -106,10 +119,21 @@ class ForecastEngineHourly():
     def predict_last_day_and_next_hour(self, df_final):
         xgb = XgboostForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
                     tree_method='gpu_hist', eval_metric='logloss')
-        if self.name == 'btc':
+        self.ai_type = xgb.__class__.__name__
+        fm_model = services.get_forecast_model(
+                            self.symbol, 
+                            config.BinanceConfig.interval,
+                            self.ai_type)
+        fm_model_name = fm_model.model_name
+        xgb.load_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{fm_model_name}')
+        print(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{fm_model_name}')
+        """
+        if self.hastag == 'btc':
             xgb.load_model('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/test_BTCUSDT_binance_model_price_2h_feature_numbers_225.json')
-        elif self.name == 'bnb':
+        elif self.hastag == 'bnb':
             xgb.load_model('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/bnb/test_BNBUSDT_binance_model_price_2h_feature_numbers_225.json')
+        """
+        
 
         X = df_final.drop(columns=['feature_label'], axis=1)
         self.prepared_data = X
@@ -130,14 +154,40 @@ class ForecastEngineHourly():
                                              }
         )
         print(f'Service tracker current status code is {r.status_code}')
+        
+    def prediction_service_new_signaltracker(self, ai_type, Xt, next_candle_prediction):
+        session = get_session()
+        repo = SignalTrackerRepository(session)
+        repo_fm = ForecastModelRepository(session)
+        try: 
+            result_fm = services.get_forecast_model(
+                self.symbol, 
+                config.BinanceConfig.interval,
+                ai_type,
+                repo_fm,
+                session
+            )
+            services.add_signal_tracker(
+                next_candle_prediction,
+                self.hastag,
+                self.tweet_counts,
+                Xt,
+                result_fm,
+                repo,
+                session,
+            )
+        except (services.InvalidName) as e:
+            return f'error occyred for signal tracker {self.symbol}'
+        return f'Succes signaltracker for {self.symbol}'
     
     def forecast_builder(self, start_date):
-        client_twt, tsa, daily, hourly, data = self.construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(start_date, self.name, self.symbol)
+        client_twt, tsa, daily, hourly, data = self.construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(start_date, self.hastag, self.symbol)
         hourly_tsa = self.get_tweet_sentiment_hourly(hourly)
         df_final = self.composite_tweet_sentiment_and_data_manipulation(data, hourly_tsa, tsa)
         Xt, next_candle_prediction = self.predict_last_day_and_next_hour(df_final)
         print(f'\n\nlast row: {Xt}\nNext Candle Hourly Prediction for {self.symbol} is: {next_candle_prediction}\n\n')
         self.prediction_service(symbol=self.symbol, Xt=Xt, next_candle_prediction=next_candle_prediction)
+        self.prediction_service_new_signaltracker(self.ai_type, Xt, next_candle_prediction)
         
         
         
