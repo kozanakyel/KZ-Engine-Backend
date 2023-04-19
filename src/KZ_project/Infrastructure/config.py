@@ -2,11 +2,18 @@ import os
 from dotenv import load_dotenv
 from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
 from KZ_project.Infrastructure.logger.logger import Logger
+from datetime import datetime
 
 load_dotenv()
 
 api_key = os.getenv('BINANCE_API_KEY')
 api_secret_key = os.getenv('BINANCE_SECRET_KEY')
+
+
+LOG_PATH = './src/KZ_project/Infrastructure/logger' + os.sep + "logs"
+LOG_FILE_NAME_PREFIX = f"log_{datetime.now()}"
+logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
+client = BinanceClient(api_key, api_secret_key, logger=logger)
 
 PSQL_USER = os.getenv('PSQL_USER')
 PSQL_PWD = os.getenv('PSQL_PWD')
@@ -34,7 +41,7 @@ class YahooConfig:
     LOG_PATH = './src/KZ_project/Infrastructure/logger' + os.sep + "logs"
     LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
 
-    logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
+    logger = logger
     
 
 
@@ -56,8 +63,8 @@ class BinanceConfig:
     LOG_PATH = './src/KZ_project/Infrastructure/logger' + os.sep + "logs"
     LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
     
-    logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
-    client = BinanceClient(api_key, api_secret_key, logger=logger)
+    logger = logger
+    client = client
     
 class BitcoinConfig:
     SYMBOL = 'BTCUSDT'
@@ -79,8 +86,8 @@ class BitcoinConfig:
     tweet_file_hourly = './data/tweets_data/btc/btc_hour.csv'
     tweet_file_daily = './data/tweets_data/btc/btc_day.csv'
     
-    logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
-    client = BinanceClient(api_key, api_secret_key, logger=logger)
+    logger = logger
+    client = client
     
 class RippleConfig:
     SYMBOL = 'XRPUSDT'
@@ -102,8 +109,8 @@ class RippleConfig:
     tweet_file_hourly = './data/tweets_data/xrp/xrp_hour.csv'
     tweet_file_daily = './data/tweets_data/xrp/xrp_day.csv'
     
-    logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
-    client = BinanceClient(api_key, api_secret_key, logger=logger)
+    logger = logger
+    client = client
     
 class DogeConfig:
     SYMBOL = 'DOGEUSDT'
@@ -125,8 +132,8 @@ class DogeConfig:
     tweet_file_hourly = './data/tweets_data/doge/doge_hour.csv'
     tweet_file_daily = './data/tweets_data/doge/doge_day.csv'
     
-    logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
-    client = BinanceClient(api_key, api_secret_key, logger=logger)
+    logger = logger
+    client = client
 
 class EthereumConfig:
     SYMBOL = 'ETHUSDT'
@@ -148,10 +155,10 @@ class EthereumConfig:
     tweet_file_hourly = './data/tweets_data/doge/doge_hour.csv'
     tweet_file_daily = './data/tweets_data/doge/doge_day.csv'
     
-    logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
-    client = BinanceClient(api_key, api_secret_key, logger=logger)
+    logger = logger
+    client = client
 
-config_coin_list = [BinanceConfig, BitcoinConfig, RippleConfig, EthereumConfig, DogeConfig]
+config_coin_list = [BinanceConfig(), BitcoinConfig(), RippleConfig(), EthereumConfig(), DogeConfig()]
 
 
 def get_postgres_uri():
