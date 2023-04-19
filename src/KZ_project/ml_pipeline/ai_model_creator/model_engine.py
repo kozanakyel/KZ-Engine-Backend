@@ -2,6 +2,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix
+from KZ_project.core.adapters.crypto_repository import CryptoRepository
+from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
 
 from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
@@ -128,6 +130,9 @@ class ModelEngine():
 
         ### Services test
         self.save_service(X, xgb, acc_score)
+        ## New Domain servicesss test
+        res_str = self.save_crypto_forecast_model_service(X, xgb, acc_score)
+        print(f'New test domain servis result is: {res_str}')
 
         n_feat = xgb.get_n_importance_features(10)
         print(f'importance: {n_feat}')
@@ -148,6 +153,37 @@ class ModelEngine():
             self.symbol_cut, accuracy_score,
             repo, session
         )
+        
+    def save_crypto_forecast_model_service(self, X: pd.DataFrame(), 
+                                           forecaster: XgboostForecaster,
+                                           accuracy_score):
+        session = get_session()
+        repo = ForecastModelRepository(session)
+        repo_cr = CryptoRepository(session)
+        try: 
+            finding_crypto = services.get_crypto(
+                ticker=self.symbol_cut, 
+                repo=repo_cr, 
+                session=session
+                )
+    
+            services.add_forecast_model(
+                self.symbol,
+                self.source,
+                X.shape[1],
+                self.model_name,
+                self.interval,
+                forecaster.__class__.__name__,
+                self.symbol_cut,
+                accuracy_score,
+                finding_crypto,
+                repo,
+                session,
+            )
+        except (services.InvalidName) as e:
+            return f'An errror for creating model {self.symbol}'
+        return f'Succesfully created model {self.symbol}'
+        
         
     def start_model_engine(self, data:DataManipulation,
                             tsa: TweetSentimentAnalyzer, tweet_file):
