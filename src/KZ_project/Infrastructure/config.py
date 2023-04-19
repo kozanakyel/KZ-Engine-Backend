@@ -18,7 +18,6 @@ API_PORT = os.getenv('API_PORT')
 API_HOST = os.getenv('API_HOST')
 
 
-
 class YahooConfig:
     SYMBOL = 'BTC-USD'
     SYMBOL_NAME = 'Bitcoin'
@@ -44,9 +43,11 @@ class BinanceConfig:
     SYMBOL_NAME = 'Binance'
     SYMBOL_CUT = 'bnb'
     SCALE = 1
+    description = 'CEO of Binance is CZ and big company in blockchain field.'
     range_list = [i for i in range(5,21)]
     range_list = [i*1 for i in range_list]
-    interval = '1h'
+    interval_model = '1h'
+    interval = '2h'
     start_date = '2022-06-17'
     end_date = '2023-03-22'
     #start_date = '2022-06-17'
@@ -63,8 +64,10 @@ class BitcoinConfig:
     SYMBOL_NAME = 'Bitcoin'
     SYMBOL_CUT = 'btc'
     SCALE = 1
+    description = 'Maded by Satoshi Nakamoto in 2008'
     range_list = [i for i in range(5,21)]
     range_list = [i*1 for i in range_list]
+    interval_model = '1h'
     interval = '2h'
     start_date = '2022-06-17'
     end_date = '2023-03-22'
@@ -84,8 +87,10 @@ class RippleConfig:
     SYMBOL_NAME = 'Ripple'
     SYMBOL_CUT = 'xrp'
     SCALE = 1
+    description = 'Big opputunity in Banking fields Future'
     range_list = [i for i in range(5,21)]
     range_list = [i*1 for i in range_list]
+    interval_model = '1h'
     interval = '2h'
     start_date = '2022-06-17'
     end_date = '2023-03-22'
@@ -105,9 +110,11 @@ class DogeConfig:
     SYMBOL_NAME = 'Doge coin'
     SYMBOL_CUT = 'doge'
     SCALE = 1
+    description = 'What the fuck are you doing Elon??'
     range_list = [i for i in range(5,21)]
     range_list = [i*1 for i in range_list]
-    interval = '1d'
+    interval_model = '1h'
+    interval = '2h'
     start_date = '2022-06-17'
     end_date = '2023-03-22'
     #start_date = '2022-06-17'
@@ -121,7 +128,30 @@ class DogeConfig:
     logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
     client = BinanceClient(api_key, api_secret_key, logger=logger)
 
+class EthereumConfig:
+    SYMBOL = 'ETHUSDT'
+    SYMBOL_NAME = 'Etherum'
+    SYMBOL_CUT = 'eth'
+    SCALE = 1
+    description = 'Ethereum is the modern and changeable bitcoin'
+    range_list = [i for i in range(5,21)]
+    range_list = [i*1 for i in range_list]
+    interval_model = '1h'
+    interval = '2h'
+    start_date = '2022-06-17'
+    end_date = '2023-03-22'
+    #start_date = '2022-06-17'
+    #end_date = '2023-02-17'
+    source = 'binance'
+    LOG_PATH = './src/KZ_project/Infrastructure/logger' + os.sep + "logs"
+    LOG_FILE_NAME_PREFIX = f"log_{SYMBOL_CUT}_{start_date}_{end_date}"
+    tweet_file_hourly = './data/tweets_data/doge/doge_hour.csv'
+    tweet_file_daily = './data/tweets_data/doge/doge_day.csv'
+    
+    logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
+    client = BinanceClient(api_key, api_secret_key, logger=logger)
 
+config_coin_list = [BinanceConfig, BitcoinConfig, RippleConfig, EthereumConfig, DogeConfig]
 
 
 def get_postgres_uri():

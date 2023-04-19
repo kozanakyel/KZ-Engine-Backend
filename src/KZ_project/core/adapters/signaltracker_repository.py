@@ -20,9 +20,9 @@ class SignalTrackerRepository(AbstractSignalTrackerRepository):
     def add(self, signal_tracker):
         self.session.add(signal_tracker)
 
-    def get(self, ticker):
+    def get(self, forecast_model_id):
         # why datetime_t and not created_at, we investigate them !!!
-        return self.session.query(SignalTracker).filter_by(ticker=ticker).order_by(desc(SignalTracker.datetime_t)).first()
+        return self.session.query(SignalTracker).filter_by(forecast_model_id=forecast_model_id).order_by(desc(SignalTracker.datetime_t)).first()
     
     def list(self):
         return self.session.query(SignalTracker).all()

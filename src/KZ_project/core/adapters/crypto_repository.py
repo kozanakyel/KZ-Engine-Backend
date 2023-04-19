@@ -19,8 +19,8 @@ class CryptoRepository(AbstractCryptoRepository):
     def add(self, crypto):
         self.session.add(crypto)
 
-    def get(self, name):
-        return self.session.query(Crypto).filter_by(name=name).first()
+    def get(self, ticker):
+        return self.session.query(Crypto).filter_by(ticker=ticker).first()
     
     def list(self):
         return self.session.query(Crypto).all()

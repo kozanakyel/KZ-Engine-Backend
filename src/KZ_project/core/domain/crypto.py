@@ -12,7 +12,13 @@ class Crypto:
         if not isinstance(other, Crypto):
             return False
         return other.name == self.name
-        
+      
+    def json(self):
+        return {
+            'name':self.name,
+            'ticker':self.ticker,
+            'description':self.description
+            }  
         
     def __repr__(self):
         return f"<Crypto {self.name}>"

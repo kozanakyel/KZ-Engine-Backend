@@ -1,6 +1,9 @@
 from __future__ import annotations
+from KZ_project.core.adapters.crypto_repository import CryptoRepository
 from KZ_project.core.domain.asset import Asset, allocate_tracker
 from KZ_project.core.domain.aimodel import AIModel
+from KZ_project.core.domain.forecast_model import ForecastModel
+from KZ_project.core.domain.signal_tracker import SignalTracker
 from KZ_project.core.domain.tracker import Tracker
 from KZ_project.core.domain.crypto import Crypto
 from KZ_project.core.domain.asset import InvalidSymbol
@@ -59,9 +62,74 @@ def get_aimodel(
     return result 
 
 
+#######################
+class InvalidName(Exception):
+    pass
+
 def add_crypto(
     name: str, ticker: str, description:str,
     repo: AbstractBaseRepository, session,
 ) -> None:
+    crypto_list = repo.list()
+    crypto_name_list = [x.name for x in crypto_list]
+    
+    if name in crypto_name_list:
+        raise InvalidName(f'Error This name is exist: {name}')
     repo.add(Crypto(name, ticker, description))
     session.commit()
+    
+def get_crypto(
+    ticker: str, 
+    repo: AbstractBaseRepository, session,
+) -> None:
+    crypto_list = repo.list()
+    crypto_ticker_list = [x.ticker for x in crypto_list]
+    
+    if ticker not in crypto_ticker_list:
+        raise InvalidName(f'Error This ticker is not exist: {ticker}')
+    result = repo.get(ticker)
+    session.commit()
+    return result 
+
+def add_forecast_model(
+    symbol:str, source:str, feature_counts:int, model_name:str,
+    interval:str, ai_type:str, hashtag:str, accuracy_score:float,
+    crypto, repo: AbstractBaseRepository, session
+) -> None:
+    #repo_cr = CryptoRepository(session)
+    #finding_crypto = get_crypto(ticker=hashtag, repo=repo_cr, session=session)
+    
+    repo.add(ForecastModel(symbol, source, feature_counts, model_name,
+                          interval, ai_type, hashtag, accuracy_score, crypto))
+    session.commit()
+    
+def get_forecast_model(
+    symbol: str, interval:str, ai_type:str, 
+    repo: AbstractBaseRepository, session,
+) -> None:
+    
+    result = repo.get(symbol, interval, ai_type)
+    
+    session.commit()
+    return result 
+
+def add_signal_tracker(
+    signal:int, ticker:str,  tweet_counts:int, datetime_t:str,
+    forecast_model: ForecastModel,
+    repo: AbstractBaseRepository, session
+) -> None:
+    repo.add(SignalTracker(signal, ticker, tweet_counts, datetime_t,
+                          forecast_model))
+    session.commit()
+    
+def get_signal_tracker(
+    forecast_model_id:int, 
+    repo: AbstractBaseRepository, session,
+) -> None:
+    
+    result = repo.get(forecast_model_id)
+    
+    session.commit()
+    return result 
+    
+

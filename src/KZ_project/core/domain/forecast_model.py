@@ -14,12 +14,26 @@ class ForecastModel():
         self.created_at = created_at
         self.crypto = crypto
         
-        def __eq__(self, other):
-            if not isinstance(other, ForecastModel):
-                return False
-            c1 = str(other) == str(self)
-            c2 = str(self.created_at) == str(other.created_at)
-            return c1 and c2
+    def json(self):
+        return {
+           'symbol':self.symbol,
+           'source':self.source,
+           'feature_counts':self.feature_counts,
+           'model_name':self.model_name,
+           'interval':self.interval,
+           'ai_type':self.ai_type,
+           'hashtag':self.hashtag,
+           'accuracy_score':self.accuracy_score,
+           'created_at':self.created_at,
+           'crypto':self.crypto.json() 
+        }
+        
+    def __eq__(self, other):
+        if not isinstance(other, ForecastModel):
+            return False
+        c1 = str(other) == str(self)
+        c2 = str(self.created_at) == str(other.created_at)
+        return c1 and c2
 
     def __repr__(self):
         return f"<ForecastModel {self.model_name}, symbol: {self.symbol}, interval: {self.interval}, aitype: {self.ai_type}>"
