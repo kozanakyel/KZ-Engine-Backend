@@ -1,28 +1,27 @@
 import pandas as pd
-from binance.client import Client
-import pandas as ta
+#from binance.client import Client
+#import pandas as ta
 import numpy as np
 import matplotlib.pyplot as plt
 
 from binance import ThreadedWebsocketManager
 from datetime import datetime, timedelta
-import requests
+#import requests
 
 from KZ_project.Infrastructure.logger.logger import Logger
-from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
+#from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
+#from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
+#from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
+#from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
+#from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
 from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
 from KZ_project.ml_pipeline.services.binance_service.forecast_engine_hourly import ForecastEngineHourly
-from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
-from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
-from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
-from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
-
 
 import KZ_project.Infrastructure.config as config
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from KZ_project.webapi.services import services
+#from KZ_project.webapi.services import services
 
 #orm.start_mappers()
 engine = create_engine(config.get_postgres_uri())
@@ -31,7 +30,7 @@ get_session = sessionmaker(bind=engine)
 
 class AITrader():
     
-    def __init__(self, symbol: str, name: str, bar_length, client: BinanceClient, units, logger: Logger=None):
+    def __init__(self, symbol: str, name: str, bar_length, client: BinanceClient, units, engine: ForecastEngineHourly , logger: Logger=None):
         self.symbol = symbol
         self.name = name
         self.bar_length = bar_length
@@ -43,7 +42,7 @@ class AITrader():
         self.trade_values = []
         self.units = units
         self.logger = logger
-        self.engine = ForecastEngineHourly(self.name, self.symbol)
+        self.engine = engine
       
     def start_trading(self):
         
@@ -157,24 +156,48 @@ if __name__ == '__main__':
         print(dff)
 
 
-    def web_socket_bnb():
-        trader_btc = AITrader(symbol="BTCUSDT", name="btc", bar_length="5m", client=client, units=20)
-        trader_bnb = AITrader(symbol="BNBUSDT", name="bnb", bar_length="3m", client=client, units=20)
-        trader_xrp = AITrader(symbol="XRPUSDT", name="xrp", bar_length="3m", client=client, units=20)
-        trader_eth = AITrader(symbol="ETHUSDT", name="eth", bar_length="5m", client=client, units=20)
-        trader_doge = AITrader(symbol="DOGEUSDT", name="doge", bar_length="5m", client=client, units=20)
-        trader_btc.start_trading()
-        trader_bnb.start_trading()
-        trader_xrp.start_trading()
-        trader_eth.start_trading()
-        trader_doge.start_trading()
+    def web_socket_trader_starter():
+        cr_list = [{"symbol":"BTCUSDT", "name":"btc", "bar_length":"3m"}, 
+                   {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"3m"},
+                   {"symbol":"XRPUSDT", "name":"xrp", "bar_length":"5m"},
+                   {"symbol":"ETHUSDT", "name":"eth", "bar_length":"5m"},
+                   {"symbol":"DOGEUSDT", "name":"doge", "bar_length":"5m"}]
+        trader_c_list = []
+        for coin_d in cr_list:
+            engine = ForecastEngineHourly(coin_d["name"], coin_d["symbol"])
+        
+            trader_coin_d = AITrader(
+                symbol=coin_d["symbol"], 
+                name=coin_d["name"], 
+                bar_length=coin_d["bar_length"], 
+                client=client, 
+                units=20, 
+                engine=engine
+                )
+            
+            trader_c_list.append(trader_coin_d)
+        
+        for i in trader_c_list:
+            i.start_trading()    
+        
         time.sleep(60*20)
-        trader_btc.stop_trading()
-        trader_bnb.start_trading()
-        trader_doge.stop_trading()
-        trader_eth.stop_trading()
-        trader_xrp.stop_trading()
+        
+        for i in trader_c_list:
+            i.stop_trading()
+            
+    def web_socket_trader_starter_btc():
+        engine = ForecastEngineHourly("btc", "BTCUSDT")
+        
+        trader_coin_d = AITrader(
+                symbol="BTCUSDT", 
+                name="btc", 
+                bar_length="3m", 
+                client=client, 
+                units=20, 
+                engine=engine
+                ) 
+        trader_coin_d.start_trading()   
     
-    web_socket_bnb()
+    web_socket_trader_starter()
     
     

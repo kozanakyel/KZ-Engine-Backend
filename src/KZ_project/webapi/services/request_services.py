@@ -16,7 +16,6 @@ import json
 get_session = sessionmaker(bind=create_engine(config.get_postgres_uri()))
 
 class RequestServices():
-
     
     @staticmethod
     def post_signaltracker_with_api(symbol, interval, ai_type, 
@@ -69,3 +68,15 @@ class RequestServices():
         string_content = r.content.decode('utf-8')
         dict_content = json.loads(string_content) 
         return dict_content
+    
+    @staticmethod
+    def post_crypto_with_api(name, ticker, description):
+        url = config.get_api_url()
+        
+        r = requests.post(
+            f"{url}/add_crypto", json={"name": name,
+                                             "ticker": ticker,
+                                             "description": description
+                                             }
+        )    
+        return r.status_code

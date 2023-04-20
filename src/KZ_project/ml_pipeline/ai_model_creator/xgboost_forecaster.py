@@ -124,6 +124,7 @@ class XgboostForecaster():
         return grid_result.best_params_
         
 
+    # Needs modify for new folder structure
     def get_model_names(self, path_models: str):
         files = os.listdir(path_models)
         list_files = []

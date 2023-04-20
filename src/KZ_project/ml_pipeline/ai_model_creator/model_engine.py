@@ -98,7 +98,7 @@ class ModelEngine():
         X_pd["strategy_net"] = X_pd.strategy + X_pd.trades * ptc # strategy returns net of costs
         X_pd["cstrategy_net"] = X_pd.strategy_net.cumsum().apply(np.exp)
     
-        X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(figsize = (12 , 8))
+        X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(figsize = (12 , 8),  title = f"{self.symbol} - Buy and Hold")
         plt.savefig(self.model_plot_path)
         
     def get_accuracy_score_for_xgboost_fit_separate_dataset(self, df_final: pd.DataFrame()):
@@ -124,7 +124,7 @@ class ModelEngine():
 
         print(f'First score: {score}')
         #xgb.plot_learning_curves()
-        xgb.get_model_names('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/')
+        #xgb.get_model_names('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/')
         #best_params = xgb.bestparams_gridcv([100, 200], [0.1], [1, 3], verbose=3)
 
         ytest = xgb.y_test

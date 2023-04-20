@@ -1,28 +1,25 @@
 from datetime import timedelta
 from matplotlib import pyplot as plt
 import numpy as np
-
-import json
-
 import pandas as pd
-import requests
+
 from KZ_project.Infrastructure import config
-from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
-from KZ_project.core.adapters.signaltracker_repository import SignalTrackerRepository
+#from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
+#from KZ_project.core.adapters.signaltracker_repository import SignalTrackerRepository
 from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+#from sqlalchemy import create_engine
+#from sqlalchemy.orm import sessionmaker
 
-from KZ_project.webapi.services import services
+#from KZ_project.webapi.services import services
 from KZ_project.webapi.services.request_services import RequestServices
 
 #orm.start_mappers()
-engine = create_engine(config.get_postgres_uri())
-get_session = sessionmaker(bind=engine)
+#engine = create_engine(config.get_postgres_uri())
+#get_session = sessionmaker(bind=engine)
 #orm.metadata.create_all(engine)
 
 
@@ -34,7 +31,7 @@ class ForecastEngineHourly():
         self.hastag = hastag
         self.symbol = symbol
         self.data_plot_path = f'./data/plots/instant_evaluation/'
-        self.model_plot_path = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_instant_backtest.png'
+        self.model_plot_path = self.data_plot_path + f'{self.hastag}/{self.symbol}_model_instant_backtest.png'
         #self.model_importance_feature = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_importance.png'
      
     def get_sentiment_daily_hourly_scores(self, hastag: str, 
@@ -43,17 +40,17 @@ class ForecastEngineHourly():
                                            hour: int=24*1):
         #print(f'attribuites get interval: {hastag} {hour} ')
         df_tweets = twitter_client.get_tweets_with_interval(hastag, 'en', hour=hour, interval=1)
-        print(f'######## Shape of {hastag} tweets df: {df_tweets.shape}')
+        #print(f'######## Shape of {hastag} tweets df: {df_tweets.shape}')
         self.tweet_counts = df_tweets.shape[0]
         #print(f'pure tweets hourly: {df_tweets.iloc[-1]}')
         path_df = f'./data/tweets_data/{hastag}/'
-        file_df = f'{hastag}_tweets.csv'
+        #file_df = f'{hastag}_tweets.csv'
         daily_sents, hourly_sents = tsa.create_sent_results_df(hastag, df_tweets, path_df, saved=False)
         #print(f'tweets hourly: {hourly_sents.iloc[-1]}')
         return daily_sents, hourly_sents   
     
     def construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(self, start_date, hastag: str, symbol) -> tuple:
-        INTERVAL = '1h'
+        #INTERVAL = '1h'
         client_twt, tsa = self.client_twitter, self.tsa
         daily, hourly = self.get_sentiment_daily_hourly_scores(hastag, client_twt, tsa)
 
@@ -91,7 +88,7 @@ class ForecastEngineHourly():
     def backtest_prediction(self, X_pd, y_pred):
         X_pd["position"] = [y_pred[i] for i, _ in enumerate(X_pd.index)]
     
-        print(X_pd[["log_return", "position"]]) 
+        #print(X_pd[["log_return", "position"]]) 
     
         X_pd["strategy"] = X_pd.position.shift(1) * X_pd["log_return"]
         X_pd[["log_return", "strategy"]].sum().apply(np.exp)
@@ -105,12 +102,12 @@ class ForecastEngineHourly():
         #plt.show()
         
     def trade_fee_net_returns(self, X_pd: pd.DataFrame()):
-        val_counts = X_pd.position.value_counts()
-        print(f'val counts: {val_counts}')
+        #val_counts = X_pd.position.value_counts()
+        #print(f'val counts: {val_counts}')
     
         X_pd["trades"] = X_pd.position.diff().fillna(0).abs()
-        trade_val_count = X_pd.trades.value_counts()
-        print(f'trade val counts: {trade_val_count}')
+        #trade_val_count = X_pd.trades.value_counts()
+        #print(f'trade val counts: {trade_val_count}')
     
         commissions = 0.00075 # reduced Binance commission 0.075%
         other = 0.0001 # proportional costs for bid-ask spread & slippage (more detailed analysis required!)
@@ -144,9 +141,9 @@ class ForecastEngineHourly():
         #fm_model_name = fm_model.model_name
         #md_name = self.get_model_name_with_api()
         model_t = RequestServices.get_model_with_api(self.symbol, config.BinanceConfig.interval_model, self.ai_type)
-        print(f'modelll nameee: {model_t["model_name"]}')
+        #print(f'modelll nameee: {model_t["model_name"]}')
         xgb.load_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{model_t["model_name"]}')
-        print(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{model_t["model_name"]}')
+        #print(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{model_t["model_name"]}')
         
         
         #if self.hastag == 'btc':
@@ -166,9 +163,11 @@ class ForecastEngineHourly():
     
         return str(X.index[-1] + timedelta(hours=1)), int(ypred_reg[-1])
     
+
+     
+    """
     def prediction_service(self, symbol, Xt, next_candle_prediction):
         url = config.get_api_url()
-        
         
         r = requests.post(
             f"{url}/allocate_tracker", json={"symbol": symbol,
@@ -205,9 +204,7 @@ class ForecastEngineHourly():
                                              }
         )    
         return r.status_code
-     
-     
-    """
+    
     def prediction_service_new_signaltracker(self, ai_type, Xt, next_candle_prediction):
         session = get_session()
         repo = SignalTrackerRepository(session)
@@ -241,7 +238,7 @@ class ForecastEngineHourly():
         df_final = self.composite_tweet_sentiment_and_data_manipulation(data, hourly_tsa, tsa)
         Xt, next_candle_prediction = self.predict_last_day_and_next_hour(df_final)
         print(f'\n\nlast row: {Xt}\nNext Candle Hourly Prediction for {self.symbol} is: {next_candle_prediction}\n\n')
-        self.prediction_service(symbol=self.symbol, Xt=Xt, next_candle_prediction=next_candle_prediction)
+        #self.prediction_service(symbol=self.symbol, Xt=Xt, next_candle_prediction=next_candle_prediction)
         #self.prediction_service_new_signaltracker(self.ai_type, Xt, next_candle_prediction)
         #scode = self.post_signaltracker_with_api(next_candle_prediction, self.hastag, self.tweet_counts, Xt)
         sr_code = RequestServices.post_signaltracker_with_api(
