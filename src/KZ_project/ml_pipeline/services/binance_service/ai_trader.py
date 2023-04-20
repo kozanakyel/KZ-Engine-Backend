@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import requests
 
 from KZ_project.Infrastructure.logger.logger import Logger
+from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
 from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
 from KZ_project.ml_pipeline.services.binance_service.forecast_engine_hourly import ForecastEngineHourly
 from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
@@ -18,6 +19,14 @@ from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostFo
 
 
 import KZ_project.Infrastructure.config as config
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from KZ_project.webapi.services import services
+
+#orm.start_mappers()
+engine = create_engine(config.get_postgres_uri())
+get_session = sessionmaker(bind=engine)
 
 
 class AITrader():
@@ -68,7 +77,9 @@ class AITrader():
         if complete:
             #print(f'Write logic for prediction in this area')
             #print(f'start date: {start_date} and type {type(start_date)}')
-            self.engine.forecast_builder(start_date=start_date)
+            
+            ai_type, Xt, next_candle_prediction = self.engine.forecast_builder(start_date=start_date)
+            
             #self.main_prediction(start_date=start_date, name=self.name, symbol=self.symbol)
             #self.execute_trades()
         # feed df (add new bar / update latest bar)
@@ -147,12 +158,22 @@ if __name__ == '__main__':
 
 
     def web_socket_bnb():
-        trader_btc = AITrader(symbol="BTCUSDT", name="btc", bar_length="3m", client=client, units=20)
+        #trader_btc = AITrader(symbol="BTCUSDT", name="btc", bar_length="5m", client=client, units=20)
         trader_bnb = AITrader(symbol="BNBUSDT", name="bnb", bar_length="3m", client=client, units=20)
-        trader_btc.start_trading()
+        #trader_xrp = AITrader(symbol="XRPUSDT", name="xrp", bar_length="5m", client=client, units=20)
+        #trader_eth = AITrader(symbol="ETHUSDT", name="eth", bar_length="5m", client=client, units=20)
+        #trader_doge = AITrader(symbol="DOGEUSDT", name="doge", bar_length="5m", client=client, units=20)
+        #trader_btc.start_trading()
         trader_bnb.start_trading()
+        #trader_xrp.start_trading()
+        #trader_eth.start_trading()
+        #trader_doge.start_trading()
         time.sleep(60*20)
-        trader_btc.stop_trading()
+        #trader_btc.stop_trading()
+        trader_bnb.start_trading()
+        #trader_doge.stop_trading()
+        #trader_eth.stop_trading()
+        #trader_xrp.stop_trading()
     
     web_socket_bnb()
     

@@ -2,6 +2,8 @@ from datetime import timedelta
 from matplotlib import pyplot as plt
 import numpy as np
 
+import json
+
 import pandas as pd
 import requests
 from KZ_project.Infrastructure import config
@@ -36,7 +38,7 @@ class ForecastEngineHourly():
                                            tsa: TweetSentimentAnalyzer,
                                            hour: int=24*1):
         #print(f'attribuites get interval: {hastag} {hour} ')
-        df_tweets = twitter_client.get_tweets_with_interval(hastag, 'en', hour=hour, interval=2)
+        df_tweets = twitter_client.get_tweets_with_interval(hastag, 'en', hour=hour, interval=1)
         print(f'######## Shape of {hastag} tweets df: {df_tweets.shape}')
         self.tweet_counts = df_tweets.shape[0]
         #print(f'pure tweets hourly: {df_tweets.iloc[-1]}')
@@ -53,7 +55,7 @@ class ForecastEngineHourly():
 
         data = DataManipulation(symbol, config.BinanceConfig.source, 
                             config.BinanceConfig.range_list, start_date=start_date,
-                            interval=config.BinanceConfig.interval, scale=config.BinanceConfig.SCALE, 
+                            interval=config.BinanceConfig.interval_model, scale=config.BinanceConfig.SCALE, 
                             prefix_path='.', saved_to_csv=False, client=config.BinanceConfig.client)
         #print(f'df shape: {data.df.iloc[-1]}')
         return client_twt, tsa, daily, hourly, data
@@ -120,19 +122,33 @@ class ForecastEngineHourly():
         xgb = XgboostForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
                     tree_method='gpu_hist', eval_metric='logloss')
         self.ai_type = xgb.__class__.__name__
-        fm_model = services.get_forecast_model(
-                            self.symbol, 
-                            config.BinanceConfig.interval,
-                            self.ai_type)
-        fm_model_name = fm_model.model_name
-        xgb.load_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{fm_model_name}')
-        print(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{fm_model_name}')
-        """
-        if self.hastag == 'btc':
-            xgb.load_model('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/test_BTCUSDT_binance_model_price_2h_feature_numbers_225.json')
-        elif self.hastag == 'bnb':
-            xgb.load_model('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/bnb/test_BNBUSDT_binance_model_price_2h_feature_numbers_225.json')
-        """
+        
+        session = get_session()
+        repo = ForecastModelRepository(session)
+        print(f'deneme forecast: {self.symbol} {config.BinanceConfig.interval_model} {self.ai_type}')
+        #try:
+        #    fm_model = services.get_forecast_model(
+        #                    "BNBUSDT", 
+        #                    "1h",
+        #                    "XgboostForecaster",
+        #                    repo,
+        #                    session
+        #                    )
+        #except Exception as e:
+        #    print(f'errors occured frmodel: {e}')
+        #print(f'son test {fm_model}')
+        #fm_model_name = fm_model.model_name
+        md_name = self.get_model_name_with_api()
+        print(f'modelll nameee: {md_name}')
+        xgb.load_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{md_name}')
+        print(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{md_name}')
+        
+        
+        #if self.hastag == 'btc':
+        #    xgb.load_model('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/test_BTCUSDT_binance_model_price_2h_feature_numbers_225.json')
+        #elif self.hastag == 'bnb':
+        #    xgb.load_model('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/bnb/test_BNBUSDT_binance_model_price_2h_feature_numbers_225.json')
+        
         
 
         X = df_final.drop(columns=['feature_label'], axis=1)
@@ -147,6 +163,8 @@ class ForecastEngineHourly():
     
     def prediction_service(self, symbol, Xt, next_candle_prediction):
         url = config.get_api_url()
+        
+        
         r = requests.post(
             f"{url}/allocate_tracker", json={"symbol": symbol,
                                              "datetime_t": Xt,
@@ -155,14 +173,43 @@ class ForecastEngineHourly():
         )
         print(f'Service tracker current status code is {r.status_code}')
         
+    def get_model_name_with_api(self):
+        url = config.get_api_url()
+        
+        r = requests.get(
+            f"{url}/forecast_model", json={"symbol": self.symbol,
+                                             "interval": config.BinanceConfig.interval_model,
+                                             "ai_type": self.ai_type
+                                             }
+        )   
+        string_content = r.content.decode('utf-8')
+        dict_content = json.loads(string_content) 
+        return dict_content["model_name"]
+    
+    def post_signaltracker_with_api(self, signal, ticker, tweet_counts, datetime_t):
+        url = config.get_api_url()
+        
+        r = requests.post(
+            f"{url}/add_signal_tracker", json={"symbol": self.symbol,
+                                             "interval": config.BinanceConfig.interval_model,
+                                             "ai_type": self.ai_type,
+                                             "signal":signal,
+                                             "ticker":ticker,
+                                             "tweet_counts":tweet_counts,
+                                             "datetime_t":datetime_t
+                                             }
+        )    
+        return r.status_code
+        
     def prediction_service_new_signaltracker(self, ai_type, Xt, next_candle_prediction):
         session = get_session()
         repo = SignalTrackerRepository(session)
         repo_fm = ForecastModelRepository(session)
         try: 
+            print(f'deneme forecast: {self.symbol} {config.BinanceConfig.interval_model} {ai_type}')
             result_fm = services.get_forecast_model(
                 self.symbol, 
-                config.BinanceConfig.interval,
+                config.BinanceConfig.interval_model,
                 ai_type,
                 repo_fm,
                 session
@@ -187,7 +234,10 @@ class ForecastEngineHourly():
         Xt, next_candle_prediction = self.predict_last_day_and_next_hour(df_final)
         print(f'\n\nlast row: {Xt}\nNext Candle Hourly Prediction for {self.symbol} is: {next_candle_prediction}\n\n')
         self.prediction_service(symbol=self.symbol, Xt=Xt, next_candle_prediction=next_candle_prediction)
-        self.prediction_service_new_signaltracker(self.ai_type, Xt, next_candle_prediction)
+        #self.prediction_service_new_signaltracker(self.ai_type, Xt, next_candle_prediction)
+        scode = self.post_signaltracker_with_api(next_candle_prediction, self.hastag, self.tweet_counts, Xt)
+        print(scode)
+        return self.ai_type, Xt, next_candle_prediction
         
         
         

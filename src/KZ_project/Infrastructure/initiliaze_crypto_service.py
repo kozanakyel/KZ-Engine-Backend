@@ -1,5 +1,6 @@
 from KZ_project.Infrastructure import config
 from KZ_project.core.adapters.crypto_repository import CryptoRepository
+from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
 from KZ_project.ml_pipeline.ai_model_creator.model_engine import ModelEngine
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
@@ -47,10 +48,23 @@ def create_all_models_2hourly(asset_config):
     model_engine.start_model_engine(data, tsa, asset_config.tweet_file_hourly)
         
 if __name__ == '__main__':
-    for i in coin_list:
-        create_all_models_2hourly(i)
+    #for i in coin_list:
+     #   create_all_models_2hourly(i)
         #print(res)
-    
+    session = get_session()
+    repo = ForecastModelRepository(session)
+    print(f'deneme forecast: ')
+    try:
+        fm_model = services.get_forecast_model(
+                            "BNBUSDT", 
+                            "1h",
+                            "XgboostForecaster",
+                            repo,
+                            session
+                            )
+    except Exception as e:
+        print(f'errors occured frmodel: {e}')
+    print(f'son test {type(repo.__class__.__name__)}')
         
     
 
