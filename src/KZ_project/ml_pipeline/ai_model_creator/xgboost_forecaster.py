@@ -139,7 +139,7 @@ class XgboostForecaster():
         n_features = dict(itertools.islice(sorted_d.items(), n)) 
         return n_features
 
-    def plot_fature_importance(self):
+    def plot_feature_importance(self, file_path, symbol):
         fig, ax = plt.subplots(1,1,figsize=(20,30))
-        plot_importance(self.model, ax=ax)
-        plt.savefig('./data/plots/importance_feature_params.png')
+        plot_importance(self.model, ax=ax, title=f'{symbol} Feature Importance')
+        plt.savefig(file_path)

@@ -2,22 +2,24 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix
-from KZ_project.core.adapters.crypto_repository import CryptoRepository
-from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
+#from KZ_project.core.adapters.crypto_repository import CryptoRepository
+#from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
 
 from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 
-from KZ_project.webapi.services import services
-from KZ_project.core.adapters.aimodel_repository import AIModelRepository
-from KZ_project.Infrastructure.orm_mapper import orm
+#from KZ_project.webapi.services import services
+#from KZ_project.core.adapters.aimodel_repository import AIModelRepository
+#from KZ_project.Infrastructure.orm_mapper import orm
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from KZ_project.webapi.services.request_services import RequestServices
+
+#from sqlalchemy import create_engine
+#from sqlalchemy.orm import sessionmaker
 from KZ_project.Infrastructure import config
-orm.start_mappers()
-get_session = sessionmaker(bind=create_engine(config.get_postgres_uri(), pool_size=50, pool_timeout=60, max_overflow=0))
+#orm.start_mappers()
+#get_session = sessionmaker(bind=create_engine(config.get_postgres_uri(), pool_size=50, pool_timeout=60, max_overflow=0))
 
 
 class ModelEngine():
@@ -27,7 +29,9 @@ class ModelEngine():
         self.source = source
         self.interval = interval
         self.symbol_cut = symbol_cut
-        
+        self.data_plot_path = f'./data/plots/model_evaluation/'
+        self.model_plot_path = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_backtest.png'
+        self.model_importance_feature = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_importance.png'
     
     def get_tweet_sentiment_hourly_filed(self, tweet_file):
         #sent_tweets = pd.read_csv('./data/archieve_data/btc_archieve/btc_hourly_sent_score.csv')
@@ -36,7 +40,7 @@ class ModelEngine():
         sent_tweets.Datetime = pd.to_datetime(sent_tweets.Datetime)
         
         if self.interval[-1] == 'd':
-            print('yes daily model')
+            #print('yes daily model')
             sent_tweets['Datetime'] = sent_tweets['Datetime'].dt.strftime('%Y-%m-%d %H:%M:%S+00:00')
             sent_tweets.Datetime = pd.to_datetime(sent_tweets.Datetime)
         sent_tweets.set_index('Datetime', inplace=True, drop=True)
@@ -46,7 +50,7 @@ class ModelEngine():
         #sent_tweets.set_index('Datetime', inplace=True, drop=True)
         
         #sent_tweets.index = sent_tweets.index.tz_convert(None) # only hourly
-        print(sent_tweets)
+        #print(sent_tweets)
         return sent_tweets
     
     def composite_tweet_sentiment_and_data_manipulation(self, data: DataManipulation,
@@ -54,7 +58,7 @@ class ModelEngine():
                                                          sent_tweets: pd.DataFrame()):
 
         df_price_ext = data.extract_features()
-        print(f'df: {type(df_price_ext.index)} tweet: {type(sent_tweets.index)}')
+        #print(f'df: {type(df_price_ext.index)} tweet: {type(sent_tweets.index)}')
         
         df_final = tsa.concat_ohlc_compound_score(df_price_ext, sent_tweets)
         del df_price_ext
@@ -66,26 +70,26 @@ class ModelEngine():
     def backtest_prediction(self, X_pd, y_pred):
         X_pd["position"] = [y_pred[i] for i, _ in enumerate(X_pd.index)]
     
-        print(X_pd[["log_return", "position"]]) 
+        #print(X_pd[["log_return", "position"]]) 
     
         X_pd["strategy"] = X_pd.position.shift(1) * X_pd["log_return"]
         X_pd[["log_return", "strategy"]].sum().apply(np.exp)
         X_pd["cstrategy"] = X_pd["strategy"].cumsum().apply(np.exp) 
         X_pd["creturns"] = X_pd.log_return.cumsum().apply(np.exp) 
 
-        X_pd.creturns.plot(figsize = (12, 8), title = f"{self.symbol} - Buy and Hold", fontsize = 12)
-        plt.show()
+        #X_pd.creturns.plot(figsize = (12, 8), title = f"{self.symbol} - Buy and Hold", fontsize = 12)
+        #plt.savefig(self.data_plot_path)
 
-        X_pd[["creturns", "cstrategy"]].plot(figsize = (12 , 8), fontsize = 12)
-        plt.show()
+        #X_pd[["creturns", "cstrategy"]].plot(figsize = (12 , 8), title = f"{self.symbol} - Buy and Hold", fontsize = 12)
+        #plt.savefig(self.data_plot_path)
         
     def trade_fee_net_returns(self, X_pd: pd.DataFrame()):
-        val_counts = X_pd.position.value_counts()
-        print(f'val counts: {val_counts}')
+        #val_counts = X_pd.position.value_counts()
+        #print(f'val counts: {val_counts}')
     
         X_pd["trades"] = X_pd.position.diff().fillna(0).abs()
-        trade_val_count = X_pd.trades.value_counts()
-        print(f'trade val counts: {trade_val_count}')
+        #trade_val_count = X_pd.trades.value_counts()
+        #print(f'trade val counts: {trade_val_count}')
     
         commissions = 0.00075 # reduced Binance commission 0.075%
         other = 0.0001 # proportional costs for bid-ask spread & slippage (more detailed analysis required!)
@@ -95,19 +99,20 @@ class ModelEngine():
         X_pd["cstrategy_net"] = X_pd.strategy_net.cumsum().apply(np.exp)
     
         X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(figsize = (12 , 8))
-        plt.show()
+        plt.savefig(self.model_plot_path)
         
     def get_accuracy_score_for_xgboost_fit_separate_dataset(self, df_final: pd.DataFrame()):
         y = df_final.feature_label
         X = df_final.drop(columns=['feature_label'], axis=1)
         
-        print(f'shapes {X.shape, y.shape}')
+        #print(f'shapes {X.shape, y.shape}')
     
         #X["twitter_sent_score"] = X["twitter_sent_score"].shift(1)
         #X["twitter_sent_score"][X.index[0]] = 0
 
         xgb = XgboostForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
                     tree_method='gpu_hist', eval_metric='logloss')
+        self.ai_type = xgb.__class__.__name__
         xgb.create_train_test_data(X, y, test_size=0.2)
         
         xgb.fit()
@@ -117,7 +122,7 @@ class ModelEngine():
         xgb.save_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}')
         score = xgb.get_score()
 
-        print(f'first score: {score}')
+        print(f'First score: {score}')
         #xgb.plot_learning_curves()
         xgb.get_model_names('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/')
         #best_params = xgb.bestparams_gridcv([100, 200], [0.1], [1, 3], verbose=3)
@@ -126,23 +131,44 @@ class ModelEngine():
         ypred_reg = xgb.model.predict(xgb.X_test)
         print(f'Last accuracy: {accuracy_score(ytest, ypred_reg)}')
         acc_score = accuracy_score(ytest, ypred_reg)
-        print(f'Confusion Matrix: {confusion_matrix(ytest, ypred_reg)}')
+        print(f'Confusion Matrix:\n{confusion_matrix(ytest, ypred_reg)}')
 
         ### Services test
-        self.save_service(X, xgb, acc_score)
+        #self.save_service(X, xgb, acc_score)
         ## New Domain servicesss test
-        res_str = self.save_crypto_forecast_model_service(X, xgb, acc_score)
-        print(f'New test domain servis result is: {res_str}')
+        save_forecast_model_service = RequestServices().post_save_model_with_api(
+                                self.symbol,
+                                self.symbol_cut,
+                                self.source,
+                                X.shape[1],
+                                self.model_name,
+                                self.interval,
+                                self.ai_type, 
+                                acc_score
+                            )
+        #res_str = self.save_crypto_forecast_model_service(X, xgb, acc_score)
+        print(f'New test domain servis result is: {save_forecast_model_service}')
 
-        n_feat = xgb.get_n_importance_features(10)
-        print(f'importance: {n_feat}')
+        #n_feat = xgb.get_n_importance_features(10)
+        #print(f'importance: {n_feat}')
     
-        xgb.plot_fature_importance()
+        xgb.plot_feature_importance(
+            self.model_importance_feature, 
+            self.symbol
+            )
     
         ypr = xgb.model.predict(X)
         self.backtest_prediction(X, ypr)
         self.trade_fee_net_returns(X)
         
+    def start_model_engine(self, data:DataManipulation,
+                            tsa: TweetSentimentAnalyzer, tweet_file):
+        sent_tweets = self.get_tweet_sentiment_hourly_filed(tweet_file)
+        df_final = self.composite_tweet_sentiment_and_data_manipulation(data, tsa, sent_tweets)
+        #df_final = data.extract_features()
+        self.get_accuracy_score_for_xgboost_fit_separate_dataset(df_final)
+
+    """
     def save_service(self, X: pd.DataFrame(), forecaster: XgboostForecaster, accuracy_score):
         ### Services test
         session = get_session()
@@ -181,16 +207,10 @@ class ModelEngine():
                 session,
             )
         except (services.InvalidName) as e:
-            return f'An errror for creating model {self.symbol}'
+            return f'An errror for creating model {e}'
         return f'Succesfully created model {self.symbol}'
+    """
         
-        
-    def start_model_engine(self, data:DataManipulation,
-                            tsa: TweetSentimentAnalyzer, tweet_file):
-        sent_tweets = self.get_tweet_sentiment_hourly_filed(tweet_file)
-        df_final = self.composite_tweet_sentiment_and_data_manipulation(data, tsa, sent_tweets)
-        #df_final = data.extract_features()
-        self.get_accuracy_score_for_xgboost_fit_separate_dataset(df_final)
         
 if __name__ == '__main__':
     from KZ_project.Infrastructure import config
@@ -199,11 +219,11 @@ if __name__ == '__main__':
     tsa = TweetSentimentAnalyzer()
     data = DataManipulation(asset_config.SYMBOL, asset_config.source, 
                         asset_config.range_list, start_date=asset_config.start_date, 
-                        end_date=asset_config.end_date, interval=asset_config.interval, scale=asset_config.SCALE, 
+                        end_date=asset_config.end_date, interval=asset_config.interval_model, scale=asset_config.SCALE, 
                         prefix_path='.', saved_to_csv=False,
                         logger=asset_config.logger, client=asset_config.client)
     df_price = data.df.copy()
     
-    model_engine = ModelEngine(asset_config.SYMBOL, asset_config.SYMBOL_CUT, asset_config.source, asset_config.interval)
+    model_engine = ModelEngine(asset_config.SYMBOL, asset_config.SYMBOL_CUT, asset_config.source, asset_config.interval_model)
     
     model_engine.start_model_engine(data, tsa, asset_config.tweet_file_hourly)
