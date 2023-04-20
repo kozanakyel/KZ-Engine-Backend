@@ -18,6 +18,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from KZ_project.webapi.services import services
+from KZ_project.webapi.services.request_services import RequestServices
 
 #orm.start_mappers()
 engine = create_engine(config.get_postgres_uri())
@@ -32,6 +33,9 @@ class ForecastEngineHourly():
         self.tsa = TweetSentimentAnalyzer(lang=lang)
         self.hastag = hastag
         self.symbol = symbol
+        self.data_plot_path = f'./data/plots/instant_evaluation/'
+        self.model_plot_path = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_instant_backtest.png'
+        #self.model_importance_feature = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_importance.png'
      
     def get_sentiment_daily_hourly_scores(self, hastag: str, 
                                            twitter_client: TwitterCollection,
@@ -94,10 +98,10 @@ class ForecastEngineHourly():
         X_pd["cstrategy"] = X_pd["strategy"].cumsum().apply(np.exp) 
         X_pd["creturns"] = X_pd.log_return.cumsum().apply(np.exp) 
 
-        X_pd.creturns.plot(figsize = (12, 8), title = "BTC/USDT - Buy and Hold", fontsize = 12)
-        #plt.show()
+        #X_pd.creturns.plot(figsize = (12, 8), title = "BTC/USDT - Buy and Hold", fontsize = 12)
+        #plt.savefig()
 
-        X_pd[["creturns", "cstrategy"]].plot(figsize = (12 , 8), fontsize = 12)
+        #X_pd[["creturns", "cstrategy"]].plot(figsize = (12 , 8), fontsize = 12)
         #plt.show()
         
     def trade_fee_net_returns(self, X_pd: pd.DataFrame()):
@@ -115,17 +119,17 @@ class ForecastEngineHourly():
         X_pd["strategy_net"] = X_pd.strategy + X_pd.trades * ptc # strategy returns net of costs
         X_pd["cstrategy_net"] = X_pd.strategy_net.cumsum().apply(np.exp)
     
-        X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(figsize = (12 , 8))
-        #plt.show()
+        X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(figsize = (12 , 8), title = f"{self.symbol} Instant Returns")
+        plt.savefig(self.model_plot_path)
         
     def predict_last_day_and_next_hour(self, df_final):
         xgb = XgboostForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
                     tree_method='gpu_hist', eval_metric='logloss')
         self.ai_type = xgb.__class__.__name__
         
-        session = get_session()
-        repo = ForecastModelRepository(session)
-        print(f'deneme forecast: {self.symbol} {config.BinanceConfig.interval_model} {self.ai_type}')
+        #session = get_session()
+        #repo = ForecastModelRepository(session)
+        #print(f'deneme forecast: {self.symbol} {config.BinanceConfig.interval_model} {self.ai_type}')
         #try:
         #    fm_model = services.get_forecast_model(
         #                    "BNBUSDT", 
@@ -138,10 +142,11 @@ class ForecastEngineHourly():
         #    print(f'errors occured frmodel: {e}')
         #print(f'son test {fm_model}')
         #fm_model_name = fm_model.model_name
-        md_name = self.get_model_name_with_api()
-        print(f'modelll nameee: {md_name}')
-        xgb.load_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{md_name}')
-        print(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{md_name}')
+        #md_name = self.get_model_name_with_api()
+        model_t = RequestServices.get_model_with_api(self.symbol, config.BinanceConfig.interval_model, self.ai_type)
+        print(f'modelll nameee: {model_t["model_name"]}')
+        xgb.load_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{model_t["model_name"]}')
+        print(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{model_t["model_name"]}')
         
         
         #if self.hastag == 'btc':
@@ -200,7 +205,9 @@ class ForecastEngineHourly():
                                              }
         )    
         return r.status_code
-        
+     
+     
+    """
     def prediction_service_new_signaltracker(self, ai_type, Xt, next_candle_prediction):
         session = get_session()
         repo = SignalTrackerRepository(session)
@@ -226,6 +233,7 @@ class ForecastEngineHourly():
         except (services.InvalidName) as e:
             return f'error occyred for signal tracker {self.symbol}'
         return f'Succes signaltracker for {self.symbol}'
+    """     
     
     def forecast_builder(self, start_date):
         client_twt, tsa, daily, hourly, data = self.construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(start_date, self.hastag, self.symbol)
@@ -235,8 +243,17 @@ class ForecastEngineHourly():
         print(f'\n\nlast row: {Xt}\nNext Candle Hourly Prediction for {self.symbol} is: {next_candle_prediction}\n\n')
         self.prediction_service(symbol=self.symbol, Xt=Xt, next_candle_prediction=next_candle_prediction)
         #self.prediction_service_new_signaltracker(self.ai_type, Xt, next_candle_prediction)
-        scode = self.post_signaltracker_with_api(next_candle_prediction, self.hastag, self.tweet_counts, Xt)
-        print(scode)
+        #scode = self.post_signaltracker_with_api(next_candle_prediction, self.hastag, self.tweet_counts, Xt)
+        sr_code = RequestServices.post_signaltracker_with_api(
+            self.symbol, 
+            config.BinanceConfig.interval_model, 
+            self.ai_type, 
+            next_candle_prediction,
+            self.hastag,
+            self.tweet_counts,
+            Xt
+            )
+        print(sr_code)
         return self.ai_type, Xt, next_candle_prediction
         
         

@@ -10,6 +10,7 @@ from KZ_project.Infrastructure import config
 from KZ_project.Infrastructure.orm_mapper import orm
 from KZ_project.webapi.services import services
 import requests
+import json
 
 #orm.start_mappers()
 get_session = sessionmaker(bind=create_engine(config.get_postgres_uri()))
@@ -52,4 +53,19 @@ class RequestServices():
                                              "accuracy_score":accuracy_score
                                              }
         )    
-        return r.status_code   
+        return r.status_code  
+    
+    @staticmethod
+    def get_model_with_api(symbol, interval, ai_type):
+        url = config.get_api_url()
+        
+        r = requests.get(
+            f"{url}/forecast_model", json={
+                "symbol": symbol,
+                "interval": interval,
+                "ai_type": ai_type
+            }
+        )   
+        string_content = r.content.decode('utf-8')
+        dict_content = json.loads(string_content) 
+        return dict_content
