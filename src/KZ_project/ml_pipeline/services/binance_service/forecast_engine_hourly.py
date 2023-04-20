@@ -95,10 +95,10 @@ class ForecastEngineHourly():
         X_pd["creturns"] = X_pd.log_return.cumsum().apply(np.exp) 
 
         X_pd.creturns.plot(figsize = (12, 8), title = "BTC/USDT - Buy and Hold", fontsize = 12)
-        plt.show()
+        #plt.show()
 
         X_pd[["creturns", "cstrategy"]].plot(figsize = (12 , 8), fontsize = 12)
-        plt.show()
+        #plt.show()
         
     def trade_fee_net_returns(self, X_pd: pd.DataFrame()):
         val_counts = X_pd.position.value_counts()
@@ -116,7 +116,7 @@ class ForecastEngineHourly():
         X_pd["cstrategy_net"] = X_pd.strategy_net.cumsum().apply(np.exp)
     
         X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(figsize = (12 , 8))
-        plt.show()
+        #plt.show()
         
     def predict_last_day_and_next_hour(self, df_final):
         xgb = XgboostForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
@@ -159,7 +159,7 @@ class ForecastEngineHourly():
         self.trade_fee_net_returns(X)
         
     
-        return str(X.index[-1] + timedelta(hours=2)), int(ypred_reg[-1])
+        return str(X.index[-1] + timedelta(hours=1)), int(ypred_reg[-1])
     
     def prediction_service(self, symbol, Xt, next_candle_prediction):
         url = config.get_api_url()
