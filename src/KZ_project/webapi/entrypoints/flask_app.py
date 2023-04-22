@@ -28,6 +28,7 @@ orm.metadata.create_all(engine)
 app = Flask(__name__)
 
   # CORs policy from local development problem
+CORS(app) 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = config.get_postgres_uri()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -35,9 +36,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 ##migrate = Migrate(app, db)
 ####
-with app.app_context():
-    db.create_all()
-CORS(app) 
+#with app.app_context():
+#    db.create_all()
+
 
 
 @app.route("/add_asset", methods=["POST"])
@@ -232,7 +233,7 @@ def add_signal_tracker():
         return {"message": str(e)}, 400
     return "OK", 201
 
-@app.route("/signal_tracker", methods=["GET"])
+@app.route("/signal_tracker", methods=["POST"])
 def get_signal_tracker():
     session = get_session()
     repo_fm = ForecastModelRepository(session)
