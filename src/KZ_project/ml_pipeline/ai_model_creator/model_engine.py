@@ -2,6 +2,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix
+from datetime import datetime
 #from KZ_project.core.adapters.crypto_repository import CryptoRepository
 #from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
 
@@ -51,6 +52,10 @@ class ModelEngine():
         
         #sent_tweets.index = sent_tweets.index.tz_convert(None) # only hourly
         #print(sent_tweets)
+        
+        # For one hour start date
+        ss = datetime(2023, 1, 9, 0, 0, 0)
+        sent_tweets = sent_tweets.loc[:ss]
         return sent_tweets
     
     def composite_tweet_sentiment_and_data_manipulation(self, data: DataManipulation,

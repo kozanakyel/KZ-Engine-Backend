@@ -25,11 +25,12 @@ from KZ_project.webapi.services.request_services import RequestServices
 
 class ForecastEngineHourly():
     
-    def __init__(self, hastag, symbol, lang: str="en"):
+    def __init__(self, hastag, symbol, interval, lang: str="en"):
         self.client_twitter = TwitterCollection()
         self.tsa = TweetSentimentAnalyzer(lang=lang)
         self.hastag = hastag
         self.symbol = symbol
+        self.interval = interval
         self.data_plot_path = f'./data/plots/instant_evaluation/'
         self.model_plot_path = self.data_plot_path + f'{self.hastag}/{self.symbol}_model_instant_backtest.png'
         #self.model_importance_feature = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_importance.png'
@@ -39,7 +40,7 @@ class ForecastEngineHourly():
                                            tsa: TweetSentimentAnalyzer,
                                            hour: int=24*1):
         #print(f'attribuites get interval: {hastag} {hour} ')
-        df_tweets = twitter_client.get_tweets_with_interval(hastag, 'en', hour=hour, interval=1)
+        df_tweets = twitter_client.get_tweets_with_interval(hastag, 'en', hour=hour, interval=int(self.interval[0]))
         #print(f'######## Shape of {hastag} tweets df: {df_tweets.shape}')
         self.tweet_counts = df_tweets.shape[0]
         #print(f'pure tweets hourly: {df_tweets.iloc[-1]}')
@@ -140,8 +141,9 @@ class ForecastEngineHourly():
         #print(f'son test {fm_model}')
         #fm_model_name = fm_model.model_name
         #md_name = self.get_model_name_with_api()
-        model_t = RequestServices.get_model_with_api(self.symbol, config.BinanceConfig.interval_model, self.ai_type)
-        #print(f'modelll nameee: {model_t["model_name"]}')
+        print(f'interval: {self.interval}')
+        model_t = RequestServices.get_model_with_api(self.symbol, self.interval, self.ai_type)
+        print(f'modelll nameee: {model_t["model_name"]}')
         xgb.load_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{model_t["model_name"]}')
         #print(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{model_t["model_name"]}')
         
@@ -161,7 +163,7 @@ class ForecastEngineHourly():
         self.trade_fee_net_returns(X)
         
     
-        return str(X.index[-1] + timedelta(hours=1)), int(ypred_reg[-1])
+        return str(X.index[-1] + timedelta(hours=int(self.interval[0]))), int(ypred_reg[-1])
     
 
      
@@ -243,7 +245,7 @@ class ForecastEngineHourly():
         #scode = self.post_signaltracker_with_api(next_candle_prediction, self.hastag, self.tweet_counts, Xt)
         sr_code = RequestServices.post_signaltracker_with_api(
             self.symbol, 
-            config.BinanceConfig.interval_model, 
+            self.interval, 
             self.ai_type, 
             next_candle_prediction,
             self.hastag,

@@ -152,7 +152,8 @@ if __name__ == '__main__':
 
     def get_history():
         now = datetime.utcnow()
-        dff = client.get_history(symbol = "BTCUSDT", interval = "1h", start = str(now - timedelta(hours = 2)), end=None)
+        dff = client.get_history(symbol = "BTCUSDT", interval = "1h", 
+                                 start = str(now - timedelta(hours = 2)), end=None)
         print(dff)
 
 
@@ -164,7 +165,7 @@ if __name__ == '__main__':
                    {"symbol":"DOGEUSDT", "name":"doge", "bar_length":"5m"}]
         trader_c_list = []
         for coin_d in cr_list:
-            engine = ForecastEngineHourly(coin_d["name"], coin_d["symbol"])
+            engine = ForecastEngineHourly(coin_d["name"], coin_d["symbol"], "1h")
         
             trader_coin_d = AITrader(
                 symbol=coin_d["symbol"], 
@@ -186,7 +187,7 @@ if __name__ == '__main__':
             i.stop_trading()
             
     def web_socket_trader_starter_btc():
-        engine = ForecastEngineHourly("btc", "BTCUSDT")
+        engine = ForecastEngineHourly("btc", "BTCUSDT", "1h")
         
         trader_coin_d = AITrader(
                 symbol="BTCUSDT", 
