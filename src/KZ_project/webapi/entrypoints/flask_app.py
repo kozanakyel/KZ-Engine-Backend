@@ -4,7 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_migrate import Migrate
+import json
+# from flask_migrate import Migrate
 
 from KZ_project.Infrastructure.orm_mapper import orm
 from KZ_project.core.adapters.crypto_repository import CryptoRepository
@@ -259,3 +260,39 @@ def get_signal_tracker():
             return {"message": "This Tracker is not found!"}, 400
     else:
         return {"message": "This AI model is not found!"}, 400
+    
+@app.route("/signal_tracker_all", methods=["POST"])
+def get_signal_tracker_all():
+    """Fetch all unique models with symbol and last created date but 
+    if we have models that same paramaters and 
+    train different datetime you can see this models result
+
+    Returns:
+        _type_: _description_
+    """
+    session = get_session()
+    repo_fm = ForecastModelRepository(session)
+    repo_sg = SignalTrackerRepository(session)
+    
+    model_list = services.get_fm_models_list_all_unique_symbols(
+        request.json["interval"],
+        request.json["ai_type"],        
+        repo_fm, 
+        session
+    )
+    #print(model_list)
+    signal_tracker_list = []
+    for i in model_list:
+        
+        #print(i.id)
+        res_signal = services.get_signal_tracker(
+            i.id, repo_sg, session
+        )
+        #print(i.symbol)
+        if res_signal:
+            signal_tracker_list.append(res_signal.json())
+    
+    #json_obj_list = [i.json() for i in model_list]
+    #print(json_obj_list)
+    # json_output = json.dumps(json_obj_list)
+    return signal_tracker_list, 201

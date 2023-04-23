@@ -2,7 +2,7 @@ import abc
 from KZ_project.core.adapters.repository import AbstractBaseRepository
 from KZ_project.core.domain.forecast_model import ForecastModel
 
-from sqlalchemy import desc
+from sqlalchemy import desc, func, and_
 
 
 class AbstractForecastModelRepository(AbstractBaseRepository):
@@ -31,3 +31,20 @@ class ForecastModelRepository(AbstractForecastModelRepository):
     
     def list(self):
         return self.session.query(ForecastModel).all()
+    
+    def get_last_forecast_models(self, interval, ai_type):
+        subq = self.session.query(
+                    ForecastModel.symbol.label('symbol'),
+                    func.max(ForecastModel.created_at).label('max_created_at')
+                ).filter_by(interval=interval)\
+                 .filter_by(ai_type=ai_type)\
+                 .group_by(ForecastModel.symbol).subquery()
+
+        q = self.session.query(ForecastModel).join(
+                subq, and_(
+                    ForecastModel.symbol == subq.c.symbol,
+                    ForecastModel.created_at == subq.c.max_created_at
+                )
+            )
+
+        return q.all()

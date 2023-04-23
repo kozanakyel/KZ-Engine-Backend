@@ -62,7 +62,7 @@ def get_aimodel(
     return result 
 
 
-#######################
+####################### new Domains ##############################
 class InvalidName(Exception):
     pass
 
@@ -132,4 +132,13 @@ def get_signal_tracker(
     session.commit()
     return result 
     
+def get_fm_models_list_all_unique_symbols( 
+    interval: str, ai_type: str,                                      
+    repo: AbstractBaseRepository, session,
+) -> None:
+    
+    result = repo.get_last_forecast_models(interval, ai_type)
+    
+    session.commit()
+    return result 
 
