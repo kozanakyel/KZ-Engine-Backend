@@ -1,10 +1,85 @@
 # KZ Forecasting Engine with Sentiment Analysis and Decision Trees
-This is my project. That is an Algoritmic Trading Bot at CryptoCurrencies and Analysis for Financial Data Science. Additionally it includes Twitter Sentiment analysis and functionalities. The other side i add XGboost, LightGBM, DecisitonTree, Random Walk strategies and also LSTM modelling..
+The objective of this project is to use various techniques such as Decision Trees, Sentiment Analysis with Natural Language Processing, and Japanese Candlestick Art to forecast the structure of the next candle for popular cryptocurrencies like Bitcoin, Ethereum, Binance coin, Ripple, and Doge coin. The predictions will be made using a binary format and will aim to determine whether the price movement of the cryptocurrencies in the market will increase or decrease within the next 1-2 hours based on the candle structure.
 
-Example: Bitcoin sentiment analysis with 2 million tweets from 2022-10 and 2022-11
-![Bitcoin Sentiment Analysis](/assets/images/btc_twitter_sentimen.png)
+In addition to these techniques, the research also involves studying other technical analysis and indicator structures, as well as incorporating Twitter data and sentiment analysis scores into the model.
+The research resulted in the development of an application with a backend data and AI modelling pipeline, as well as a frontend for users to view the coin signal results and how many tweets were evaluated.
+
+However, it is important to note that predicting the movement of cryptocurrencies can be challenging due to their volatility and the many external factors that may impact their value. Therefore, while this project may provide useful insights, investors should exercise caution and consider all relevant information before making investment decisions.
+
+The motivation behind this project is that when people decide to buy a coin, generally the price of that coin in the stock market starts to fall, and when all indicators say "sell," the price goes up, or when they say "buy," the price goes down. This is called the point of financial saturation. My goal is to create an artificial intelligence-based system that can prevent this from happening, by detecting these two points and presenting them to users through various methods. Additionally, I aim to turn this system into an application and meet with customers. By evaluating this process with artificial intelligence and applications, I want to create an application that will help people make long-term profits and reduce trading stress by detecting price trends.
+
+Financial saturation is a well-known phenomenon in the world of trading and investing, and it can be difficult for individuals to navigate. With the advancements in technology and the increasing popularity of artificial intelligence, there is an opportunity to create a system that can help individuals make better decisions when it comes to trading. By detecting the points of financial saturation, individuals can avoid buying or selling at the wrong time and potentially lose money. This project aims to develop such a system using various methods and algorithms, including the use of machine learning and neural networks. Additionally, by creating an application that can be used by customers, this system can be accessible to a wider audience, ultimately helping more people make profitable trades and achieve their financial goals.
+
+## How installed and Run
+Require specific python version because Binance API not upgraded for other new python verison.
+We recommend pyenv and use python 3.8
+
+```
+python==3.8.1
+```
+
+```
+$ git clone https://github.com/kozanakyel/KZ-Forecasting-Engine-Backend
+$ cd https://github.com/kozanakyel/KZ-Forecasting-Engine-Backend
+$ python3 -m venv venv
+$ source venv/bin/activate
+$ pip install -U pip
+$ pip install -U requirements.txt
+$ pip install -e src
+$ python -m nltk.downloader stopwords
+
+```
+
+OK! At the now tou can ready for running application but before you should add .env file with this format.
+
+```
+TW_access_token=...
+TW_access_token_secret=...
+TW_consumer_key=...
+TW_consumer_secret=...
+TW_BEARER_TOKEN=...
+
+BINANCE_API_KEY=...
+BINANCE_SECRET_KEY=...
+
+SECRET_KEY=...
+
+PSQL_USER=postgres
+PSQL_PWD=postgres
+PSQL_HOST=localhost
+PSQL_PORT=5433
+PSQL_DB_NAME=kz_project
+
+API_PORT=5000
+API_HOST=127.0.0.1
+```
+
+Then we can ready for running application. Firstly you must start the web api project part.
+
+```
+$ python src/app.py
+```
+
+If ypu can track and getting instantly model prediction for 5 coins(BTCUSDT, BNBUSDT, ETHUSDT, XRPUSDT, DOGEUSDT). you must run this command:
+
+```
+$ cd src/Kz_project/ml_pipeline/services/binance_service
+$ python ai_trader.py
+```
+
+## Explanation and some Result Comparison
+
+You can see some backtest result in data/plots folder for this 5 coins
+
+![DOGE coin 5 months backtest result for AI model](/data/plots/model_evaluation/doge/DOGEUSDT_binance_1h_model_backtest.png)
+
+Below picture you can see model importance for this model and DOGE coin
+
+![DOGE coin Feature importance for AI model](/data/plots/model_evaluation/doge/DOGEUSDT_binance_1h_model_importance.png)
 
 The aim of this project is to price prediction (Cryptocurrencies, Bitcoin, and National Exchange platforms like BIST) any asset on exchanges with machine learning and deep learning methods especially trending methods recently used like the Xgboost, LigthGBM, LSTM etc., whether the price predictions of the products in the stock markets and the next day or the candle structure will increase or decrease. For this purposes, a sequence of steps and a machine learning workflow structure that will be applied sequentially will be followed. First of all, data pre-processing will be done. We will use tradingview api, binance api, yahoo finance api, ctxc api etc. Many API structures will be examined with various trials. Afterwards, studies will be carried out with technical analysis libraries under the python language for technical analysis and creation of new features. After the necessary indicators and features are determined, technical analysis strategies that give good results in the finance market will be labelled. One of the desired studies is to add Japanese candlestick recognition to these features. With the created data pipeline, the necessary data frames for both deep learning modelling and technical analysis and determining strategies with high profitability will be automatically created and easy to use with the help of pandas library.
+
+![Bitcoin Sentiment Analysis](/assets/images/btc_twitter_sentimen.png)
 
 INNOVATION: Always ask myself why and when all the people say buy coin but then price decrease, Sell the coin then price UP.
 So i innovate a new Indicator with combination 23 indicators and also some strategies most popular. then all this indicators converted to binary matrix. at the last step i sum up all rows for obtain some knowledge about them. I named it the KZ_INDEX/SCORE.
