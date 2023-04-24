@@ -77,7 +77,11 @@ Below picture you can see model importance for this model and DOGE coin
 
 ![DOGE coin Feature importance for AI model](/data/plots/model_evaluation/doge/DOGEUSDT_binance_1h_model_importance.png)
 
-The aim of this project is to price prediction (Cryptocurrencies, Bitcoin, and National Exchange platforms like BIST) any asset on exchanges with machine learning and deep learning methods especially trending methods recently used like the Xgboost, LigthGBM, LSTM etc., whether the price predictions of the products in the stock markets and the next day or the candle structure will increase or decrease. For this purposes, a sequence of steps and a machine learning workflow structure that will be applied sequentially will be followed. First of all, data pre-processing will be done. We will use tradingview api, binance api, yahoo finance api, ctxc api etc. Many API structures will be examined with various trials. Afterwards, studies will be carried out with technical analysis libraries under the python language for technical analysis and creation of new features. After the necessary indicators and features are determined, technical analysis strategies that give good results in the finance market will be labelled. One of the desired studies is to add Japanese candlestick recognition to these features. With the created data pipeline, the necessary data frames for both deep learning modelling and technical analysis and determining strategies with high profitability will be automatically created and easy to use with the help of pandas library.
+## AI pipeline and KZ Engine Logic
+
+![Project Logic Flow](/assets/images/KZ_project.jpg)
+
+### some extra information
 
 ![Bitcoin Sentiment Analysis](/assets/images/btc_twitter_sentimen.png)
 
