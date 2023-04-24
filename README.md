@@ -20,7 +20,7 @@ python==3.8.1
 
 ```
 $ git clone https://github.com/kozanakyel/KZ-Forecasting-Engine-Backend
-$ cd https://github.com/kozanakyel/KZ-Forecasting-Engine-Backend
+$ cd KZ-Forecasting-Engine-Backend
 $ python3 -m venv venv
 $ source venv/bin/activate
 $ pip install -U pip
