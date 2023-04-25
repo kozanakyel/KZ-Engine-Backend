@@ -58,6 +58,7 @@ class ModelEngine():
         sent_tweets = sent_tweets.loc[:ss]
         return sent_tweets
     
+    
     def composite_tweet_sentiment_and_data_manipulation(self, data: DataManipulation,
                                                              tsa: TweetSentimentAnalyzer,
                                                          sent_tweets: pd.DataFrame()):
@@ -123,6 +124,9 @@ class ModelEngine():
         xgb.fit()
     
         self.model_name = f'test_{self.symbol}_{self.source}_model_price_{self.interval}_feature_numbers_{X.shape[1]}.json'
+        
+        # try for instant model evaluation for one week
+        self.model_name
     
         xgb.save_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}')
         score = xgb.get_score()
@@ -165,6 +169,7 @@ class ModelEngine():
         ypr = xgb.model.predict(X)
         self.backtest_prediction(X, ypr)
         self.trade_fee_net_returns(X)
+        print(f'x last row {X.iloc[-1]}\n prediction last candle {ypr[-1]}')
         
     def start_model_engine(self, data:DataManipulation,
                             tsa: TweetSentimentAnalyzer, tweet_file):

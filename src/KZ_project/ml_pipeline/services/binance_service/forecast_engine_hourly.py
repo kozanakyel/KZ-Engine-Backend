@@ -10,7 +10,7 @@ from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostFo
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
-
+from sklearn.metrics import accuracy_score, confusion_matrix
 #from sqlalchemy import create_engine
 #from sqlalchemy.orm import sessionmaker
 
@@ -38,7 +38,7 @@ class ForecastEngineHourly():
     def get_sentiment_daily_hourly_scores(self, hastag: str, 
                                            twitter_client: TwitterCollection,
                                            tsa: TweetSentimentAnalyzer,
-                                           hour: int=24*1):
+                                           hour: int=24*5):
         #print(f'attribuites get interval: {hastag} {hour} ')
         df_tweets = twitter_client.get_tweets_with_interval(hastag, 'en', hour=hour, interval=int(self.interval[0]))
         #print(f'######## Shape of {hastag} tweets df: {df_tweets.shape}')
@@ -88,8 +88,13 @@ class ForecastEngineHourly():
     
     def backtest_prediction(self, X_pd, y_pred):
         X_pd["position"] = [y_pred[i] for i, _ in enumerate(X_pd.index)]
-    
-        #print(X_pd[["log_return", "position"]]) 
+        X_pd["target"] = (X_pd['log_return'] > 0).astype(int)             ### bidaha bak gereksiz gibi
+        X_pd["target"] = X_pd['target'].shift(-1)                         ### bidaha bak gereksiz gibi
+        X_pd["target"][X_pd.index[-1]] = X_pd["target"][X_pd.index[-2]]   ### bidaha bak gereksiz gibi
+        
+        ccc = accuracy_score(list(X_pd["target"]), list(X_pd["position"]))  ### bidaha bak gereksiz gibi
+        
+        ##print(f'IN BACKTESET Accuracy skor for 2 days: {ccc}') 
     
         X_pd["strategy"] = X_pd.position.shift(1) * X_pd["log_return"]
         X_pd[["log_return", "strategy"]].sum().apply(np.exp)
@@ -125,28 +130,29 @@ class ForecastEngineHourly():
                     tree_method='gpu_hist', eval_metric='logloss')
         self.ai_type = xgb.__class__.__name__
         
-        #session = get_session()
-        #repo = ForecastModelRepository(session)
-        #print(f'deneme forecast: {self.symbol} {config.BinanceConfig.interval_model} {self.ai_type}')
-        #try:
-        #    fm_model = services.get_forecast_model(
-        #                    "BNBUSDT", 
-        #                    "1h",
-        #                    "XgboostForecaster",
-        #                    repo,
-        #                    session
-        #                    )
-        #except Exception as e:
-        #    print(f'errors occured frmodel: {e}')
-        #print(f'son test {fm_model}')
-        #fm_model_name = fm_model.model_name
-        #md_name = self.get_model_name_with_api()
-        print(f'interval: {self.interval}')
+        #print(f'interval: {self.interval}')
         model_t = RequestServices.get_model_with_api(self.symbol, self.interval, self.ai_type)
-        print(f'modelll nameee: {model_t["model_name"]}')
+        #print(f'modelll nameee: {model_t["model_name"]}')
         xgb.load_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{model_t["model_name"]}')
         #print(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{model_t["model_name"]}')
         
+        
+        ############################ instantly 1 week model train results ##########
+        print(f'############################ instantly 1 week model train results ##########')
+        yyy = df_final.feature_label
+        xxx = df_final.drop(columns=['feature_label'], axis=1)
+
+        xgbk = XgboostForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
+                    tree_method='gpu_hist', eval_metric='logloss')
+        xgbk.create_train_test_data(xxx, yyy, test_size=0.2)
+        xgbk.fit()
+        yytest = xgbk.y_test
+        ypred_reg = xgbk.model.predict(xgbk.X_test)
+        print(f'Accuracy for 5 days traing result: {accuracy_score(yytest, ypred_reg)}')
+        print(f'XXX 5 days training last row {xxx.iloc[-1]}\n prediction last candle {ypred_reg[-1]}')
+        
+        self.backtest_prediction(xxx, ypred_reg)
+        self.trade_fee_net_returns(xxx)
         
         #if self.hastag == 'btc':
         #    xgb.load_model('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/test_BTCUSDT_binance_model_price_2h_feature_numbers_225.json')
@@ -159,8 +165,8 @@ class ForecastEngineHourly():
         self.prepared_data = X
 
         ypred_reg = xgb.model.predict(X)
-        self.backtest_prediction(X, ypred_reg)
-        self.trade_fee_net_returns(X)
+        #self.backtest_prediction(X, ypred_reg)      ### sonra tekrar ac
+        #self.trade_fee_net_returns(X)
         
     
         return str(X.index[-1] + timedelta(hours=int(self.interval[0]))), int(ypred_reg[-1])
@@ -239,7 +245,7 @@ class ForecastEngineHourly():
         hourly_tsa = self.get_tweet_sentiment_hourly(hourly)
         df_final = self.composite_tweet_sentiment_and_data_manipulation(data, hourly_tsa, tsa)
         Xt, next_candle_prediction = self.predict_last_day_and_next_hour(df_final)
-        print(f'\n\nlast row: {Xt}\nNext Candle Hourly Prediction for {self.symbol} is: {next_candle_prediction}\n\n')
+        print(f'\n\nDatabase Model Last row: {Xt}\nNext Candle Hourly Prediction for {self.symbol} is: {next_candle_prediction}\n\n')
         #self.prediction_service(symbol=self.symbol, Xt=Xt, next_candle_prediction=next_candle_prediction)
         #self.prediction_service_new_signaltracker(self.ai_type, Xt, next_candle_prediction)
         #scode = self.post_signaltracker_with_api(next_candle_prediction, self.hastag, self.tweet_counts, Xt)

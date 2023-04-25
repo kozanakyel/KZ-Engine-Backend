@@ -158,11 +158,11 @@ if __name__ == '__main__':
 
 
     def web_socket_trader_starter():
-        cr_list = [{"symbol":"BTCUSDT", "name":"btc", "bar_length":"3m"}, 
-                   {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"3m"},
+        cr_list = [{"symbol":"BTCUSDT", "name":"btc", "bar_length":"5m"}, 
+                   {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"5m"},
                    {"symbol":"XRPUSDT", "name":"xrp", "bar_length":"5m"},
-                   {"symbol":"ETHUSDT", "name":"eth", "bar_length":"5m"},
-                   {"symbol":"DOGEUSDT", "name":"doge", "bar_length":"5m"}]
+                   {"symbol":"ETHUSDT", "name":"eth", "bar_length":"3m"},
+                   {"symbol":"DOGEUSDT", "name":"doge", "bar_length":"3m"}]
         trader_c_list = []
         for coin_d in cr_list:
             engine = ForecastEngineHourly(coin_d["name"], coin_d["symbol"], "1h")
@@ -181,7 +181,7 @@ if __name__ == '__main__':
         for i in trader_c_list:
             i.start_trading()    
         
-        time.sleep(60*20)
+        time.sleep(60*30)
         
         for i in trader_c_list:
             i.stop_trading()
