@@ -106,6 +106,7 @@ class ModelEngine():
     
         X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(figsize = (12 , 8),  title = f"{self.symbol} - Buy and Hold")
         plt.savefig(self.model_plot_path)
+        plt.show()
         
     def get_accuracy_score_for_xgboost_fit_separate_dataset(self, df_final: pd.DataFrame()):
         y = df_final.feature_label
@@ -136,6 +137,7 @@ class ModelEngine():
         #xgb.get_model_names('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/')
         #best_params = xgb.bestparams_gridcv([100, 200], [0.1], [1, 3], verbose=3)
 
+        # modelengine works
         ytest = xgb.y_test
         ypred_reg = xgb.model.predict(xgb.X_test)
         print(f'Last accuracy: {accuracy_score(ytest, ypred_reg)}')
@@ -166,17 +168,19 @@ class ModelEngine():
             self.symbol
             )
     
+        xxx = xgb.X_test
         ypr = xgb.model.predict(X)
-        self.backtest_prediction(X, ypr)
-        self.trade_fee_net_returns(X)
-        print(f'x last row {X.iloc[-1]}\n prediction last candle {ypr[-1]}')
+        self.backtest_prediction(xxx, ytest)
+        self.trade_fee_net_returns(xxx)
+        print(f'x last row {X.index[-1]}\n prediction last candle {ypr[-1]}')
+        return X.index[-1], ypr[-1]
         
     def start_model_engine(self, data:DataManipulation,
                             tsa: TweetSentimentAnalyzer, tweet_file):
         sent_tweets = self.get_tweet_sentiment_hourly_filed(tweet_file)
         df_final = self.composite_tweet_sentiment_and_data_manipulation(data, tsa, sent_tweets)
         #df_final = data.extract_features()
-        self.get_accuracy_score_for_xgboost_fit_separate_dataset(df_final)
+        dat, pree = self.get_accuracy_score_for_xgboost_fit_separate_dataset(df_final)
 
     """
     def save_service(self, X: pd.DataFrame(), forecaster: XgboostForecaster, accuracy_score):
@@ -224,7 +228,7 @@ class ModelEngine():
         
 if __name__ == '__main__':
     from KZ_project.Infrastructure import config
-    asset_config = config.BitcoinConfig()
+    asset_config = config.BinanceConfig()
 
     tsa = TweetSentimentAnalyzer()
     data = DataManipulation(asset_config.SYMBOL, asset_config.source, 

@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from KZ_project.Infrastructure import config
+from KZ_project.ml_pipeline.ai_model_creator.model_engine import ModelEngine
 #from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
 #from KZ_project.core.adapters.signaltracker_repository import SignalTrackerRepository
 from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
@@ -88,11 +89,11 @@ class ForecastEngineHourly():
     
     def backtest_prediction(self, X_pd, y_pred):
         X_pd["position"] = [y_pred[i] for i, _ in enumerate(X_pd.index)]
-        X_pd["target"] = (X_pd['log_return'] > 0).astype(int)             ### bidaha bak gereksiz gibi
-        X_pd["target"] = X_pd['target'].shift(-1)                         ### bidaha bak gereksiz gibi
-        X_pd["target"][X_pd.index[-1]] = X_pd["target"][X_pd.index[-2]]   ### bidaha bak gereksiz gibi
+        ##X_pd["target"] = (X_pd['log_return'] > 0).astype(int)             ### bidaha bak gereksiz gibi
+        ##X_pd["target"] = X_pd['target'].shift(-1)                         ### bidaha bak gereksiz gibi
+        ##X_pd["target"][X_pd.index[-1]] = X_pd["target"][X_pd.index[-2]]   ### bidaha bak gereksiz gibi
         
-        ccc = accuracy_score(list(X_pd["target"]), list(X_pd["position"]))  ### bidaha bak gereksiz gibi
+        ##ccc = accuracy_score(list(X_pd["target"]), list(X_pd["position"]))  ### bidaha bak gereksiz gibi
         
         ##print(f'IN BACKTESET Accuracy skor for 2 days: {ccc}') 
     
@@ -130,29 +131,34 @@ class ForecastEngineHourly():
                     tree_method='gpu_hist', eval_metric='logloss')
         self.ai_type = xgb.__class__.__name__
         
+        
+        
+        print(f'############################ new model saved instantly 1 week model train results ##########')
+        model_engine = ModelEngine(self.symbol, self.hastag, 'binance', self.interval)
+        dtt, pree = model_engine.get_accuracy_score_for_xgboost_fit_separate_dataset(df_final)
+        
         #print(f'interval: {self.interval}')
         model_t = RequestServices.get_model_with_api(self.symbol, self.interval, self.ai_type)
         #print(f'modelll nameee: {model_t["model_name"]}')
         xgb.load_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{model_t["model_name"]}')
         #print(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.hastag}/{model_t["model_name"]}')
         
-        
         ############################ instantly 1 week model train results ##########
-        print(f'############################ instantly 1 week model train results ##########')
-        yyy = df_final.feature_label
-        xxx = df_final.drop(columns=['feature_label'], axis=1)
+        # print(f'############################ instantly 1 week model train results ##########')
+        # yyy = df_final.feature_label
+        # xxx = df_final.drop(columns=['feature_label'], axis=1)
 
-        xgbk = XgboostForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
-                    tree_method='gpu_hist', eval_metric='logloss')
-        xgbk.create_train_test_data(xxx, yyy, test_size=0.2)
-        xgbk.fit()
-        yytest = xgbk.y_test
-        ypred_reg = xgbk.model.predict(xgbk.X_test)
-        print(f'Accuracy for 5 days traing result: {accuracy_score(yytest, ypred_reg)}')
-        print(f'XXX 5 days training last row {xxx.iloc[-1]}\n prediction last candle {ypred_reg[-1]}')
+        # xgbk = XgboostForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
+        #             tree_method='gpu_hist', eval_metric='logloss')
+        # xgbk.create_train_test_data(xxx, yyy, test_size=0.2)
+        # xgbk.fit()
+        # yytest = xgbk.y_test
+        # ypred_reg = xgbk.model.predict(xgbk.X_test)
+        # print(f'Accuracy for 5 days traing result: {accuracy_score(yytest, ypred_reg)}')
+        # print(f'XXX 5 days training last row {xxx.iloc[-1]}\n prediction last candle {ypred_reg[-1]}')
         
-        self.backtest_prediction(xxx, ypred_reg)
-        self.trade_fee_net_returns(xxx)
+        # self.backtest_prediction(xxx, ypred_reg)
+        # self.trade_fee_net_returns(xxx)
         
         #if self.hastag == 'btc':
         #    xgb.load_model('./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/test_BTCUSDT_binance_model_price_2h_feature_numbers_225.json')
@@ -161,15 +167,16 @@ class ForecastEngineHourly():
         
         
 
-        X = df_final.drop(columns=['feature_label'], axis=1)
-        self.prepared_data = X
+        # X = df_final.drop(columns=['feature_label'], axis=1)
+        # self.prepared_data = X
 
-        ypred_reg = xgb.model.predict(X)
+        # ypred_reg = xgb.model.predict(X)
         #self.backtest_prediction(X, ypred_reg)      ### sonra tekrar ac
         #self.trade_fee_net_returns(X)
         
     
-        return str(X.index[-1] + timedelta(hours=int(self.interval[0]))), int(ypred_reg[-1])
+        # return str(X.index[-1] + timedelta(hours=int(self.interval[0]))), int(ypred_reg[-1])
+        return str(dtt + timedelta(hours=int(self.interval[0]))), int(pree)
     
 
      
