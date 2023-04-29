@@ -1,8 +1,10 @@
+import abc
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix
 from datetime import datetime
+import json
 #from KZ_project.core.adapters.crypto_repository import CryptoRepository
 #from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
 
@@ -23,9 +25,20 @@ from KZ_project.Infrastructure import config
 #get_session = sessionmaker(bind=create_engine(config.get_postgres_uri(), pool_size=50, pool_timeout=60, max_overflow=0))
 
 
-class ModelEngine():
+class IBacktestable(abc.ABC):
     
-    def __init__(self, symbol, symbol_cut, source, interval) -> None:
+    @abc.abstractmethod
+    def backtest_prediction(self, X_pd, y_pred):
+        raise NotImplementedError
+        
+    @abc.abstractmethod   
+    def trade_fee_net_returns(self, X_pd: pd.DataFrame()):
+        raise NotImplementedError
+
+
+class ModelEngine(IBacktestable):
+    
+    def __init__(self, symbol, symbol_cut, source, interval):
         self.symbol = symbol
         self.source = source
         self.interval = interval
@@ -106,7 +119,8 @@ class ModelEngine():
     
         X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(figsize = (12 , 8),  title = f"{self.symbol} - Buy and Hold")
         plt.savefig(self.model_plot_path)
-        plt.show()
+        #plt.show()
+        return X_pd[["creturns", "cstrategy", "cstrategy_net"]].to_json()
         
     def get_accuracy_score_for_xgboost_fit_separate_dataset(self, df_final: pd.DataFrame()):
         y = df_final.feature_label
@@ -147,18 +161,11 @@ class ModelEngine():
         ### Services test
         #self.save_service(X, xgb, acc_score)
         ## New Domain servicesss test
-        save_forecast_model_service = RequestServices().post_save_model_with_api(
-                                self.symbol,
-                                self.symbol_cut,
-                                self.source,
-                                X.shape[1],
-                                self.model_name,
-                                self.interval,
-                                self.ai_type, 
-                                acc_score
-                            )
+        
+
+        
         #res_str = self.save_crypto_forecast_model_service(X, xgb, acc_score)
-        print(f'New test domain servis result is: {save_forecast_model_service}')
+       
 
         #n_feat = xgb.get_n_importance_features(10)
         #print(f'importance: {n_feat}')
@@ -171,16 +178,31 @@ class ModelEngine():
         xxx = xgb.X_test
         ypr = xgb.model.predict(X)
         self.backtest_prediction(xxx, ytest)
-        self.trade_fee_net_returns(xxx)
-        print(f'x last row {X.index[-1]}\n prediction last candle {ypr[-1]}')
-        return X.index[-1], ypr[-1]
+        bt_json = self.trade_fee_net_returns(xxx)
+        print(f'x last row {xxx.index[-1]}\n prediction last candle {ytest[-1]}')
+        print(f' bt:   mehoid inside: {json.dumps(bt_json)}')
+        
+        save_forecast_model_service = RequestServices().post_save_model_with_api(
+                                self.symbol,
+                                self.symbol_cut,
+                                self.source,
+                                X.shape[1],
+                                self.model_name,
+                                self.interval,
+                                self.ai_type, 
+                                acc_score
+                            )
+        print(f'New test domain servis result is: {save_forecast_model_service}')
+        
+        return xxx.index[-1], ytest[-1], json.dumps(bt_json)
         
     def start_model_engine(self, data:DataManipulation,
                             tsa: TweetSentimentAnalyzer, tweet_file):
         sent_tweets = self.get_tweet_sentiment_hourly_filed(tweet_file)
         df_final = self.composite_tweet_sentiment_and_data_manipulation(data, tsa, sent_tweets)
         #df_final = data.extract_features()
-        dat, pree = self.get_accuracy_score_for_xgboost_fit_separate_dataset(df_final)
+        dat, pree, bt = self.get_accuracy_score_for_xgboost_fit_separate_dataset(df_final)
+        
 
     """
     def save_service(self, X: pd.DataFrame(), forecaster: XgboostForecaster, accuracy_score):

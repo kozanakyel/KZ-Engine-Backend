@@ -135,7 +135,7 @@ class ForecastEngineHourly():
         
         print(f'############################ new model saved instantly 1 week model train results ##########')
         model_engine = ModelEngine(self.symbol, self.hastag, 'binance', self.interval)
-        dtt, pree = model_engine.get_accuracy_score_for_xgboost_fit_separate_dataset(df_final)
+        dtt, pree, bt = model_engine.get_accuracy_score_for_xgboost_fit_separate_dataset(df_final)
         
         #print(f'interval: {self.interval}')
         model_t = RequestServices.get_model_with_api(self.symbol, self.interval, self.ai_type)
