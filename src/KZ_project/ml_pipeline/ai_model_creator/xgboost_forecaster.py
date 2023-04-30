@@ -1,19 +1,47 @@
+import abc
 import numpy
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import cross_val_score, KFold
-from sklearn.metrics import mean_squared_error, accuracy_score
-from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
-from xgboost import XGBClassifier, XGBRegressor
-from xgboost import plot_importance
-
-from KZ_project.Infrastructure.logger.logger import Logger
-import matplotlib.pyplot as plt
 import operator
 import itertools 
 import os
 
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score, KFold
+from sklearn.metrics import mean_squared_error, accuracy_score
+from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
 
-class XgboostForecaster():
+from xgboost import XGBClassifier, XGBRegressor
+from xgboost import plot_importance
+
+from KZ_project.Infrastructure.logger.logger import Logger
+
+
+class AbstractForecaster(abc.ABC):
+    
+    @abc.abstractmethod
+    def create_train_test_data(self, x, y, test_size):
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    def fit(self):
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    def save_model(self, file_name: str):
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    def load_model(self, file_name: str):
+        raise NotImplementedError
+    
+class AbstractXgboostForecaster(AbstractForecaster):
+    ...
+    
+class XgboostRegressorForecaster(AbstractXgboostForecaster):
+    ...
+    
+
+class XgboostForecaster(AbstractXgboostForecaster):
 
     def __init__(self, n_estimators: int=100, tree_method: str='gpu_hist', eta: float=0.1, 
                     max_depth: int=1, objective: str='binary', eval_metric: str='logloss', 
