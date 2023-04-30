@@ -182,17 +182,17 @@ class ModelEngine(IBacktestable):
         print(f'x last row {xxx.index[-1]}\n prediction last candle {ytest[-1]}')
         print(f' bt:   mehoid inside: {json.dumps(bt_json)}')
         
-        # save_forecast_model_service = RequestServices().post_save_model_with_api(
-        #                         self.symbol,
-        #                         self.symbol_cut,
-        #                         self.source,
-        #                         X.shape[1],
-        #                         self.model_name,
-        #                         self.interval,
-        #                         self.ai_type, 
-        #                         acc_score
-        #                     )
-        # print(f'New test domain servis result is: {save_forecast_model_service}')
+        save_forecast_model_service = RequestServices().post_save_model_with_api(
+                                self.symbol,
+                                self.symbol_cut,
+                                self.source,
+                                X.shape[1],
+                                self.model_name,
+                                self.interval,
+                                self.ai_type, 
+                                acc_score
+                            )
+        print(f'New test domain servis result is: {save_forecast_model_service}')
         
         return xxx.index[-1], ytest[-1], json.dumps(bt_json)
         
