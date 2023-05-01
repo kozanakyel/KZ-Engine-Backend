@@ -8,7 +8,7 @@ import json
 #from KZ_project.core.adapters.crypto_repository import CryptoRepository
 #from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
 
-from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostBinaryForecaster
+from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 

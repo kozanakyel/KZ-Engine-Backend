@@ -2,7 +2,7 @@ import pandas as pd
 from KZ_project.core.adapters.crypto_repository import CryptoRepository
 from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
 
-from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
+from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_forecaster import XgboostForecaster
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

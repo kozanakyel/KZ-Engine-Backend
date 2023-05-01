@@ -4,10 +4,11 @@ import numpy as np
 import pandas as pd
 
 from KZ_project.Infrastructure import config
+from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
 from KZ_project.ml_pipeline.ai_model_creator.model_engine import ModelEngine
 #from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
 #from KZ_project.core.adapters.signaltracker_repository import SignalTrackerRepository
-from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
+
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
@@ -127,7 +128,7 @@ class ForecastEngineHourly():
         plt.savefig(self.model_plot_path)
         
     def predict_last_day_and_next_hour(self, df_final):
-        xgb = XgboostForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
+        xgb = XgboostBinaryForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
                     tree_method='gpu_hist', eval_metric='logloss')
         self.ai_type = xgb.__class__.__name__
         
