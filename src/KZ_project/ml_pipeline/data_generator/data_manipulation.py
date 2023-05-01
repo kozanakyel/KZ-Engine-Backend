@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import os
 import yfinance as yf
-import shutil
 from tqdm import tqdm
 
 from KZ_project.core.strategies.technical_analysis.indicators import Indicators
@@ -26,7 +25,10 @@ some strategies need 3 level layer for labelling.
 But our main purposes is that matrix preparation for the
 our Forecaster model...
 """            
-    
+ 
+class DataCreator():
+    ...   
+
 
 class DataManipulation():
     def __init__(self, symbol: str, source: str, range_list: list, period: str=None, interval: str=None, 
@@ -361,19 +363,13 @@ class DataManipulation():
         # Normalized process for any specific column or feature
         df[column] = ((df[column] / df[column].mean()) > 1).astype(int)
 
-
-    def remove_directory(self, path: str) -> None:
-        if os.path.exists(path):
-            shutil.rmtree(path)
-            self.log(f'The path is REMOVED: {path}')
-        else:
-            self.log(f'The path is not exist. {path}')
     
     def log(self, text):
         if self.logger:
             self.logger.append_log(text)
         else:
             print(text)
+            
             
             
 if __name__ == '__main__':
@@ -395,5 +391,10 @@ if __name__ == '__main__':
                     start_date=START_DATE, end_date=END_DATE, prefix_path=PREFIX_PATH, 
                     main_path=MAIN_PATH, pure_path=PURE_PATH,
                     feature_path=FEATURE_PATH)  
+    
+    FileDataChecker(symbol=SYMBOL, period=PERIOD, interval=INTERVAL, 
+                    start_date=START_DATE, end_date=END_DATE, prefix_path=PREFIX_PATH, 
+                    main_path=MAIN_PATH, pure_path=PURE_PATH,
+                    feature_path=FEATURE_PATH)
     
     print(os.getcwd())

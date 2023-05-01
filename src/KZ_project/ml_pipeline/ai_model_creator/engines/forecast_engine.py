@@ -6,6 +6,7 @@ from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecast
 from KZ_project.ml_pipeline.ai_model_creator.engines.model_engine import ModelEngine
 
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
+from KZ_project.ml_pipeline.data_generator.feature_extractor import FeatureExtractor
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
 
@@ -61,7 +62,10 @@ class ForecastEngine():
                                                          sent_tweets: pd.DataFrame(),
                                                          tsa: TweetSentimentAnalyzer):
 
-        df_price_ext = data.extract_features()
+        feature_extractor = FeatureExtractor(data.df, data.range_list)
+        feature_extractor.create_featured_matrix()
+        df_price_ext = feature_extractor.featured_matrix
+        # df_price_ext = data.extract_features()
         df_price_ext.index = df_price_ext.index + timedelta(hours=3)
         #print(f'df extract features: {df_price_ext.iloc[-1]}')
         df_final = tsa.concat_ohlc_compound_score(df_price_ext, sent_tweets)

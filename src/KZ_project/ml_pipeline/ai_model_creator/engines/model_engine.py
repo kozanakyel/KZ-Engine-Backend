@@ -9,6 +9,7 @@ from KZ_project.ml_pipeline.ai_model_creator.engines.Ibacktestable import IBackt
 from KZ_project.ml_pipeline.ai_model_creator.forecasters.gridsearchable_cv import GridSearchableCV
 from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
+from KZ_project.ml_pipeline.data_generator.feature_extractor import FeatureExtractor
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 
 from KZ_project.webapi.services import services
@@ -48,7 +49,10 @@ class ModelEngine(IBacktestable):
                                                              tsa: TweetSentimentAnalyzer,
                                                          sent_tweets: pd.DataFrame()):
 
-        df_price_ext = data.extract_features()
+        feature_extractor = FeatureExtractor(df=data.df, range_list=data.range_list)
+        feature_extractor.create_featured_matrix()
+        df_price_ext = feature_extractor.featured_matrix
+        #df_price_ext = data.extract_features()
         
         df_final = tsa.concat_ohlc_compound_score(df_price_ext, sent_tweets)
         del df_price_ext
