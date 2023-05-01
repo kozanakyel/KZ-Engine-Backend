@@ -5,14 +5,13 @@ import pandas as pd
 
 from KZ_project.Infrastructure import config
 from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
-from KZ_project.ml_pipeline.ai_model_creator.model_engine import ModelEngine
+from KZ_project.ml_pipeline.ai_model_creator.engines.model_engine import ModelEngine
 #from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
 #from KZ_project.core.adapters.signaltracker_repository import SignalTrackerRepository
 
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
-from sklearn.metrics import accuracy_score, confusion_matrix
 #from sqlalchemy import create_engine
 #from sqlalchemy.orm import sessionmaker
 
@@ -25,7 +24,7 @@ from KZ_project.webapi.services.request_services import RequestServices
 #orm.metadata.create_all(engine)
 
 
-class ForecastEngineHourly():
+class ForecastEngine():
     
     def __init__(self, hastag, symbol, interval, lang: str="en"):
         self.client_twitter = TwitterCollection()

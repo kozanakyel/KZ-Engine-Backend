@@ -15,7 +15,7 @@ from KZ_project.Infrastructure.logger.logger import Logger
 #from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 #from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
 from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
-from KZ_project.ml_pipeline.services.binance_service.forecast_engine_hourly import ForecastEngineHourly
+from KZ_project.ml_pipeline.ai_model_creator.engines.forecast_engine import ForecastEngine
 
 import KZ_project.Infrastructure.config as config
 from sqlalchemy import create_engine
@@ -30,7 +30,8 @@ get_session = sessionmaker(bind=engine)
 
 class AITrader():
     
-    def __init__(self, symbol: str, name: str, bar_length, client: BinanceClient, units, engine: ForecastEngineHourly , logger: Logger=None):
+    def __init__(self, symbol: str, name: str, bar_length, client: BinanceClient, 
+                 units, engine: ForecastEngine, logger: Logger=None):
         self.symbol = symbol
         self.name = name
         self.bar_length = bar_length
@@ -188,7 +189,7 @@ if __name__ == '__main__':
             i.stop_trading()
             
     def web_socket_trader_starter_btc():
-        engine = ForecastEngineHourly("btc", "BTCUSDT", "1h")
+        engine = ForecastEngine("btc", "BTCUSDT", "1h")
         
         trader_coin_d = AITrader(
                 symbol="BTCUSDT", 
