@@ -5,15 +5,17 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix
 from datetime import datetime
 import json
-#from KZ_project.core.adapters.crypto_repository import CryptoRepository
-#from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
+from KZ_project.core.adapters.crypto_repository import CryptoRepository
+from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
+from KZ_project.ml_pipeline.ai_model_creator.engines.Ibacktestable import IBacktestable
+from KZ_project.ml_pipeline.ai_model_creator.forecasters.abstract_forecaster import AbstractForecaster
 
 from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 
-#from KZ_project.webapi.services import services
-#from KZ_project.core.adapters.aimodel_repository import AIModelRepository
+from KZ_project.webapi.services import services
+from KZ_project.webapi.entrypoints.flask_app import get_session
 #from KZ_project.Infrastructure.orm_mapper import orm
 
 from KZ_project.webapi.services.request_services import RequestServices
@@ -23,18 +25,6 @@ from KZ_project.webapi.services.request_services import RequestServices
 from KZ_project.Infrastructure import config
 #orm.start_mappers()
 #get_session = sessionmaker(bind=create_engine(config.get_postgres_uri(), pool_size=50, pool_timeout=60, max_overflow=0))
-
-
-class IBacktestable(abc.ABC):
-    
-    @abc.abstractmethod
-    def backtest_prediction(self, X_pd, y_pred):
-        raise NotImplementedError
-        
-    @abc.abstractmethod   
-    def trade_fee_net_returns(self, X_pd: pd.DataFrame()):
-        raise NotImplementedError
-
 
 class ModelEngine(IBacktestable):
     
@@ -86,7 +76,7 @@ class ModelEngine(IBacktestable):
         df_final.dropna(inplace=True)
         return df_final
     
-    def backtest_prediction(self, X_pd, y_pred):
+    def create_retuns_data(self, X_pd, y_pred):
         X_pd["position"] = [y_pred[i] for i, _ in enumerate(X_pd.index)]
     
         #print(X_pd[["log_return", "position"]]) 
@@ -131,7 +121,7 @@ class ModelEngine(IBacktestable):
         #X["twitter_sent_score"] = X["twitter_sent_score"].shift(1)
         #X["twitter_sent_score"][X.index[0]] = 0
 
-        xgb = XgboostBinaryForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
+        xgb = XgboostBinaryForecaster(n_estimators=500, eta=0.01, max_depth=7, 
                     tree_method='gpu_hist', eval_metric='logloss')
         self.ai_type = xgb.__class__.__name__
         xgb.create_train_test_data(X, y, test_size=0.2)
@@ -164,8 +154,10 @@ class ModelEngine(IBacktestable):
         
 
         
-        #res_str = self.save_crypto_forecast_model_service(X, xgb, acc_score)
-       
+        res_str = services.save_crypto_forecast_model_service(acc_score, get_session(), self.symbol_cut, 
+                                                          self.symbol, self.source, X.shape[1], self.model_name,
+                                                          self.interval, self.ai_type)
+        print(f'model engine model save: {res_str}')
 
         #n_feat = xgb.get_n_importance_features(10)
         #print(f'importance: {n_feat}')
@@ -177,22 +169,22 @@ class ModelEngine(IBacktestable):
     
         xxx = xgb.X_test
         ypr = xgb.model.predict(X)
-        self.backtest_prediction(xxx, ytest)
+        self.create_retuns_data(xxx, ytest)
         bt_json = self.trade_fee_net_returns(xxx)
         print(f'x last row {xxx.index[-1]}\n prediction last candle {ytest[-1]}')
         print(f' bt:   mehoid inside: {json.dumps(bt_json)}')
         
-        save_forecast_model_service = RequestServices().post_save_model_with_api(
-                                self.symbol,
-                                self.symbol_cut,
-                                self.source,
-                                X.shape[1],
-                                self.model_name,
-                                self.interval,
-                                self.ai_type, 
-                                acc_score
-                            )
-        print(f'New test domain servis result is: {save_forecast_model_service}')
+        # save_forecast_model_service = RequestServices().post_save_model_with_api(
+        #                         self.symbol,
+        #                         self.symbol_cut,
+        #                         self.source,
+        #                         X.shape[1],
+        #                         self.model_name,
+        #                         self.interval,
+        #                         self.ai_type, 
+        #                         acc_score
+        #                     )
+        # print(f'New test domain servis result is: {save_forecast_model_service}')
         
         return xxx.index[-1], ytest[-1], json.dumps(bt_json)
         
@@ -215,36 +207,6 @@ class ModelEngine(IBacktestable):
             self.symbol_cut, accuracy_score,
             repo, session
         )
-        
-    def save_crypto_forecast_model_service(self, X: pd.DataFrame(), 
-                                           forecaster: XgboostForecaster,
-                                           accuracy_score):
-        session = get_session()
-        repo = ForecastModelRepository(session)
-        repo_cr = CryptoRepository(session)
-        try: 
-            finding_crypto = services.get_crypto(
-                ticker=self.symbol_cut, 
-                repo=repo_cr, 
-                session=session
-                )
-    
-            services.add_forecast_model(
-                self.symbol,
-                self.source,
-                X.shape[1],
-                self.model_name,
-                self.interval,
-                forecaster.__class__.__name__,
-                self.symbol_cut,
-                accuracy_score,
-                finding_crypto,
-                repo,
-                session,
-            )
-        except (services.InvalidName) as e:
-            return f'An errror for creating model {e}'
-        return f'Succesfully created model {self.symbol}'
     """
         
         

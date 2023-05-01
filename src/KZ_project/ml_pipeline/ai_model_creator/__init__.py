@@ -1,3 +1,0 @@
-from .forecasters import xgboost_forecaster
-
-__all__ = ["xgboost_forecaster"]

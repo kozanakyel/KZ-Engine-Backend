@@ -2,7 +2,7 @@ import pandas as pd
 #from binance.client import Client
 #import pandas as ta
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from binance import ThreadedWebsocketManager
 from datetime import datetime, timedelta
@@ -17,15 +17,15 @@ from KZ_project.Infrastructure.logger.logger import Logger
 from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
 from KZ_project.ml_pipeline.ai_model_creator.engines.forecast_engine import ForecastEngine
 
-import KZ_project.Infrastructure.config as config
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+# import KZ_project.Infrastructure.config as config
+# from sqlalchemy import create_engine
+# from sqlalchemy.orm import sessionmaker
 
-#from KZ_project.webapi.services import services
+# from KZ_project.webapi.services import services
 
-#orm.start_mappers()
-engine = create_engine(config.get_postgres_uri())
-get_session = sessionmaker(bind=engine)
+# orm.start_mappers()
+# engine_api = create_engine(config.get_postgres_uri())
+# get_session = sessionmaker(bind=engine_api)
 
 
 class AITrader():
@@ -167,7 +167,7 @@ if __name__ == '__main__':
                    ]
         trader_c_list = []
         for coin_d in cr_list:
-            engine = ForecastEngineHourly(coin_d["name"], coin_d["symbol"], "1h")
+            engine = ForecastEngine(coin_d["name"], coin_d["symbol"], "1h")
         
             trader_coin_d = AITrader(
                 symbol=coin_d["symbol"], 

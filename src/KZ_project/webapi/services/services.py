@@ -1,5 +1,7 @@
 from __future__ import annotations
 from KZ_project.core.adapters.crypto_repository import CryptoRepository
+from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
+from KZ_project.core.adapters.signaltracker_repository import SignalTrackerRepository
 from KZ_project.core.domain.asset import Asset, allocate_tracker
 from KZ_project.core.domain.aimodel import AIModel
 from KZ_project.core.domain.forecast_model import ForecastModel
@@ -141,4 +143,63 @@ def get_fm_models_list_all_unique_symbols(
     
     session.commit()
     return result 
+
+def prediction_service_new_signaltracker(ai_type, Xt, next_candle_prediction,
+                                             symbol, interval, hashtag, tweet_counts, session):
+        #session = get_session()
+        repo = SignalTrackerRepository(session)
+        repo_fm = ForecastModelRepository(session)
+        try: 
+            print(f'deneme forecast: {self.symbol}  {ai_type}')
+            result_fm = get_forecast_model(
+                symbol, 
+                interval,
+                ai_type,
+                repo_fm,
+                session
+            )
+            add_signal_tracker(
+                next_candle_prediction,
+                hashtag,
+                tweet_counts,
+                Xt,
+                result_fm,
+                repo,
+                session,
+            )
+        except (InvalidName) as e:
+            return f'error occyred for signal tracker {symbol}'
+        print(f'Succes signaltracker for {symbol}')
+        return f'Succes signaltracker for {symbol}'
+    
+def save_crypto_forecast_model_service(accuracy_score, session, ticker, 
+                                        symbol, source, feature_counts, model_name,
+                                        interval, ai_type):
+        # session = get_session()
+        repo = ForecastModelRepository(session)
+        repo_cr = CryptoRepository(session)
+        try: 
+            finding_crypto = get_crypto(
+                ticker=ticker, 
+                repo=repo_cr, 
+                session=session
+                )
+    
+            add_forecast_model(
+                symbol,
+                source,
+                feature_counts,
+                model_name,
+                interval,
+                ai_type,
+                ticker,
+                accuracy_score,
+                finding_crypto,
+                repo,
+                session,
+            )
+        except (InvalidName) as e:
+            return f'An errror for creating model {e}'
+        print(f'Succes creating save model for {symbol}')
+        return f'Succesfully created model {symbol}'
 
