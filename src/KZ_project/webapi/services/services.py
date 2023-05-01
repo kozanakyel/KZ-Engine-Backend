@@ -150,7 +150,7 @@ def prediction_service_new_signaltracker(ai_type, Xt, next_candle_prediction,
         repo = SignalTrackerRepository(session)
         repo_fm = ForecastModelRepository(session)
         try: 
-            print(f'deneme forecast: {self.symbol}  {ai_type}')
+            print(f'deneme forecast: {symbol}  {ai_type}')
             result_fm = get_forecast_model(
                 symbol, 
                 interval,

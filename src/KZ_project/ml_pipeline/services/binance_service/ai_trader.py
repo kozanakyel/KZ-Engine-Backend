@@ -1,31 +1,12 @@
 import pandas as pd
-#from binance.client import Client
-#import pandas as ta
 import numpy as np
-# import matplotlib.pyplot as plt
 
 from binance import ThreadedWebsocketManager
 from datetime import datetime, timedelta
-#import requests
 
 from KZ_project.Infrastructure.logger.logger import Logger
-#from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
-#from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
-#from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
-#from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
-#from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
 from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
 from KZ_project.ml_pipeline.ai_model_creator.engines.forecast_engine import ForecastEngine
-
-# import KZ_project.Infrastructure.config as config
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
-
-# from KZ_project.webapi.services import services
-
-# orm.start_mappers()
-# engine_api = create_engine(config.get_postgres_uri())
-# get_session = sessionmaker(bind=engine_api)
 
 
 class AITrader():
@@ -53,8 +34,7 @@ class AITrader():
         if self.bar_length in self.available_intervals:
             self.twm.start_kline_socket(callback = self.stream_candles,
                                         symbol = self.symbol, interval = self.bar_length)
-        # "else" to be added later in the course 
-    
+            
 
     
     def stream_candles(self, msg):
@@ -74,13 +54,8 @@ class AITrader():
         # print out
         print("Time: {} | Price: {} | Complete: {} | Symbol {}".format(event_time, close, complete, self.symbol))
         
-        if complete:
-            #print(f'Write logic for prediction in this area')
-            #print(f'start date: {start_date} and type {type(start_date)}')
-            
+        if complete:            
             ai_type, Xt, next_candle_prediction = self.engine.forecast_builder(start_date=start_date)
-            
-            #self.main_prediction(start_date=start_date, name=self.name, symbol=self.symbol)
             #self.execute_trades()
         # feed df (add new bar / update latest bar)
         self.data.loc[start_time] = [first, high, low, close, volume, complete]
