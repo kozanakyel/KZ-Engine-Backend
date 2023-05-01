@@ -8,7 +8,7 @@ import json
 #from KZ_project.core.adapters.crypto_repository import CryptoRepository
 #from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
 
-from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostForecaster
+from KZ_project.ml_pipeline.ai_model_creator.xgboost_forecaster import XgboostBinaryForecaster
 from KZ_project.ml_pipeline.data_generator.data_manipulation import DataManipulation
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 
@@ -131,7 +131,7 @@ class ModelEngine(IBacktestable):
         #X["twitter_sent_score"] = X["twitter_sent_score"].shift(1)
         #X["twitter_sent_score"][X.index[0]] = 0
 
-        xgb = XgboostForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
+        xgb = XgboostBinaryForecaster(objective='binary', n_estimators=500, eta=0.01, max_depth=7, 
                     tree_method='gpu_hist', eval_metric='logloss')
         self.ai_type = xgb.__class__.__name__
         xgb.create_train_test_data(X, y, test_size=0.2)
