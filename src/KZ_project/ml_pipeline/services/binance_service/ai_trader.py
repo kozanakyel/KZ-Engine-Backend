@@ -5,16 +5,17 @@ from binance import ThreadedWebsocketManager
 from datetime import datetime, timedelta
 
 from KZ_project.Infrastructure.logger.logger import Logger
+from KZ_project.ml_pipeline.data_generator.data_creator import DataCreator
 from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
 from KZ_project.ml_pipeline.ai_model_creator.engines.forecast_engine import ForecastEngine
 
 
 class AITrader():
     
-    def __init__(self, symbol: str, name: str, bar_length, client: BinanceClient, 
-                 units, engine: ForecastEngine, logger: Logger=None):
+    def __init__(self, symbol: str, ticker: str, bar_length, client: BinanceClient, 
+                 units, interval: str, logger: Logger=None):
         self.symbol = symbol
-        self.name = name
+        self.ticker = ticker
         self.bar_length = bar_length
         self.data = pd.DataFrame(columns = ["Open", "High", "Low", "Close", "Volume", "Complete"])
         self.available_intervals = ["1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "6h", "8h", "12h", "1d", "3d", "1w", "1M"]   
@@ -24,7 +25,7 @@ class AITrader():
         self.trade_values = []
         self.units = units
         self.logger = logger
-        self.engine = engine
+        self.interval = interval
       
     def start_trading(self):
         
@@ -49,13 +50,17 @@ class AITrader():
         volume  = float(msg["k"]["v"])
         complete=       msg["k"]["x"]
          
-        start_date = (event_time - timedelta(days=10)).strftime('%Y-%m-%d')
+        start_date = (event_time - timedelta(days=15)).strftime('%Y-%m-%d')
     
         # print out
         print("Time: {} | Price: {} | Complete: {} | Symbol {}".format(event_time, close, complete, self.symbol))
         
-        if complete:            
-            ai_type, Xt, next_candle_prediction = self.engine.forecast_builder(start_date=start_date)
+        if complete:   
+            data_creator = DataCreator(symbol=self.symbol, source='binance', range_list=[i for i in range(5,21)],
+                                       period=None, interval=self.interval, start_date=start_date, client=self.client)  
+            sentiment_pipeline = ForecastEngine(data_creator, self.ticker)     
+            ai_type, Xt, next_candle_prediction = sentiment_pipeline.forecast_builder()  
+            #ai_type, Xt, next_candle_prediction = self.engine.forecast_builder(start_date=start_date)
             #self.execute_trades()
         # feed df (add new bar / update latest bar)
         self.data.loc[start_time] = [first, high, low, close, volume, complete]
@@ -134,6 +139,7 @@ if __name__ == '__main__':
 
 
     def web_socket_trader_starter():
+        interval = '1h'
         cr_list = [
             {"symbol":"BTCUSDT", "name":"btc", "bar_length":"3m"} 
                    # {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"3m"},
@@ -143,7 +149,6 @@ if __name__ == '__main__':
                    ]
         trader_c_list = []
         for coin_d in cr_list:
-            engine = ForecastEngine(coin_d["name"], coin_d["symbol"], "1h")
         
             trader_coin_d = AITrader(
                 symbol=coin_d["symbol"], 
@@ -151,7 +156,7 @@ if __name__ == '__main__':
                 bar_length=coin_d["bar_length"], 
                 client=client, 
                 units=20, 
-                engine=engine
+                interval=interval
                 )
             
             trader_c_list.append(trader_coin_d)
@@ -165,18 +170,17 @@ if __name__ == '__main__':
             i.stop_trading()
             
     def web_socket_trader_starter_btc():
-        engine = ForecastEngine("btc", "BTCUSDT", "1h")
         
         trader_coin_d = AITrader(
                 symbol="BTCUSDT", 
-                name="btc", 
+                ticker="btc", 
                 bar_length="3m", 
                 client=client, 
                 units=20, 
-                engine=engine
+                interval='1h'
                 ) 
         trader_coin_d.start_trading()   
     
-    web_socket_trader_starter()
+    web_socket_trader_starter_btc()
     
     

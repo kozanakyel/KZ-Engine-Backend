@@ -19,7 +19,7 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
         self.hashtag = hashtag
         
         
-    def create_sentiment_aggregate_feature_matrix(self):
+    def create_sentiment_aggregate_feature_matrix(self) -> pd.DataFrame():
         try:
             client_twt, tsa, daily, hourly, data = self.construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(self.hashtag)
             hourly_tsa = self.get_tweet_sentiment_hourly(hourly)
