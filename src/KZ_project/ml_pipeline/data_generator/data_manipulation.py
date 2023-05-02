@@ -1,3 +1,4 @@
+import abc
 import pandas as pd
 import numpy as np
 import os
@@ -6,11 +7,13 @@ from tqdm import tqdm
 
 from KZ_project.core.strategies.technical_analysis.indicators import Indicators
 from KZ_project.Infrastructure.logger.logger import Logger
+from KZ_project.ml_pipeline.data_generator.Ibinary_feature_label import IBinaryFeatureLabel
 from KZ_project.ml_pipeline.data_generator.data_checker import DataChecker
 from KZ_project.ml_pipeline.data_generator.feature_extractor import FeatureExtractor
 
 from KZ_project.ml_pipeline.data_generator.file_data_checker import FileDataChecker
 from KZ_project.ml_pipeline.data_generator.data_saver import factory_data_saver
+from KZ_project.ml_pipeline.indicators.factory_indicator_builder import FactoryIndicatorBuilder
 from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
 from KZ_project.ml_pipeline.services.service_client.abstract_service_client import IServiceClient
 from KZ_project.ml_pipeline.services.yahoo_service.yahoo_client import YahooClient
@@ -28,9 +31,11 @@ obtain nearly binary matrix,
 some strategies need 3 level layer for labelling.
 But our main purposes is that matrix preparation for the
 our Forecaster model...
-"""            
+"""  
+
+    
  
-class DataCreator():
+class DataCreator(IBinaryFeatureLabel):
     def __init__(self, symbol: str, source: str, range_list: list, period: str=None, interval: str=None, 
                                 start_date: str=None, end_date: str=None, scale: int=1, saved_to_csv: bool=False,
                                 logger: Logger=None, data_checker: DataChecker=None, client: IServiceClient=None):  
@@ -61,7 +66,30 @@ class DataCreator():
         dframe['Datetime'] = dframe.index
         dframe = dframe.set_index('Datetime')
         dframe.dropna(inplace=True)
+        
         return dframe
+    
+    def column_names_preparation(self, dframe, range_list):
+        if dframe.shape[0] > range_list[-1]:
+            dframe.columns = dframe.columns.str.lower()
+            if 'adj close' in dframe.columns.to_list():
+                dframe = dframe.rename(columns={'adj close': 'adj_close'})  
+            # self.pure_df = dframe.copy()
+        else:
+            self.log(f'{self.symbol} shape size not sufficient from download')
+            raise ValueError('shape size not sufficient from download')
+        return dframe
+    
+    
+    def create_binary_feature_label(self, df: pd.DataFrame()) -> None:
+        """Next candle Binary feature actual reason forecasting to this label
+
+        Args:
+            df (pd.DataFrame):
+        """
+        df['feature_label'] = (df['log_return'] > 0).astype(int)
+        df['feature_label'] = df['feature_label'].shift(-1)
+        df["feature_label"][df.index[-1]] = df["feature_label"][df.index[-2]]
         
     def log(self, text):
         if self.logger:
@@ -179,11 +207,13 @@ class DataManipulation():
             if self.saved_to_csv:
                 self.data_saver.save_data(self.df, self.file_data_checker.pure_folder, 
                                           self.file_data_checker.pure_file)
-                self.log(f'Write pure data file to {self.file_data_checker.create_pure()}') 
-            indicators = Indicators(self.df, self.range_list, logger=self.logger)    # Create Indicator class fro calculating tech. indicators
-            indicators.create_indicators_columns()        
-            self.df = indicators.df.copy()
-            self.log(f'Created Indicator object and indicators columns')
+                self.log(f'Write pure data file to {self.file_data_checker.create_pure()}')
+            indicator_df_result = FactoryIndicatorBuilder.create_indicators_columns(self.df, self.range_list, logger=self.logger) 
+            #indicators = Indicators(self.df, self.range_list, logger=self.logger)    # Create Indicator class fro calculating tech. indicators
+            #indicators.create_indicators_columns()        
+            #self.df = indicators.df.copy()
+            self.df = indicator_df_result
+            self.log(f'Created Indicator object and indicators columns shape {self.df.shape}')
             
             self.df.columns = self.df.columns.str.lower()              # Columns letters to LOWER
             self.df = self.df.reindex(sorted(self.df.columns), axis=1) # sort Columns with to alphabetic order
@@ -429,7 +459,7 @@ if __name__ == '__main__':
     range_list = [i*scale for i in range_list]
     source='yahoo'
     
-    d = DataManipulation(symbol=SYMBOL, source=source, range_list=range_list, period=PERIOD, interval=INTERVAL, 
+    dm = DataManipulation(symbol=SYMBOL, source=source, range_list=range_list, period=PERIOD, interval=INTERVAL, 
                     start_date=START_DATE, end_date=END_DATE, prefix_path=PREFIX_PATH, 
                     main_path=MAIN_PATH, pure_path=PURE_PATH,
                     feature_path=FEATURE_PATH, saved_to_csv=False)  
@@ -449,6 +479,7 @@ if __name__ == '__main__':
                     client=y)  
     d.df = d.download_ohlc_from_client()
     d.df = d.create_datetime_index(d.df)
-    print(d.df)
+    d.df = d.column_names_preparation(d.df, d.range_list)
+    print(dm.df)
     
     print(os.getcwd())

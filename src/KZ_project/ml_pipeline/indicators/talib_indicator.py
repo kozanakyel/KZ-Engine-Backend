@@ -1,120 +1,13 @@
 import pandas as pd
-import pandas_ta as ta
+import talib
+from tqdm import tqdm
+
 from KZ_project.Infrastructure.logger.logger import Logger
 from KZ_project.core.strategies.technical_analysis.candlestick_features import *
-from tqdm import tqdm
-import warnings
-warnings.filterwarnings('ignore')
-warnings.simplefilter(action = 'ignore', category = pd.errors.PerformanceWarning)
-"""
-@author: Ugur AKYEL
-@description: For creating columns and Dataframes with related to technical analysis and indicators
-                each talib or pandas_ta library using for any programming environment you can
-                work this code.
-"""
-
-class PandasTaIndicator():
-    def __init__(self, df: pd.DataFrame()=None, range_list: list=None, logger: Logger=None):
-        self.range_list = range_list
-        self.logger = logger
-        self.df = df.copy()
-        
-    def log(self, text):
-        if self.logger:
-            self.logger.append_log(text)
-        else:
-            print(text)
-        
-    def create_ind_cols_ta(self) -> None:
-        for i in tqdm(self.range_list):
-            self.df.ta.sma(length=i, append=True)
-
-            bbands = self.df.ta.bbands(length=i).iloc[:, :3]
-            bbands.columns = [f'lowband_{i}', f'midband_{i}', f'upband_{i}']
-            self.df = pd.concat([self.df, bbands], axis=1)
-
-            self.df.ta.dema(length=i, append=True)
-            self.df.ta.ema(length=i, append=True)
-            self.df.ta.kama(length=i, append=True)
-            self.df = self.df.rename(columns={f'KAMA_{i}_2_30': f'KAMA_{i}'}) 
-            self.df.ta.t3(length=i, append=True)
-            self.df = self.df.rename(columns={f'T3_{i}_0.7': f'T3_{i}'}) 
-
-            self.df.ta.tema(length=i, append=True)
-            self.df.ta.trima(length=i, append=True)
-            self.df.ta.wma(length=i, append=True)
-            self.df.ta.adx(length=i, append=True)
-            self.df.ta.cmo(length=i, append=True)
-            self.df.ta.cci(length=i, append=True)
-            self.df = self.df.rename(columns={f'CCI_{i}_0.015': f'CCI_{i}'}) 
-
-            self.df.ta.rsi(length=i, append=True)
-            self.df.ta.mfi(length=i, append=True)
-            self.df.ta.roc(length=i, append=True)
-            self.df.ta.willr(length=i, append=True)
-            self.df.ta.atr(length=i, append=True)
-            self.df = self.df.rename(columns={f'ATRR_{i}': f'ATR_{i}'}) 
-            self.df.ta.natr(length=i, append=True)
-        
-        macd = self.df.ta.macd()
-        macd.columns = ['macd', 'macdhist', 'macdsignal']
-        self.df = pd.concat([self.df, macd], axis=1)
-
-        stoch = self.df.ta.stochrsi()
-        stoch.columns = ['stoch_k', 'stoch_d']
-        self.df = pd.concat([self.df, stoch], axis=1)
-
-        self.create_ichmiouk_kijunsen(self.df)
-        self.create_ichmiouk_tenkansen(self.df)
-        
-        fishert = self.df.ta.fisher()
-        fishert.columns = ['fishert', 'fisherts']
-        self.df = pd.concat([self.df, fishert], axis=1)
-
-        self.df.ta.ad(append=True)
-        self.df.ta.obv(append=True)
-
-        self.df['candle_label'] = 0
-        self.df['candlestick_pattern'] = 'NO_PATTERN'
-        self.df['daily_return'] = self.df['close'].pct_change()
-        self.df['log_rt'] = self.df.ta.log_return()
-        
-    def create_ichmiouk_kijunsen(self, dft: pd.DataFrame()) -> None:
-        period26_high = dft['high'].rolling(window=26).max()
-        period26_low = dft['low'].rolling(window=26).min()
-        dft['ich_kline'] = (period26_high + period26_low) / 2
-
-    def create_ichmiouk_tenkansen(self, dft: pd.DataFrame()) -> None:
-        period26_high = dft['high'].rolling(window=9).max()
-        period26_low = dft['low'].rolling(window=9).min()
-        dft['ich_tline'] = (period26_high + period26_low) / 2
-        
-    def supertrend(self, df_temp: pd.DataFrame()):
-        sti = ta.supertrend(df_temp['high'], df_temp['low'], df_temp['close'], length=7, multiplier=3)
-        sti.drop(columns=['SUPERTd_7_3.0', 'SUPERTl_7_3.0'], inplace=True)
-        sti.columns = ['supertrend_support', 'supertrend_resistance']
-        return sti
+from KZ_project.ml_pipeline.indicators.base_indicator import BaseIndicator
 
 
-class FactoryIndicatorBuilder():
-    
-    @staticmethod
-    def create_indicators_columns(df, range_list, logger) -> None:
-        try:
-            import talib
-            print('Start TA-LIB module')
-            talib_indicator = Indicators(df, range_list, logger)
-            talib_indicator.create_ind_candle_cols_talib()
-            print('created indicators columns with TA-LIB')
-        except ModuleNotFoundError:
-            print('Start Pandas_ta module')
-            ta_indicator = PandasTaIndicator(df, range_list, logger)
-            ta_indicator.create_ind_cols_ta()
-            print('created indicators columns with Pandas_ta')      
-    
-
-
-class Indicators():
+class TalibIndicator(BaseIndicator):
 
     def __init__(self, df: pd.DataFrame()=None, range_list: list=None, logger: Logger=None):
         self.range_list = range_list
@@ -126,17 +19,6 @@ class Indicators():
             self.logger.append_log(text)
         else:
             print(text)
-
-    def create_indicators_columns(self) -> None:
-        try:
-            import talib
-            print('Start TA-LIB module')
-            self.create_ind_candle_cols_talib()
-            print('created indicators columns with TA-LIB')
-        except ModuleNotFoundError:
-            print('Start Pandas_ta module')
-            self.create_ind_cols_ta()
-            print('created indicators columns with Pandas_ta')
 
     def create_ind_candle_cols_talib(self) -> None:
         self.create_ind_with_ct(self.df, 'sma', talib.SMA, self.range_list)
@@ -280,12 +162,6 @@ class Indicators():
         dft[ind] = func_ta(dft['high'], dft['low'], dft['close'], dft['volume'])
         self.log(f'Calculated {ind.upper()}')
 
-
-    def supertrend(self, df_temp: pd.DataFrame()):
-        sti = ta.supertrend(df_temp['high'], df_temp['low'], df_temp['close'], length=7, multiplier=3)
-        sti.drop(columns=['SUPERTd_7_3.0', 'SUPERTl_7_3.0'], inplace=True)
-        sti.columns = ['supertrend_support', 'supertrend_resistance']
-        return sti
     
     def volatility(self, dft: pd.DataFrame()):
         """
@@ -293,48 +169,3 @@ class Indicators():
         """
         dft['volatility'] = dft['log_return'].std()*252**.5
         self.log(f'Calculated Volatility')
-
-"""
-
-    ###### Not working good and has alot of probl;em for implemantation not recommended for using a strategy
-
-    def cumulative_volume_delta(self, df_original: pd.DataFrame()):
-        #full_df.index = full_df['Datetime'].apply(lambda x: pd.to_datetime(x, as_str=False))
-        full_df = df_original.copy()
-        month_groups = full_df.groupby(pd.Grouper(freq='M'))
-
-        monthly_deltas = []
-
-        for _, group in month_groups:
-            df = group.copy()
-
-            df['open_close_max'] = df.high - df[["open", "close"]].max(axis=1)
-            df['open_close_min'] = df[["open", "close"]].min(axis=1) - df.low
-            df['open_close_abs'] = (df.close - df.open).abs()
-            df['is_close_larger'] = df.close >= df.open
-            df['is_open_larger'] = df.open > df.close
-            df['is_body_cond_met'] = df.is_close_larger | df.is_open_larger
-        
-            df.loc[df.is_body_cond_met == False, 'open_close_abs_2x'] = 0
-            df.loc[df.is_body_cond_met == True, 'open_close_abs_2x'] = 2*df.open_close_abs
-
-            df['nominator'] = df.open_close_max + df.open_close_min + df.open_close_abs_2x
-            df['denom'] = df.open_close_max + df.open_close_min + df.open_close_abs
-        
-            df['delta'] = 0
-            df.loc[df.denom == 0, 'delta'] = 0.5
-            df.loc[df.denom != 0, 'delta'] = df.nominator / df.denom
-            df.loc[df.is_close_larger == False, 'delta'] = df.loc[df.is_close_larger == False, 'volume'] * (-df.loc[df.is_close_larger == False, 'delta'])
-            df.loc[df.is_close_larger == True, 'delta'] = df.loc[df.is_close_larger == True, 'volume'] * (df.loc[df.is_close_larger == True, 'delta'])
-
-            monthly_deltas.append(pd.Series(np.cumsum(df.delta.values)))
-    
-        all_deltas = pd.concat(monthly_deltas).reset_index(drop=True)
-        full_df['cvd'] = all_deltas
-        self.log(f'Calculated CUMULATIVE VOLUME DELTA')
-
-        return full_df
-
-"""
-
-

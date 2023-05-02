@@ -3,9 +3,9 @@ import pandas as pd
 from tqdm import tqdm
 
 from KZ_project.Infrastructure.logger.logger import Logger
+from KZ_project.ml_pipeline.data_generator.Ibinary_feature_label import IBinaryFeatureLabel
 
-
-class FeatureExtractor():
+class FeatureExtractor(IBinaryFeatureLabel):
     
     def __init__(self, df: pd.DataFrame(), range_list: list, interval: str, logger: Logger=None):
         self.logger = logger
