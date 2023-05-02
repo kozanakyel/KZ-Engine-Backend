@@ -1,8 +1,12 @@
+from datetime import timedelta
+import pandas as pd
 from KZ_project.ml_pipeline.data_generator.data_checker import DataChecker
 from KZ_project.ml_pipeline.data_generator.data_creator import DataCreator
 from KZ_project.ml_pipeline.data_generator.feature_extractor import FeatureExtractor
 from KZ_project.ml_pipeline.data_generator.file_data_checker import FileDataChecker
 from KZ_project.ml_pipeline.indicators.factory_indicator_builder import FactoryIndicatorBuilder
+from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
+from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
 
 """
 @author: Kozan Ugur AKYEL
@@ -25,6 +29,11 @@ class FeaturedMatrixPipeline():
         self.data_creator = data_creator
         self.data_checker = data_checker
         
+        
+    @property
+    def interval(self) -> str:
+        return self.data_creator.interval
+        
     def create_aggregate_featured_matrix(self):
         self.data_creator.df = self.data_creator.download_ohlc_from_client()
         self.data_creator.df = self.data_creator.create_datetime_index(self.data_creator.df)
@@ -35,6 +44,70 @@ class FeaturedMatrixPipeline():
         self.feature_extractor = FeatureExtractor(self.data_creator.df, self.data_creator.range_list, self.data_creator.interval, self.data_creator.logger)
         self.feature_extractor.create_featured_matrix()
         self.agg_featured_matrix = self.feature_extractor.featured_matrix 
+        
+        
+
+    
+class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
+    
+    def __init__(self, data_creator: DataCreator, 
+                 data_checker: DataChecker, start_date, hashtag, lang: str="en"):
+        super().__init__(data_creator, data_checker)
+        self.client_twitter = TwitterCollection()
+        self.tsa = TweetSentimentAnalyzer(lang=lang)
+        self.tweet_counts = 0
+        self.hashtag = hashtag
+        
+    def get_sentiment_daily_hourly_scores(self, hastag: str, 
+                                           twitter_client: TwitterCollection,
+                                           tsa: TweetSentimentAnalyzer,
+                                           hour: int=24*7):
+        df_tweets = twitter_client.get_tweets_with_interval(hastag, 'en', hour=hour, interval=int(self.interval[0]))
+        self.tweet_counts = df_tweets.shape[0]
+        path_df = f'./data/tweets_data/{hastag}/'
+        daily_sents, hourly_sents = tsa.create_sent_results_df(hastag, df_tweets, path_df, saved=False)
+        return daily_sents, hourly_sents 
+    
+    def construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(self, start_date, hastag: str, symbol) -> tuple:
+
+        client_twt, tsa = self.client_twitter, self.tsa
+        daily, hourly = self.get_sentiment_daily_hourly_scores(hastag, client_twt, tsa)
+
+        data = self.data_creator
+        return client_twt, tsa, daily, hourly, data
+    
+    def get_tweet_sentiment_hourly(self, sent_tweets_hourly: pd.DataFrame()):
+        sent_tweets = sent_tweets_hourly
+        sent_tweets.Datetime = pd.to_datetime(sent_tweets.index)
+        sent_tweets = sent_tweets.reset_index()
+        sent_tweets.set_index('Datetime', inplace=True, drop=True)
+        #sent_tweets.index = sent_tweets.index.tz_convert(None) # only hourly
+        sent_tweets.index = sent_tweets.index + timedelta(hours=4)
+        return sent_tweets
+    
+    def composite_tweet_sentiment_and_data_manipulation(self,
+                                                         sent_tweets: pd.DataFrame(),
+                                                         tsa: TweetSentimentAnalyzer):
+
+        # feature_extractor = FeatureExtractor(self.data_creator.df, self.data_creator.range_list)
+        # feature_extractor.create_featured_matrix()
+        # df_price_ext = feature_extractor.featured_matrix
+        # df_price_ext = data.extract_features()
+        super().create_aggregate_featured_matrix()
+        df_price_ext = self.agg_featured_matrix
+        df_price_ext.index = df_price_ext.index + timedelta(hours=3)
+        #print(f'df extract features: {df_price_ext.iloc[-1]}')
+        df_final = tsa.concat_ohlc_compound_score(df_price_ext, sent_tweets)
+        #print(f'df tweets features: {df_final.iloc[-1]}')
+        del df_price_ext
+        #df_final = df_final.loc['2021-01-01':,:].copy()
+        df_final = df_final.rename(columns={"compound_total":"twitter_sent_score"})
+        df_final.dropna(inplace=True)
+        return df_final 
+        
+    
+    
+     
 
 
 

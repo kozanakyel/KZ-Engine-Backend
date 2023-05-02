@@ -49,7 +49,7 @@ class ModelEngine(IBacktestable):
                                                              tsa: TweetSentimentAnalyzer,
                                                          sent_tweets: pd.DataFrame()):
 
-        feature_extractor = FeatureExtractor(df=data.df, range_list=data.range_list)
+        feature_extractor = FeatureExtractor(df=data.df, range_list=data.range_list, interval=data.interval)
         feature_extractor.create_featured_matrix()
         df_price_ext = feature_extractor.featured_matrix
         #df_price_ext = data.extract_features()

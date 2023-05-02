@@ -61,8 +61,8 @@ class ForecastEngine():
     def composite_tweet_sentiment_and_data_manipulation(self, data: DataManipulation,
                                                          sent_tweets: pd.DataFrame(),
                                                          tsa: TweetSentimentAnalyzer):
-
-        feature_extractor = FeatureExtractor(data.df, data.range_list)
+        
+        feature_extractor = FeatureExtractor(data.df, data.range_list, data.interval)
         feature_extractor.create_featured_matrix()
         df_price_ext = feature_extractor.featured_matrix
         # df_price_ext = data.extract_features()

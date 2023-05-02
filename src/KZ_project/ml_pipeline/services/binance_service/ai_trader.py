@@ -134,8 +134,9 @@ if __name__ == '__main__':
 
 
     def web_socket_trader_starter():
-        cr_list = [{"symbol":"BTCUSDT", "name":"btc", "bar_length":"5m"}, 
-                   {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"5m"},
+        cr_list = [
+            {"symbol":"BTCUSDT", "name":"btc", "bar_length":"3m"} 
+                   # {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"3m"},
                    # {"symbol":"XRPUSDT", "name":"xrp", "bar_length":"5m"},
                    # {"symbol":"ETHUSDT", "name":"eth", "bar_length":"5m"},
                    # {"symbol":"DOGEUSDT", "name":"doge", "bar_length":"5m"}
