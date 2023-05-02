@@ -1,10 +1,9 @@
 from datetime import timedelta
 
-from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
 from KZ_project.ml_pipeline.ai_model_creator.engines.model_engine import ModelEngine
 from KZ_project.ml_pipeline.data_generator.data_checker import DataChecker
 from KZ_project.ml_pipeline.data_generator.data_creator import DataCreator
-from KZ_project.ml_pipeline.data_generator.featured_matrix_pipeline import SentimentFeaturedMatrixPipeline
+from KZ_project.ml_pipeline.data_generator.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
 from KZ_project.webapi.services import services
 from KZ_project.webapi.entrypoints.flask_app import get_session
 
@@ -16,11 +15,10 @@ class ForecastEngine():
         self.hashtag = hashtag
         self.sentiment_featured_pipeline = SentimentFeaturedMatrixPipeline(data_creator, data_checker, hashtag)
         
-    def predict_last_day_and_next_hour(self, df_final):
-
-        self.ai_type = XgboostBinaryForecaster.__class__.__name__       
+    def predict_last_day_and_next_hour(self, df_final):      
         model_engine = ModelEngine(self.data_creator.symbol, self.hashtag, 'binance', self.data_creator.interval)
         dtt, y_pred, bt_json = model_engine.get_accuracy_score_for_xgboost_fit_separate_dataset(df_final)
+        self.ai_type = model_engine.ai_type
         
         return str(dtt + timedelta(hours=int(self.data_creator.interval[0]))), int(y_pred)
     

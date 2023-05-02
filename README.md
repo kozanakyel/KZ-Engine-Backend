@@ -27,6 +27,8 @@ $ pip install -U pip
 $ pip install -U requirements.txt
 $ pip install -e src
 $ python -m nltk.downloader stopwords
+$ sudo apt install ntpdate
+$ sudo ntpdate -sb time.nist.gov
 
 ```
 

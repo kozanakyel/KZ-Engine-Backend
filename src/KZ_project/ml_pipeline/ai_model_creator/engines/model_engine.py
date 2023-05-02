@@ -83,7 +83,6 @@ class ModelEngine(IBacktestable):
         xtest = xgb.X_test
         self.create_retuns_data(xtest, ytest)
         bt_json = self.trade_fee_net_returns(xtest)
-        print(f'x last row {xtest.index[-1]}\n prediction last candle {ytest[-1]}')
         print(f'bt: method inside: {json.dumps(bt_json)}')
         
         return xtest.index[-1], ytest[-1], json.dumps(bt_json)

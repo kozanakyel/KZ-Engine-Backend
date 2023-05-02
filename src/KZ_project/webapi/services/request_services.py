@@ -1,17 +1,6 @@
-import pandas as pd
-from KZ_project.core.adapters.crypto_repository import CryptoRepository
-from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from KZ_project.Infrastructure import config
-from KZ_project.Infrastructure.orm_mapper import orm
-from KZ_project.webapi.services import services
 import requests
 import json
-
-# orm.start_mappers()
-# get_session = sessionmaker(bind=create_engine(config.get_postgres_uri()))
 
 class RequestServices():
     

@@ -60,7 +60,6 @@ class AITrader():
                                        period=None, interval=self.interval, start_date=start_date, client=self.client)  
             sentiment_pipeline = ForecastEngine(data_creator, self.ticker)     
             ai_type, Xt, next_candle_prediction = sentiment_pipeline.forecast_builder()  
-            #ai_type, Xt, next_candle_prediction = self.engine.forecast_builder(start_date=start_date)
             #self.execute_trades()
         # feed df (add new bar / update latest bar)
         self.data.loc[start_time] = [first, high, low, close, volume, complete]
@@ -141,18 +140,18 @@ if __name__ == '__main__':
     def web_socket_trader_starter():
         interval = '1h'
         cr_list = [
-            {"symbol":"BTCUSDT", "name":"btc", "bar_length":"3m"} 
-                   # {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"3m"},
-                   # {"symbol":"XRPUSDT", "name":"xrp", "bar_length":"5m"},
-                   # {"symbol":"ETHUSDT", "name":"eth", "bar_length":"5m"},
-                   # {"symbol":"DOGEUSDT", "name":"doge", "bar_length":"5m"}
+                   {"symbol":"BTCUSDT", "name":"btc", "bar_length":"5m"}, 
+                   {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"5m"},
+                   {"symbol":"XRPUSDT", "name":"xrp", "bar_length":"5m"},
+                   {"symbol":"ETHUSDT", "name":"eth", "bar_length":"5m"},
+                   {"symbol":"DOGEUSDT", "name":"doge", "bar_length":"5m"}
                    ]
         trader_c_list = []
         for coin_d in cr_list:
         
             trader_coin_d = AITrader(
                 symbol=coin_d["symbol"], 
-                name=coin_d["name"], 
+                ticker=coin_d["name"], 
                 bar_length=coin_d["bar_length"], 
                 client=client, 
                 units=20, 
@@ -181,6 +180,6 @@ if __name__ == '__main__':
                 ) 
         trader_coin_d.start_trading()   
     
-    web_socket_trader_starter_btc()
+    web_socket_trader_starter()
     
     

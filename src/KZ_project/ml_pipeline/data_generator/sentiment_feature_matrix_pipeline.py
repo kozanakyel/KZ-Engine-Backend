@@ -7,6 +7,10 @@ from KZ_project.ml_pipeline.data_generator.file_data_checker import FileDataChec
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
 
+from KZ_project.Infrastructure import config
+
+btc = config.BitcoinConfig()
+
 
 class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
     
@@ -28,8 +32,10 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
             print(f'Error for Tweepy: {e}')
             self.agg_sent_feature_matrix = super().create_aggregate_featured_matrix().copy()
             self.agg_sent_feature_matrix["twitter_sent_score"] = 0.0
+            # for binance exchange time module
+            self.agg_sent_feature_matrix.index = self.agg_sent_feature_matrix.index + timedelta(hours=3)
             self.tweet_counts = 0
-        print(self.agg_sent_feature_matrix["twitter_sent_score"])
+        # print(self.agg_sent_feature_matrix["twitter_sent_score"])
         return self.agg_sent_feature_matrix
             
         
@@ -70,7 +76,7 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
         df_final = tsa.concat_ohlc_compound_score(df_price_ext, sent_tweets)
         del df_price_ext
         df_final = df_final.rename(columns={"compound_total":"twitter_sent_score"})
-        print(df_final["twitter_sent_score"])
+        # print(df_final["twitter_sent_score"])
         df_final.dropna(inplace=True)
         return df_final 
     

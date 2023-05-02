@@ -7,7 +7,6 @@ from KZ_project.core.domain.forecast_model import ForecastModel
 from KZ_project.core.domain.signal_tracker import SignalTracker
 
 from KZ_project.core.domain.crypto import Crypto
-from KZ_project.core.domain.asset import InvalidSymbol
 from KZ_project.core.adapters.repository import AbstractBaseRepository
 
 
@@ -96,7 +95,7 @@ def prediction_service_new_signaltracker(ai_type, Xt, next_candle_prediction,
         repo = SignalTrackerRepository(session)
         repo_fm = ForecastModelRepository(session)
         try: 
-            print(f'deneme forecast: {symbol}  {ai_type}')
+            # print(f'deneme forecast: {symbol}  {ai_type}')
             result_fm = get_forecast_model(
                 symbol, 
                 interval,
@@ -115,7 +114,7 @@ def prediction_service_new_signaltracker(ai_type, Xt, next_candle_prediction,
             )
         except (InvalidName) as e:
             return f'error occyred for signal tracker {symbol}'
-        print(f'Succes signaltracker for {symbol}')
+        # print(f'Succes signaltracker for {symbol}')
         return f'Succes signaltracker for {symbol}'
     
 def save_crypto_forecast_model_service(accuracy_score, session, ticker, 
@@ -146,6 +145,6 @@ def save_crypto_forecast_model_service(accuracy_score, session, ticker,
             )
         except (InvalidName) as e:
             return f'An errror for creating model {e}'
-        print(f'Succes creating save model for {symbol}')
+        # print(f'Succes creating save model for {symbol}')
         return f'Succesfully created model {symbol}'
 
