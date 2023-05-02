@@ -20,7 +20,7 @@ class TalibIndicator(BaseIndicator):
         else:
             print(text)
 
-    def create_ind_candle_cols_talib(self) -> None:
+    def create_ind_cols(self) -> None:
         self.create_ind_with_ct(self.df, 'sma', talib.SMA, self.range_list)
         self.create_bband_t(self.df, talib.BBANDS, self.range_list)
         self.create_ind_with_ct(self.df, 'dema', talib.DEMA, self.range_list)

@@ -18,7 +18,7 @@ class PandasTaIndicator(BaseIndicator):
         else:
             print(text)
         
-    def create_ind_cols_ta(self) -> None:
+    def create_ind_cols(self) -> None:
         for i in tqdm(self.range_list):
             self.df.ta.sma(length=i, append=True)
 

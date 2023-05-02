@@ -53,7 +53,7 @@ class AITrader():
         start_date = (event_time - timedelta(days=15)).strftime('%Y-%m-%d')
     
         # print out
-        print("Time: {} | Price: {} | Complete: {} | Symbol {}".format(event_time, close, complete, self.symbol))
+        # print("Time: {} | Price: {} | Complete: {} | Symbol {}".format(event_time, close, complete, self.symbol))
         
         if complete:   
             data_creator = DataCreator(symbol=self.symbol, source='binance', range_list=[i for i in range(5,21)],
@@ -140,11 +140,11 @@ if __name__ == '__main__':
     def web_socket_trader_starter():
         interval = '1h'
         cr_list = [
-                   {"symbol":"BTCUSDT", "name":"btc", "bar_length":"5m"}, 
-                   {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"5m"},
-                   {"symbol":"XRPUSDT", "name":"xrp", "bar_length":"5m"},
-                   {"symbol":"ETHUSDT", "name":"eth", "bar_length":"5m"},
-                   {"symbol":"DOGEUSDT", "name":"doge", "bar_length":"5m"}
+                   {"symbol":"BTCUSDT", "name":"btc", "bar_length":"1h"}, 
+                   {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"1h"},
+                   {"symbol":"XRPUSDT", "name":"xrp", "bar_length":"1h"},
+                   {"symbol":"ETHUSDT", "name":"eth", "bar_length":"1h"},
+                   {"symbol":"DOGEUSDT", "name":"doge", "bar_length":"1h"}
                    ]
         trader_c_list = []
         for coin_d in cr_list:

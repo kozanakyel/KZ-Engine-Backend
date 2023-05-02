@@ -11,13 +11,13 @@ class FactoryIndicatorBuilder():
             import talib
             print('Start TA-LIB module')
             talib_indicator = TalibIndicator(df, range_list, logger)
-            talib_indicator.create_ind_candle_cols_talib()
+            talib_indicator.create_ind_cols()
             result_df = talib_indicator.df.copy()
             print('created indicators columns with TA-LIB')
         except ModuleNotFoundError:
             print('Start Pandas_ta module')
             ta_indicator = PandasTaIndicator(df, range_list, logger)
-            ta_indicator.create_ind_cols_ta()
+            ta_indicator.create_ind_cols()
             result_df = ta_indicator.df.copy()
             print('created indicators columns with Pandas_ta') 
         return result_df
