@@ -16,6 +16,35 @@ import json
 class RequestServices():
     
     @staticmethod
+    def get_model_with_api(symbol, interval, ai_type):
+        url = config.get_api_url()
+        
+        r = requests.get(
+            f"{url}/forecast_model", json={
+                "symbol": symbol,
+                "interval": interval,
+                "ai_type": ai_type
+            }
+        )   
+        string_content = r.content.decode('utf-8')
+        dict_content = json.loads(string_content) 
+        return dict_content
+
+
+"""    
+    @staticmethod
+    def post_crypto_with_api(name, ticker, description):
+        url = config.get_api_url()
+        
+        r = requests.post(
+            f"{url}/add_crypto", json={"name": name,
+                                             "ticker": ticker,
+                                             "description": description
+                                             }
+        )    
+        return r.status_code
+    
+    @staticmethod
     def post_signaltracker_with_api(symbol, interval, ai_type, 
                                     signal, ticker, tweet_counts, 
                                     datetime_t):
@@ -51,30 +80,5 @@ class RequestServices():
                                              }
         )    
         return r.status_code  
-    
-    @staticmethod
-    def get_model_with_api(symbol, interval, ai_type):
-        url = config.get_api_url()
         
-        r = requests.get(
-            f"{url}/forecast_model", json={
-                "symbol": symbol,
-                "interval": interval,
-                "ai_type": ai_type
-            }
-        )   
-        string_content = r.content.decode('utf-8')
-        dict_content = json.loads(string_content) 
-        return dict_content
-    
-    @staticmethod
-    def post_crypto_with_api(name, ticker, description):
-        url = config.get_api_url()
-        
-        r = requests.post(
-            f"{url}/add_crypto", json={"name": name,
-                                             "ticker": ticker,
-                                             "description": description
-                                             }
-        )    
-        return r.status_code
+"""
