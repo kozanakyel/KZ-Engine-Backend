@@ -7,14 +7,15 @@ from KZ_project.Infrastructure.logger.logger import Logger
 
 class FeatureExtractor():
     
-    def __init__(self, df: pd.DataFrame(), range_list: list, logger: Logger=None):
+    def __init__(self, df: pd.DataFrame(), range_list: list, interval: str, logger: Logger=None):
         self.logger = logger
         self.range_list = range_list
+        self.interval = interval
         self.df = df.copy()
         self.featured_matrix = None
     
     def create_featured_matrix(self):
-        self.normalized_all_indicators_col(self.featured_matrix, self.df)
+        self.featured_matrix = self.normalized_all_indicators_col(self.df)
         self.add_datetime_features(self.featured_matrix)
         self.featured_matrix['candle_label'] = self.df.candle_label
         self.featured_matrix['vol_delta'] = (self.featured_matrix['volume'].pct_change() > 0).astype(int)
@@ -28,7 +29,7 @@ class FeatureExtractor():
         self.featured_matrix['kz_score'] = self.featured_matrix.sum(axis = 1)/100
         self.log(f'Add KZ score and Index label')
     
-    def normalized_all_indicators_col(self, sample, matrix_data):
+    def normalized_all_indicators_col(self, matrix_data):
         sample = self.pattern_helper_for_extract_feature(matrix_data)        
         self.norm_features_ind(sample, matrix_data, 'ema', self.range_list)
         self.norm_features_ind(sample, matrix_data, 'mfi', self.range_list, 100)
@@ -39,6 +40,7 @@ class FeatureExtractor():
         self.norm_features_ind(sample, matrix_data, 'rsi', self.range_list, 100)
         self.norm_adx_ind(sample, matrix_data, self.range_list)
         self.log(f'Normalized features for indicators values to 1 and 0')
+        return sample
                 
         
     def add_datetime_features(self, sample):

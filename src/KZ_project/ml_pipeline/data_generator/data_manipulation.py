@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 from KZ_project.core.strategies.technical_analysis.indicators import Indicators
 from KZ_project.Infrastructure.logger.logger import Logger
+from KZ_project.ml_pipeline.data_generator.feature_extractor import FeatureExtractor
 
 from KZ_project.ml_pipeline.data_generator.file_data_checker import FileDataChecker
 from KZ_project.ml_pipeline.data_generator.data_saver import factory_data_saver
@@ -27,8 +28,29 @@ our Forecaster model...
 """            
  
 class DataCreator():
-    ...   
-
+    def __init__(self, symbol: str, source: str, range_list: list, period: str=None, interval: str=None, 
+                                start_date: str=None, end_date: str=None, scale: int=1, saved_to_csv: bool=False,
+                                logger: Logger=None, data_checker: FileDataChecker=None, client: BinanceClient=None):  
+        self.symbol = symbol
+        self.source = source
+        self.scale = scale
+        self.range_list = [i*scale for i in range_list]
+        self.period = period
+        self.interval = interval 
+        self.start_date = start_date
+        self.end_date = end_date
+        self.client = client
+        self.data_checker = data_checker
+        self.saved_to_csv = saved_to_csv
+        self.logger = logger
+        
+    
+        
+    def log(self, text):
+        if self.logger:
+            self.logger.append_log(text)
+        else:
+            print(text)
 
 class DataManipulation():
     def __init__(self, symbol: str, source: str, range_list: list, period: str=None, interval: str=None, 
@@ -122,7 +144,8 @@ class DataManipulation():
         elif source == 'binance':
             df_download = self.client.get_history(symbol = self.symbol, 
                                                   interval = self.interval,
-                                                  start = self.start_date, end = self.end_date)
+                                                  start = self.start_date, 
+                                                  end = self.end_date)
         
         self.df = df_download.copy()
         self.df['Datetime'] = self.df.index
@@ -376,11 +399,11 @@ if __name__ == '__main__':
     MAIN_PATH = '/data/outputs/data_ind/'
     PURE_PATH = '/data/pure_data/'
     FEATURE_PATH = '/data/outputs/feature_data/'
-    PREFIX_PATH = './src/KZ_project'
+    PREFIX_PATH = '.'
     SYMBOL = 'BTC-USD' 
     PERIOD = "1y"
     INTERVAL = '1h'
-    START_DATE = '2020-06-30'
+    START_DATE = '2021-06-30'
     END_DATE = '2022-07-01'
     scale = 1
     range_list = [5,6,7,8,10,12,14,15,20]
@@ -390,11 +413,15 @@ if __name__ == '__main__':
     d = DataManipulation(symbol=SYMBOL, source=source, range_list=range_list, period=PERIOD, interval=INTERVAL, 
                     start_date=START_DATE, end_date=END_DATE, prefix_path=PREFIX_PATH, 
                     main_path=MAIN_PATH, pure_path=PURE_PATH,
-                    feature_path=FEATURE_PATH)  
+                    feature_path=FEATURE_PATH, saved_to_csv=False)  
     
-    FileDataChecker(symbol=SYMBOL, period=PERIOD, interval=INTERVAL, 
+    f = FileDataChecker(symbol=SYMBOL, period=PERIOD, interval=INTERVAL, 
                     start_date=START_DATE, end_date=END_DATE, prefix_path=PREFIX_PATH, 
                     main_path=MAIN_PATH, pure_path=PURE_PATH,
                     feature_path=FEATURE_PATH)
+    
+    k = FeatureExtractor(d.df, d.range_list, d.interval)
+    k.create_featured_matrix()
+    print(k.featured_matrix)
     
     print(os.getcwd())

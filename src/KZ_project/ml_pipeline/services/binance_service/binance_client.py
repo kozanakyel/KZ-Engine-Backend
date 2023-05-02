@@ -3,13 +3,14 @@ from binance.client import Client
 from binance import ThreadedWebsocketManager
 
 from KZ_project.Infrastructure.logger.logger import Logger
+from KZ_project.ml_pipeline.services.service_client.abstract_service_client import IServiceClient
 
 # binance API icin zaman sorunsalini wsl2 da cozer
 # sudo apt install ntpdate
 # sudo ntpdate -sb time.nist.gov
 
 
-class BinanceClient():
+class BinanceClient(IServiceClient):
     
     def __init__(self, api_key: str, api_secret_key: str, logger: Logger=None):
         self.api_key = api_key
@@ -70,7 +71,7 @@ class BinanceClient():
         # pd.to_datetime(last24["closeTime"], unit = "ms") 
         return self.client.get_ticker(symbol=symbol)
     
-    def get_history(self, symbol, interval, start, end = None):
+    def get_history(self, symbol, interval, start, end = None, *args):
         """
         valid intervals - 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M
         example: start = "2021-10-01 10:00:00"
