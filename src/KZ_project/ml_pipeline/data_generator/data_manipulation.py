@@ -6,11 +6,14 @@ from tqdm import tqdm
 
 from KZ_project.core.strategies.technical_analysis.indicators import Indicators
 from KZ_project.Infrastructure.logger.logger import Logger
+from KZ_project.ml_pipeline.data_generator.data_checker import DataChecker
 from KZ_project.ml_pipeline.data_generator.feature_extractor import FeatureExtractor
 
 from KZ_project.ml_pipeline.data_generator.file_data_checker import FileDataChecker
 from KZ_project.ml_pipeline.data_generator.data_saver import factory_data_saver
 from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
+from KZ_project.ml_pipeline.services.service_client.abstract_service_client import IServiceClient
+from KZ_project.ml_pipeline.services.yahoo_service.yahoo_client import YahooClient
 
 """
 @author: Kozan Ugur AKYEL
@@ -30,7 +33,7 @@ our Forecaster model...
 class DataCreator():
     def __init__(self, symbol: str, source: str, range_list: list, period: str=None, interval: str=None, 
                                 start_date: str=None, end_date: str=None, scale: int=1, saved_to_csv: bool=False,
-                                logger: Logger=None, data_checker: FileDataChecker=None, client: BinanceClient=None):  
+                                logger: Logger=None, data_checker: DataChecker=None, client: IServiceClient=None):  
         self.symbol = symbol
         self.source = source
         self.scale = scale
@@ -43,8 +46,22 @@ class DataCreator():
         self.data_checker = data_checker
         self.saved_to_csv = saved_to_csv
         self.logger = logger
-        
+        self.df = None
     
+    def download_ohlc_from_client(self):
+        if self.period:            # Only yahoo download check this data got or not
+            df_download = self.client.get_history(self.symbol, self.interval, None, None, self.period)             
+        else:
+            df_download = self.client.get_history(symbol = self.symbol, interval = self.interval,
+                                                  start = self.start_date, 
+                                                  end = self.end_date)  
+        return df_download  
+    
+    def create_datetime_index(self, dframe):
+        dframe['Datetime'] = dframe.index
+        dframe = dframe.set_index('Datetime')
+        dframe.dropna(inplace=True)
+        return dframe
         
     def log(self, text):
         if self.logger:
@@ -71,6 +88,8 @@ class DataManipulation():
         self.pure_path = pure_path
         self.feature_path = feature_path
         self.client = client
+        
+        
 
         
         # DataChecker for file and folder for checking
@@ -420,8 +439,16 @@ if __name__ == '__main__':
                     main_path=MAIN_PATH, pure_path=PURE_PATH,
                     feature_path=FEATURE_PATH)
     
-    k = FeatureExtractor(d.df, d.range_list, d.interval)
-    k.create_featured_matrix()
-    print(k.featured_matrix)
+    #k = FeatureExtractor(d.df, d.range_list, d.interval)
+    #k.create_featured_matrix()
+    #print(k.featured_matrix)
+    y = YahooClient()
+    d = DataCreator(symbol=SYMBOL, source=source, range_list=range_list, period=PERIOD, interval=INTERVAL, 
+                    start_date=START_DATE, end_date=END_DATE, 
+                    data_checker=f,
+                    client=y)  
+    d.df = d.download_ohlc_from_client()
+    d.df = d.create_datetime_index(d.df)
+    print(d.df)
     
     print(os.getcwd())
