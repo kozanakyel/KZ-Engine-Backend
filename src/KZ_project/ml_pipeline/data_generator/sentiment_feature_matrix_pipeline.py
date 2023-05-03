@@ -73,6 +73,10 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
         mtrix = super().create_aggregate_featured_matrix()
         df_price_ext = mtrix.copy()
         df_price_ext.index = df_price_ext.index + timedelta(hours=3)
+        print(f'dfindex: {df_price_ext.index[-1]} and teweet index: {sent_tweets.index[-1]}')
+        if df_price_ext.index[-1] != sent_tweets.index[-1]:
+            sent_tweets.loc[df_price_ext.index[-1]] = 0.0
+            print(f'Lastteweet index: {sent_tweets.index[-1]}')
         df_final = tsa.concat_ohlc_compound_score(df_price_ext, sent_tweets)
         del df_price_ext
         df_final = df_final.rename(columns={"compound_total":"twitter_sent_score"})

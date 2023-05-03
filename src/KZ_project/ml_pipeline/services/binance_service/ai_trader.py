@@ -136,7 +136,7 @@ if __name__ == '__main__':
                                  start = str(now - timedelta(hours = 2)), end=None)
         print(dff)
 
-
+    
     def web_socket_trader_starter():
         interval = '1h'
         cr_list = [
@@ -162,11 +162,6 @@ if __name__ == '__main__':
         
         for i in trader_c_list:
             i.start_trading()    
-        
-        time.sleep(60*30)
-        
-        for i in trader_c_list:
-            i.stop_trading()
             
     def web_socket_trader_starter_btc():
         

@@ -22,7 +22,7 @@ class SignalTrackerRepository(AbstractSignalTrackerRepository):
 
     def get(self, forecast_model_id):
         # why datetime_t and not created_at, we investigate them !!!
-        return self.session.query(SignalTracker).filter_by(forecast_model_id=forecast_model_id).order_by(desc(SignalTracker.created_at)).first()
+        return self.session.query(SignalTracker).filter_by(forecast_model_id=forecast_model_id).order_by(desc(SignalTracker.datetime_t)).first()
     
     def list(self):
         return self.session.query(SignalTracker).all()

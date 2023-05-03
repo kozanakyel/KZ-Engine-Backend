@@ -55,7 +55,7 @@ class TwitterCollection():
                                          end_time=end_time,
                                          tweet_fields = ["created_at", "text", "source"],
                                          user_fields = ["name", "username", "location", "verified", "description"],
-                                         max_results = 13,      # max result is 100
+                                         max_results = 17,      # max result is 100
                                          expansions='author_id'
                                         ) 
         return tweets
