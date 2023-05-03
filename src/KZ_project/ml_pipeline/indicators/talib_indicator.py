@@ -3,23 +3,22 @@ import talib
 from tqdm import tqdm
 
 from KZ_project.Infrastructure.logger.logger import Logger
-from KZ_project.core.strategies.technical_analysis.candlestick_features import *
+from KZ_project.Infrastructure.strategies.technical_analysis.candlestick_features import *
 from KZ_project.ml_pipeline.indicators.base_indicator import BaseIndicator
-
-
+                                                                          
 class TalibIndicator(BaseIndicator):
-
+    
     def __init__(self, df: pd.DataFrame()=None, range_list: list=None, logger: Logger=None):
         self.range_list = range_list
         self.logger = logger
         self.df = df.copy()
-
+    
     def log(self, text):
         if self.logger:
             self.logger.append_log(text)
         else:
             print(text)
-
+    
     def create_ind_cols(self) -> None:
         self.create_ind_with_ct(self.df, 'sma', talib.SMA, self.range_list)
         self.create_bband_t(self.df, talib.BBANDS, self.range_list)
