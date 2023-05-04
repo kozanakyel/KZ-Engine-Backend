@@ -1,6 +1,7 @@
 import pandas as pd
 import talib
 from tqdm import tqdm
+import pandas_ta as ta
 
 from KZ_project.Infrastructure.logger.logger import Logger
 from KZ_project.Infrastructure.strategies.technical_analysis.candlestick_features import *
