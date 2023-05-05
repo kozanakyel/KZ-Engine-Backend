@@ -63,11 +63,11 @@ def get_forecast_model(
     return result 
 
 def add_signal_tracker(
-    signal:int, ticker:str,  tweet_counts:int, datetime_t:str,
+    signal:int, ticker:str,  tweet_counts:int, datetime_t:str, backtest_returns_data,
     forecast_model: ForecastModel,
     repo: AbstractBaseRepository, session
 ) -> None:
-    repo.add(SignalTracker(signal, ticker, tweet_counts, datetime_t,
+    repo.add(SignalTracker(signal, ticker, tweet_counts, datetime_t, backtest_returns_data,
                           forecast_model))
     session.commit()
     
@@ -92,7 +92,7 @@ def get_fm_models_list_all_unique_symbols(
     return result 
 
 def prediction_service_new_signaltracker(ai_type, Xt, next_candle_prediction,
-                                             symbol, interval, hashtag, tweet_counts, session):
+                                             symbol, interval, hashtag, tweet_counts, backtest_returns_data, session):
         #session = get_session()
         repo = SignalTrackerRepository(session)
         repo_fm = ForecastModelRepository(session)
@@ -110,6 +110,7 @@ def prediction_service_new_signaltracker(ai_type, Xt, next_candle_prediction,
                 hashtag,
                 tweet_counts,
                 Xt,
+                backtest_returns_data,
                 result_fm,
                 repo,
                 session,

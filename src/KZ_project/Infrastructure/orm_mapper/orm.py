@@ -42,6 +42,7 @@ signal_trackers = Table(
     Column("signal", Integer, nullable=False),
     Column("ticker", String(25)),
     Column("tweet_counts", Integer),
+    Column("backtest_returns_data", String()),
     Column("forecast_model_id", ForeignKey("forecast_models.id")),    
 )
 
