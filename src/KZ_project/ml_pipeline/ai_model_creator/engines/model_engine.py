@@ -1,3 +1,4 @@
+from datetime import timedelta
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
@@ -68,11 +69,14 @@ class ModelEngine(IBacktestable):
         ypred_reg = xgb.model.predict(xgb.X_test)
         print(f'Last accuracy: {accuracy_score(ytest, ypred_reg)}')
         acc_score = accuracy_score(ytest, ypred_reg)
-        print(f'Confusion Matrix:\n{confusion_matrix(ytest, ypred_reg)}')    
+        print(f'Confusion Matrix:\n{confusion_matrix(ytest, ypred_reg)}')   
+        
+        xtest = xgb.X_test 
         
         res_str = services.save_crypto_forecast_model_service(acc_score, get_session(), self.symbol_cut, 
                                                           self.symbol, self.source, X.shape[1], self.model_name,
-                                                          self.interval, self.ai_type)
+                                                          self.interval, self.ai_type,
+                                                          str(xtest.index[-1] + timedelta(hours=int(self.interval[0]))))
         print(f'model engine model save: {res_str}')
     
         xgb.plot_feature_importance(
@@ -80,7 +84,7 @@ class ModelEngine(IBacktestable):
             self.symbol
             )
     
-        xtest = xgb.X_test
+        
         self.create_retuns_data(xtest, ytest)
         bt_json = self.trade_fee_net_returns(xtest)
         print(f'bt: method inside: {json.dumps(bt_json)}')

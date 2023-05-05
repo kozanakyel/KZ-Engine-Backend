@@ -30,9 +30,8 @@ forecast_models = Table(
     Column("ai_type", String(200)),
     Column("hashtag", String(100), nullable=True),
     Column("accuracy_score", Float()),
+    Column("datetime_t", String(200)),
     Column("crypto_id", ForeignKey("cryptos.id")),
-    Column("created_at", DateTime())
-
 )
 
 signal_trackers = Table(
@@ -43,9 +42,7 @@ signal_trackers = Table(
     Column("signal", Integer, nullable=False),
     Column("ticker", String(25)),
     Column("tweet_counts", Integer),
-    Column("forecast_model_id", ForeignKey("forecast_models.id")),
-    Column("created_at", DateTime())
-    
+    Column("forecast_model_id", ForeignKey("forecast_models.id")),    
 )
 
 def start_mappers():    

@@ -24,17 +24,17 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
         
         
     def create_sentiment_aggregate_feature_matrix(self) -> pd.DataFrame():
-        try:
-            client_twt, tsa, daily, hourly, data = self.construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(self.hashtag)
-            hourly_tsa = self.get_tweet_sentiment_hourly(hourly)
-            self.agg_sent_feature_matrix = self.composite_tweet_sentiment_and_data_manipulation(hourly_tsa, tsa)
-        except Exception as e:
-            print(f'Error for Tweepy: {e}')
-            self.agg_sent_feature_matrix = super().create_aggregate_featured_matrix().copy()
-            self.agg_sent_feature_matrix["twitter_sent_score"] = 0.0
-            # for binance exchange time module
-            self.agg_sent_feature_matrix.index = self.agg_sent_feature_matrix.index + timedelta(hours=3)
-            self.tweet_counts = 0
+        # try:
+        #     client_twt, tsa, daily, hourly, data = self.construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(self.hashtag)
+        #     hourly_tsa = self.get_tweet_sentiment_hourly(hourly)
+        #     self.agg_sent_feature_matrix = self.composite_tweet_sentiment_and_data_manipulation(hourly_tsa, tsa)
+        # except Exception as e:
+        #print(f'Error for Tweepy: {e}')
+        self.agg_sent_feature_matrix = super().create_aggregate_featured_matrix().copy()
+        self.agg_sent_feature_matrix["twitter_sent_score"] = 0.0
+        # for binance exchange time module
+        self.agg_sent_feature_matrix.index = self.agg_sent_feature_matrix.index + timedelta(hours=3)
+        self.tweet_counts = 0
         # print(self.agg_sent_feature_matrix["twitter_sent_score"])
         return self.agg_sent_feature_matrix
             

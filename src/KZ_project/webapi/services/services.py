@@ -41,13 +41,15 @@ def get_crypto(
 def add_forecast_model(
     symbol:str, source:str, feature_counts:int, model_name:str,
     interval:str, ai_type:str, hashtag:str, accuracy_score:float,
-    crypto, repo: AbstractBaseRepository, session
+    datetime_t:str, crypto, repo: AbstractBaseRepository, session
 ) -> None:
     #repo_cr = CryptoRepository(session)
     #finding_crypto = get_crypto(ticker=hashtag, repo=repo_cr, session=session)
-    
+    f = ForecastModel(symbol, source, feature_counts, model_name,
+                          interval, ai_type, hashtag, accuracy_score, datetime_t, crypto)
+    print(f"################## {f}")
     repo.add(ForecastModel(symbol, source, feature_counts, model_name,
-                          interval, ai_type, hashtag, accuracy_score, crypto))
+                          interval, ai_type, hashtag, accuracy_score, datetime_t, crypto))
     session.commit()
     
 def get_forecast_model(
@@ -119,7 +121,7 @@ def prediction_service_new_signaltracker(ai_type, Xt, next_candle_prediction,
     
 def save_crypto_forecast_model_service(accuracy_score, session, ticker, 
                                         symbol, source, feature_counts, model_name,
-                                        interval, ai_type):
+                                        interval, ai_type, datetime_t):
         # session = get_session()
         repo = ForecastModelRepository(session)
         repo_cr = CryptoRepository(session)
@@ -131,17 +133,18 @@ def save_crypto_forecast_model_service(accuracy_score, session, ticker,
                 )
     
             add_forecast_model(
-                symbol,
-                source,
-                feature_counts,
-                model_name,
-                interval,
-                ai_type,
-                ticker,
-                accuracy_score,
-                finding_crypto,
-                repo,
-                session,
+                symbol=symbol,
+                source=source,
+                feature_counts=feature_counts,
+                model_name=model_name,
+                interval=interval,
+                ai_type=ai_type,
+                hashtag=ticker,
+                accuracy_score=accuracy_score,
+                crypto=finding_crypto,
+                datetime_t=datetime_t,
+                repo=repo,
+                session=session,
             )
         except (InvalidName) as e:
             return f'An errror for creating model {e}'
