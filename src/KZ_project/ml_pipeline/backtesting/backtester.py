@@ -35,44 +35,54 @@ class Backtester():
         
         return str(dtt + timedelta(hours=int(self.data_creator.interval[0]))), int(y_pred), bt_json, acc_score
     
-    def backtest(self):
-        fm = backtester.create_featured_matrix()
-        sum = 0
-        for i in range(2400):
-            df = backtester.get_interval_df(i)
-            dt, signal, bt, ac = backtester.predict_next_hour(df)
-            ei = backtester.get_end_index(i)
+    def backtest(self, backtest_counts: int):
+        fm = self.create_featured_matrix()
+        true_accuracy = []
+        false_accuracy = []
+        succes_predict = 0
+        for i in range(backtest_counts):
+            df = self.get_interval_df(i)
+            dt, signal, bt, accuracy_score = self.predict_next_hour(df)
+            ei = self.get_end_index(i)
             actual_result = (fm.loc[fm.index[ei+1]]["log_return"] > 0).astype(int)
-            self.backtest_data.append((dt, ac, signal, actual_result))
+            self.backtest_data.append((dt, accuracy_score, signal, actual_result))
             if actual_result == signal:
-                sum = sum + 1
-        return sum / len(self.backtest_data)
+                succes_predict = succes_predict + 1
+                true_accuracy.append(accuracy_score)
+            else:
+                false_accuracy.append(accuracy_score)
+        return succes_predict / len(self.backtest_data), sum(true_accuracy)/len(true_accuracy), sum(false_accuracy)/len(false_accuracy)
     
 
 if __name__ == '__main__':
     from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
     from dotenv import load_dotenv
     import os
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    
     load_dotenv()
     api_key = os.getenv('BINANCE_API_KEY')
     api_secret_key = os.getenv('BINANCE_SECRET_KEY')
 
     client = BinanceClient(api_key, api_secret_key) 
     data_creator = DataCreator(symbol="BNBUSDT", source='binance', range_list=[i for i in range(5,21)],
-                                       period=None, interval="1h", start_date="2022-02-06", client=client)
-    backtester = Backtester(7, client, data_creator)
-    # print('created backtester')
-    # fm = backtester.create_featured_matrix()
-    # print('created fmmmm')
-    # df = backtester.get_interval_df(0)
-    # print('get df interval fmmmm')
-    # dt, signal, bt, ac = backtester.predict_next_hour(df)
-    # print('get prediction')
-    # ei = backtester.get_end_index(0)
-    # print(f'dt: {dt}, signal: {signal}, actual: {(fm.loc[fm.index[ei+1]]["log_return"] > 0).astype(int)}, acc_score: {ac}')
+                                       period=None, interval="1h", start_date="2020-01-06", client=client)
+    bt = Backtester(7, client, data_creator)
     
-    result_score = backtester.backtest()
-    print(f'ACCURACY SKOR FOR LAST BACKTEST: {result_score} list: {backtester.backtest_data}')
+    result_score = bt.backtest(300)
+    print(f'ACCURACY SKOR FOR LAST BACKTEST: {result_score}')
+    
+    # Assuming self.backtest_data is a list of tuples
+    data = pd.DataFrame(bt.backtest_data, columns=['date', 'accuracy', 'signal', 'actual'])
+    data['date'] = pd.to_datetime(data['date'])
+
+    # Plot the data
+    plt.plot(data['date'], data['accuracy'], label='Accuracy')
+    # plt.plot(data['date'], data['signal'], label='Signal')
+    # plt.plot(data['date'], data['actual'], label='Actual')
+    plt.legend()
+    plt.show()
     
         
     
