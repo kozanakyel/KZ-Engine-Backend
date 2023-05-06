@@ -15,28 +15,41 @@ btc = config.BitcoinConfig()
 class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
     
     def __init__(self, data_creator: DataCreator, 
-                 data_checker: DataChecker, hashtag, lang: str="en"):
+                 data_checker: DataChecker, hashtag, lang: str="en", is_twitter: bool=True):
         super().__init__(data_creator, data_checker)
-        self.client_twitter = TwitterCollection()
-        self.tsa = TweetSentimentAnalyzer(lang=lang)
+        if is_twitter:
+            self.client_twitter = TwitterCollection()
+            self.tsa = TweetSentimentAnalyzer(lang=lang)
         self.tweet_counts = 0
         self.hashtag = hashtag
+        self.is_twitter = is_twitter
         
         
     def create_sentiment_aggregate_feature_matrix(self) -> pd.DataFrame():
-        # try:
-        #     client_twt, tsa, daily, hourly, data = self.construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(self.hashtag)
-        #     hourly_tsa = self.get_tweet_sentiment_hourly(hourly)
-        #     self.agg_sent_feature_matrix = self.composite_tweet_sentiment_and_data_manipulation(hourly_tsa, tsa)
-        # except Exception as e:
-        #print(f'Error for Tweepy: {e}')
-        self.agg_sent_feature_matrix = super().create_aggregate_featured_matrix().copy()
-        self.agg_sent_feature_matrix["twitter_sent_score"] = 0.0
+        if self.is_twitter:
+            try:
+                self.agg_sent_feature_matrix = self.create_matrix_with_twitter()
+            except Exception as e:
+                print(f'Error for Tweepy: {e}')
+                self.agg_sent_feature_matrix = self.create_matrix_without_twitter()
+            return self.agg_sent_feature_matrix
+        else:
+            self.agg_sent_feature_matrix = self.create_matrix_without_twitter()
+            return self.agg_sent_feature_matrix
+    
+    def create_matrix_without_twitter(self):
+        agg_sent_feature_matrix = super().create_aggregate_featured_matrix().copy()
+        agg_sent_feature_matrix["twitter_sent_score"] = 0.0
         # for binance exchange time module
-        self.agg_sent_feature_matrix.index = self.agg_sent_feature_matrix.index + timedelta(hours=3)
+        agg_sent_feature_matrix.index = agg_sent_feature_matrix.index + timedelta(hours=3)
         self.tweet_counts = 0
-        # print(self.agg_sent_feature_matrix["twitter_sent_score"])
-        return self.agg_sent_feature_matrix
+        return agg_sent_feature_matrix
+    
+    def create_matrix_with_twitter(self):
+        client_twt, tsa, daily, hourly, data = self.construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(self.hashtag)
+        hourly_tsa = self.get_tweet_sentiment_hourly(hourly)
+        agg_sent_feature_matrix = self.composite_tweet_sentiment_and_data_manipulation(hourly_tsa, tsa)
+        return agg_sent_feature_matrix
             
         
     def get_sentiment_daily_hourly_scores(self, hastag: str, 
