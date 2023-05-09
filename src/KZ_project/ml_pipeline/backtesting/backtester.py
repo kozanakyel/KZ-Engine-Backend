@@ -1,8 +1,9 @@
 from datetime import timedelta
 
 from KZ_project.ml_pipeline.ai_model_creator.engines.model_engine import ModelEngine
-from KZ_project.ml_pipeline.data_generator.data_creator import DataCreator
-from KZ_project.ml_pipeline.data_generator.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
+from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
+from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
+from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
 from KZ_project.ml_pipeline.services.service_client.abstract_service_client import IServiceClient
 
 
@@ -16,13 +17,19 @@ class Backtester():
         self.featured_matrix = self._create_featured_matrix()
         self.backtest_data = []
         
+    def get_period(self):
+        return self.period
+    
+    def set_period(self, period):
+        self.period = period
+        
     def _create_featured_matrix(self):
         pipeline = SentimentFeaturedMatrixPipeline(self.data_creator, None, None, is_twitter=False)
         featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
         return featured_matrix
         
     def _get_interval_df(self, start_index):
-        end_index = self.get_end_index(start_index)
+        end_index = self._get_end_index(start_index)
         df = self.featured_matrix.iloc[start_index:end_index]
         return df
     
@@ -34,6 +41,16 @@ class Backtester():
         dtt, y_pred, bt_json, acc_score = model_engine.get_accuracy_score_for_xgboost_fit_separate_dataset(df)
         
         return str(dtt + timedelta(hours=int(self.data_creator.interval[0]))), int(y_pred), bt_json, acc_score
+    
+    def grid_backtest(self):
+        fm = self.featured_matrix.copy()
+        y = fm.feature_label
+        x = fm.drop(columns=['feature_label'], axis=1)
+        xgb = XgboostBinaryForecaster()
+        xgb.create_train_test_data(x, y, test_size=0.2)
+        model_gcv = xgb.model
+        best_params = GridSearchableCV.bestparams_gridcv([100, 200, 400], [0.1, 0.3], [1, 3, 5], model_gcv, xgb.X_train, xgb.y_train, verbose=3)
+        return best_params    # 0.1, 1, 100
     
     def backtest(self, backtest_counts: int):
         fm = self.featured_matrix
@@ -58,6 +75,7 @@ class Backtester():
 
 if __name__ == '__main__':
     from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
+    from KZ_project.ml_pipeline.ai_model_creator.forecasters.gridsearchable_cv import GridSearchableCV
     from dotenv import load_dotenv
     import os
     import pandas as pd
@@ -85,6 +103,9 @@ if __name__ == '__main__':
     # plt.plot(data['date'], data['actual'], label='Actual')
     plt.legend()
     plt.show()
+    
+    # gcv = bt.grid_backtest()
+    # print(f'best params: {gcv}')
     
         
     

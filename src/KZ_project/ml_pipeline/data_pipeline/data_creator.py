@@ -1,7 +1,7 @@
 import pandas as pd
 from KZ_project.Infrastructure.logger.logger import Logger
-from KZ_project.ml_pipeline.data_generator.Ibinary_feature_label import IBinaryFeatureLabel
-from KZ_project.ml_pipeline.data_generator.data_checker import DataChecker
+from KZ_project.ml_pipeline.data_pipeline.Ibinary_feature_label import IBinaryFeatureLabel
+from KZ_project.ml_pipeline.data_pipeline.data_checker import DataChecker
 from KZ_project.ml_pipeline.services.service_client.abstract_service_client import IServiceClient
 
 

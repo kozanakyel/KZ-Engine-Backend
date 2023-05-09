@@ -5,7 +5,7 @@ from binance import ThreadedWebsocketManager
 from datetime import datetime, timedelta
 
 from KZ_project.Infrastructure.logger.logger import Logger
-from KZ_project.ml_pipeline.data_generator.data_creator import DataCreator
+from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
 from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
 from KZ_project.ml_pipeline.ai_model_creator.engines.forecast_engine import ForecastEngine
 

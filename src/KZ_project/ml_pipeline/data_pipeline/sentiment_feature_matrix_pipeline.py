@@ -1,15 +1,11 @@
 from datetime import timedelta
 import pandas as pd
-from KZ_project.ml_pipeline.data_generator.data_checker import DataChecker
-from KZ_project.ml_pipeline.data_generator.data_creator import DataCreator
-from KZ_project.ml_pipeline.data_generator.featured_matrix_pipeline import FeaturedMatrixPipeline
-from KZ_project.ml_pipeline.data_generator.file_data_checker import FileDataChecker
+from KZ_project.ml_pipeline.data_pipeline.data_checker import DataChecker
+from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
+from KZ_project.ml_pipeline.data_pipeline.featured_matrix_pipeline import FeaturedMatrixPipeline
+from KZ_project.ml_pipeline.data_pipeline.file_data_checker import FileDataChecker
 from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
-
-from KZ_project.Infrastructure import config
-
-btc = config.BitcoinConfig()
 
 
 class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
@@ -46,13 +42,13 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
         return agg_sent_feature_matrix
     
     def create_matrix_with_twitter(self):
-        client_twt, tsa, daily, hourly, data = self.construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(self.hashtag)
+        client_twt, tsa, daily, hourly, data = self.construct_client_twt_tsa_hourly_twt_datamanipulation_logger(self.hashtag)
         hourly_tsa = self.get_tweet_sentiment_hourly(hourly)
         agg_sent_feature_matrix = self.composite_tweet_sentiment_and_data_manipulation(hourly_tsa, tsa)
         return agg_sent_feature_matrix
             
         
-    def get_sentiment_daily_hourly_scores(self, hastag: str, 
+    def get_sentiment_hourly_scores(self, hastag: str, 
                                            twitter_client: TwitterCollection,
                                            tsa: TweetSentimentAnalyzer,
                                            hour: int=24*7):
@@ -62,10 +58,10 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
         daily_sents, hourly_sents = tsa.create_sent_results_df(hastag, df_tweets, path_df, saved=False)
         return daily_sents, hourly_sents 
     
-    def construct_client_twt_tsa_daily_hourly_twt_datamanipulation_logger(self, hastag: str) -> tuple:
+    def construct_client_twt_tsa_hourly_twt_datamanipulation_logger(self, hastag: str) -> tuple:
 
         client_twt, tsa = self.client_twitter, self.tsa
-        daily, hourly = self.get_sentiment_daily_hourly_scores(hastag, client_twt, tsa)
+        daily, hourly = self.get_sentiment_hourly_scores(hastag, client_twt, tsa)
 
         data = self.data_creator
         return client_twt, tsa, daily, hourly, data

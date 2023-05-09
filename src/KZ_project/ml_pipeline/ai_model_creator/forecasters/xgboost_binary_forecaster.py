@@ -27,7 +27,7 @@ class XgboostBinaryForecaster(AbstractForecaster):
         self.is_kfold = is_kfold
         self.logger = logger
         self.model = XGBClassifier(n_estimators=self.n_estimators, tree_method=self.tree_method, 
-                    eta=self.eta, max_depth=self.max_depth, early_stopping_rounds = 20)
+                    eta=self.eta, max_depth=self.max_depth, early_stopping_rounds = 0)
 
     def log(self, text):
         if self.logger:

@@ -48,10 +48,9 @@ class ModelEngine(IBacktestable):
         y = df_final.feature_label
         X = df_final.drop(columns=['feature_label'], axis=1)
 
-        xgb = XgboostBinaryForecaster(n_estimators=500, eta=0.01, max_depth=7, 
-                    tree_method='gpu_hist', eval_metric='logloss')
+        xgb = XgboostBinaryForecaster()
         self.ai_type = xgb.__class__.__name__
-        xgb.create_train_test_data(X, y, test_size=0.2)
+        xgb.create_train_test_data(X, y, test_size=0.1)
         
         xgb.fit()
         

@@ -3,7 +3,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from KZ_project.Infrastructure.logger.logger import Logger
-from KZ_project.ml_pipeline.data_generator.Ibinary_feature_label import IBinaryFeatureLabel
+from KZ_project.ml_pipeline.data_pipeline.Ibinary_feature_label import IBinaryFeatureLabel
 
 class FeatureExtractor(IBinaryFeatureLabel):
     
