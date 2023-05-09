@@ -4,7 +4,7 @@ from KZ_project.Infrastructure.file_processor.data_checker import DataChecker
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
 from KZ_project.ml_pipeline.data_pipeline.featured_matrix_pipeline import FeaturedMatrixPipeline
 from KZ_project.Infrastructure.file_processor.file_data_checker import FileDataChecker
-from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
+from KZ_project.ml_pipeline.sentiment_analyzer.sentiment_analyzer import SentimentAnalyzer
 from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
 
 
@@ -20,7 +20,7 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
         super().__init__(data_creator, data_checker)
         if is_twitter:
             self.client_twitter = TwitterCollection()
-            self.tsa = TweetSentimentAnalyzer(lang=lang)
+            self.tsa = SentimentAnalyzer(lang=lang)
         self.tweet_counts = 0
         self.hashtag = hashtag
         self.is_twitter = is_twitter
@@ -55,7 +55,7 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
         
     def get_sentiment_hourly_scores(self, hastag: str, 
                                            twitter_client: TwitterCollection,
-                                           tsa: TweetSentimentAnalyzer,
+                                           tsa: SentimentAnalyzer,
                                            hour: int=24*7):
         df_tweets = twitter_client.get_tweets_with_interval(hastag, 'en', hour=hour, interval=int(self.interval[0]))
         self.tweet_counts = df_tweets.shape[0]
@@ -82,7 +82,7 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
     
     def composite_tweet_sentiment_and_data_manipulation(self,
                                                          sent_tweets: pd.DataFrame(),
-                                                         tsa: TweetSentimentAnalyzer):
+                                                         tsa: SentimentAnalyzer):
 
         mtrix = super().create_aggregate_featured_matrix()
         df_price_ext = mtrix.copy()

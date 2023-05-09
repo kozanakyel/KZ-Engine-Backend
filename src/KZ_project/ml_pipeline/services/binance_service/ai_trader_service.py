@@ -10,7 +10,7 @@ from KZ_project.ml_pipeline.services.binance_service.binance_client import Binan
 from KZ_project.ml_pipeline.ai_model_creator.engines.forecast_engine import ForecastEngine
 
 
-class AITrader():
+class AITraderService():
     
     def __init__(self, symbol: str, ticker: str, bar_length, client: BinanceClient, 
                  units, interval: str, logger: Logger=None):
@@ -121,7 +121,7 @@ if __name__ == '__main__':
     from dotenv import load_dotenv
     from datetime import datetime, timedelta
     from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
-    from KZ_project.ml_pipeline.services.binance_service.ai_trader import AITrader
+    from KZ_project.ml_pipeline.services.binance_service.ai_trader_service import AITraderService
     import time
 
     load_dotenv()
@@ -147,7 +147,7 @@ if __name__ == '__main__':
         trader_c_list = []
         for coin_d in cr_list:
         
-            trader_coin_d = AITrader(
+            trader_coin_d = AITraderService(
                 symbol=coin_d["symbol"], 
                 ticker=coin_d["name"], 
                 bar_length=coin_d["bar_length"], 
@@ -163,7 +163,7 @@ if __name__ == '__main__':
             
     def web_socket_trader_starter_btc():
         
-        trader_coin_d = AITrader(
+        trader_coin_d = AITraderService(
                 symbol="BTCUSDT", 
                 ticker="btc", 
                 bar_length="3m", 

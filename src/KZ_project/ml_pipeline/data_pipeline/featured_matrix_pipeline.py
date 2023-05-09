@@ -5,7 +5,7 @@ from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
 from KZ_project.ml_pipeline.data_pipeline.feature_extractor import FeatureExtractor
 from KZ_project.Infrastructure.file_processor.file_data_checker import FileDataChecker
 from KZ_project.ml_pipeline.indicators.factory_indicator_builder import FactoryIndicatorBuilder
-from KZ_project.ml_pipeline.services.twitter_service.tweet_sentiment_analyzer import TweetSentimentAnalyzer
+from KZ_project.ml_pipeline.sentiment_analyzer.tweet_sentiment_analyzer import TweetSentimentAnalyzer
 from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
 
 """

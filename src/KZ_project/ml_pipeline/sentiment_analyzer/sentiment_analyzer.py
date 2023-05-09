@@ -18,7 +18,7 @@ from googletrans import Translator
 from tqdm import tqdm
 tqdm.pandas()
 
-class TweetSentimentAnalyzer():
+class SentimentAnalyzer():
     def __init__(self, lang: str='en', logger: Logger=None):
         #self.df_tweets = df_twitter.copy()
         self.lang = lang
