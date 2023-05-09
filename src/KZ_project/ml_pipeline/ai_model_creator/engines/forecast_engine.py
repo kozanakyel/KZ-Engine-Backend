@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from KZ_project.ml_pipeline.ai_model_creator.engines.model_engine import ModelEngine
-from KZ_project.ml_pipeline.data_pipeline.data_checker import DataChecker
+from KZ_project.Infrastructure.file_processor.data_checker import DataChecker
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
 from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
 from KZ_project.webapi.services import services
