@@ -4,7 +4,6 @@ from tqdm import tqdm
 import pandas_ta as ta
 
 from KZ_project.Infrastructure.logger.logger import Logger
-from KZ_project.Infrastructure.strategies.technical_analysis.candlestick_features import *
 from KZ_project.ml_pipeline.indicators.base_indicator import BaseIndicator
 from KZ_project.ml_pipeline.japanese_candlestick.japanese_candlestick_creator import JapaneseCandlestickCreator
                                                                           
@@ -55,8 +54,6 @@ class TalibIndicator(BaseIndicator):
 
         JapaneseCandlestickCreator.create_candle_columns(self.df)
         JapaneseCandlestickCreator.create_candle_label(self.df)
-        # create_candle_columns(self.df, candle_names=candle_names, candle_rankings=candle_rankings)
-        # create_candle_label(self.df)
 
         self.df = self.df.drop(columns=['candlestick_match_count'], axis=1)
         self.df['daily_return'] = self.df['close'].pct_change()

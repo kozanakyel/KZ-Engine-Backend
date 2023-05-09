@@ -6,9 +6,21 @@ from KZ_project.ml_pipeline.services.service_client.abstract_service_client impo
 
 
 class DataCreator(IBinaryFeatureLabel):
-    def __init__(self, symbol: str, source: str, range_list: list, period: str=None, interval: str=None, 
-                                start_date: str=None, end_date: str=None, scale: int=1, saved_to_csv: bool=False,
-                                logger: Logger=None, data_checker: DataChecker=None, client: IServiceClient=None):  
+    def __init__(
+        self, 
+        symbol: str, 
+        source: str, 
+        range_list: list, 
+        period: str=None, 
+        interval: str=None, 
+        start_date: str=None, 
+        end_date: str=None, 
+        scale: int=1, 
+        saved_to_csv: bool=False,
+        logger: Logger=None, 
+        data_checker: DataChecker=None, 
+        client: IServiceClient=None
+    ):  
         self.symbol = symbol
         self.source = source
         self.scale = scale
