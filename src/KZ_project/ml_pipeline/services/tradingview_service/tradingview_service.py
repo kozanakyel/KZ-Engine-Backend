@@ -4,7 +4,7 @@ from tradingview_ta import *
 import time
 
 
-class TradingViewStrategy():
+class TradingViewService():
     def __init__(self, exchange, screener, path, index='Order'):
         self.exchange = exchange
         self.screener = screener
