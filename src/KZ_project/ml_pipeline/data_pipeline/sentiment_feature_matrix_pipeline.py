@@ -10,8 +10,13 @@ from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import T
 
 class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
     
-    def __init__(self, data_creator: DataCreator, 
-                 data_checker: DataChecker, hashtag, lang: str="en", is_twitter: bool=True):
+    def __init__(
+        self, 
+        data_creator: DataCreator, 
+        data_checker: DataChecker, 
+        hashtag, lang: str="en", 
+        is_twitter: bool=True
+    ):
         super().__init__(data_creator, data_checker)
         if is_twitter:
             self.client_twitter = TwitterCollection()

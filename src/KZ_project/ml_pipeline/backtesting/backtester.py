@@ -9,8 +9,12 @@ from KZ_project.ml_pipeline.services.service_client.abstract_service_client impo
 
 class Backtester():
     
-    def __init__(self, period: str, 
-                 client: IServiceClient, data_creator: DataCreator):
+    def __init__(
+        self, 
+        period: str, 
+        client: IServiceClient, 
+        data_creator: DataCreator
+    ):
         self.client = client
         self.data_creator = data_creator
         self.period = period
