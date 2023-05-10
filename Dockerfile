@@ -5,6 +5,16 @@ RUN apt-get update \
         build-essential \
         curl \
         git
+        
+RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
+    tar -xvf ta-lib-0.4.0-src.tar.gz && \
+    rm ta-lib-0.4.0-src.tar.gz && \
+    cd ta-lib && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf ta-lib
 
 WORKDIR /kz_engine
 
@@ -16,5 +26,4 @@ RUN ["pip", "install", "-r", "requirements.txt"]
 RUN ["pip", "install", "-e", "src/"]
 RUN python -m nltk.downloader stopwords
 
-RUN python src/KZ_project/ml_pipeline/services/binance_service/ai_trader.py
-RUN python src/app.py 
+RUN python src/KZ_project/webapi/app.py 

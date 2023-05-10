@@ -140,9 +140,9 @@ if __name__ == '__main__':
     def web_socket_trader_starter():
         interval = '1h'
         cr_list = [
-                   {"symbol":"BTCUSDT", "name":"btc", "bar_length":"1h"}, 
-                   {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"1h"},
-                   {"symbol":"ETHUSDT", "name":"eth", "bar_length":"1h"},
+                   {"symbol":"BTCUSDT", "name":"btc", "bar_length":"5m"}, 
+                   {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"5m"},
+                   {"symbol":"ETHUSDT", "name":"eth", "bar_length":"5m"},
                    ]
         trader_c_list = []
         for coin_d in cr_list:

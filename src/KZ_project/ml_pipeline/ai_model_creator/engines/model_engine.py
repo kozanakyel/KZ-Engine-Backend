@@ -50,7 +50,7 @@ class ModelEngine(IBacktestable):
 
         xgb = XgboostBinaryForecaster()
         self.ai_type = xgb.__class__.__name__
-        xgb.create_train_test_data(X, y, test_size=0.1)
+        xgb.create_train_test_data(X, y, test_size=0.2)
         
         xgb.fit()
         
@@ -75,17 +75,17 @@ class ModelEngine(IBacktestable):
         xtest = xgb.X_test    # last addeded tro backtest data for modeliing hourly
         
         if not self.is_backtest:   # if backtest status is True
-            xgb.save_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}')
+            # xgb.save_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}')
             res_str = services.save_crypto_forecast_model_service(acc_score, get_session(), self.symbol_cut, 
                                                           self.symbol, self.source, X.shape[1], self.model_name,
                                                           self.interval, self.ai_type,
                                                           str(xtest.index[-1] + timedelta(hours=int(self.interval[0]))))
             print(f'model engine model save: {res_str}')
     
-            xgb.plot_feature_importance(
-                self.model_importance_feature, 
-                self.symbol
-                )
+            # xgb.plot_feature_importance(
+            #     self.model_importance_feature, 
+            #     self.symbol
+            #     )
     
         
         self.create_retuns_data(xtest, ytest)
