@@ -4,6 +4,7 @@ import pandas as pd
 from KZ_project.ml_pipeline.ai_model_creator.engines.model_engine import ModelEngine
 from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
+from KZ_project.ml_pipeline.data_pipeline.featured_matrix_pipeline import FeaturedMatrixPipeline
 from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
 from KZ_project.ml_pipeline.services.service_client.abstract_service_client import IServiceClient
 
@@ -31,6 +32,10 @@ class Backtester():
     def _create_featured_matrix(self) -> pd.DataFrame:
         pipeline = SentimentFeaturedMatrixPipeline(self.data_creator, None, None, is_twitter=False)
         featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
+        # pipeline = FeaturedMatrixPipeline(self.data_creator, None)
+        # featured_matrix = pipeline.create_aggregate_indicator_matrix()
+        # featured_matrix = featured_matrix.drop(columns=["candlestick_pattern"])
+        
         return featured_matrix
         
     def _get_interval_df(self, start_index: int) -> pd.DataFrame:
@@ -43,7 +48,7 @@ class Backtester():
      
     def _predict_next_hour(self, df: pd.DataFrame) -> tuple:      
         model_engine = ModelEngine(self.data_creator.symbol, None, self.data_creator.source, self.data_creator.interval, is_backtest=True)
-        dtt, y_pred, bt_json, acc_score = model_engine.get_accuracy_score_for_xgboost_fit_separate_dataset(df)
+        dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(df)
         
         return str(dtt + timedelta(hours=int(self.data_creator.interval[0]))), int(y_pred), bt_json, acc_score
     
@@ -64,10 +69,12 @@ class Backtester():
         succes_predict = 0
         for i in range(backtest_counts):
             df = self._get_interval_df(i)
+            # df.to_csv(f"./data/outputs/model_fine_tuned_data/prompt_{i}.csv")
             dt, signal, bt, accuracy_score = self._predict_next_hour(df)
             ei = self._get_end_index(i)
             actual_result = (fm.loc[fm.index[ei+1]]["log_return"] > 0).astype(int)
             # log_return = fm.loc[fm.index[ei+1]]["log_return"]
+            # if accuracy_score > 0.50:
             self.backtest_data.append((dt, accuracy_score, signal, actual_result))
             
             if actual_result == signal:
@@ -95,22 +102,22 @@ if __name__ == '__main__':
                                        period=None, interval="1h", start_date="2020-01-06", client=client)
     bt = Backtester(7, client, data_creator)
     
-    # result_score = bt.backtest(300)
-    # print(f'ACCURACY SKOR FOR LAST BACKTEST: {result_score}')
+    result_score = bt.backtest(300)
+    print(f'ACCURACY SKOR FOR LAST BACKTEST: {result_score}')
     
-    # # Assuming self.backtest_data is a list of tuples
-    # data = pd.DataFrame(bt.backtest_data, columns=['date', 'accuracy', 'signal', 'actual'])
-    # data['date'] = pd.to_datetime(data['date'])
+    # Assuming self.backtest_data is a list of tuples
+    data = pd.DataFrame(bt.backtest_data, columns=['date', 'accuracy', 'signal', 'actual'])
+    data['date'] = pd.to_datetime(data['date'])
 
-    # # Plot the data
-    # plt.plot(data['date'], data['accuracy'], label='Accuracy')
-    # # plt.plot(data['date'], data['signal'], label='Signal')
-    # # plt.plot(data['date'], data['actual'], label='Actual')
-    # plt.legend()
-    # plt.show()
+    # Plot the data
+    plt.plot(data['date'], data['accuracy'], label='Accuracy')
+    # plt.plot(data['date'], data['signal'], label='Signal')
+    # plt.plot(data['date'], data['actual'], label='Actual')
+    plt.legend()
+    plt.show()
     
-    gcv = bt.grid_backtest()
-    print(f'best params: {gcv}')
+    # gcv = bt.grid_backtest()
+    # print(f'best params: {gcv}')
     
         
     
