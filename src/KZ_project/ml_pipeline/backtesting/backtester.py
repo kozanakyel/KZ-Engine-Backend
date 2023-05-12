@@ -44,7 +44,16 @@ class Backtester():
         return df
     
     def _get_end_index(self, start_index: int) -> int:
-        return start_index + self.period*24
+        ei = 0
+        print(f' get interval type: {self.data_creator.interval}')
+        if self.data_creator.interval == '1h':
+            ei = start_index + self.period*24
+        elif self.data_creator.interval == '1d':
+            ei = start_index + self.period
+        else:
+            raise ValueError(f'Enbd index is not available end_index: {ei}')
+        return ei
+        
      
     def _predict_next_hour(self, df: pd.DataFrame) -> tuple:      
         model_engine = ModelEngine(self.data_creator.symbol, None, self.data_creator.source, self.data_creator.interval, is_backtest=True)
@@ -99,16 +108,16 @@ if __name__ == '__main__':
 
     client = BinanceClient(api_key, api_secret_key) 
     data_creator = DataCreator(symbol="BNBUSDT", source='binance', range_list=[i for i in range(5,21)],
-                                       period=None, interval="1h", start_date="2020-01-06", client=client)
-    bt = Backtester(7, client, data_creator)
+                                       period=None, interval="1d", start_date="2019-01-06", client=client)
+    bt = Backtester(150, client, data_creator)
     
-    result_score = bt.backtest(300)
+    result_score = bt.backtest(200)
     print(f'ACCURACY SKOR FOR LAST BACKTEST: {result_score}')
     
     # Assuming self.backtest_data is a list of tuples
     data = pd.DataFrame(bt.backtest_data, columns=['date', 'accuracy', 'signal', 'actual'])
     data['date'] = pd.to_datetime(data['date'])
-
+    
     # Plot the data
     plt.plot(data['date'], data['accuracy'], label='Accuracy')
     # plt.plot(data['date'], data['signal'], label='Signal')

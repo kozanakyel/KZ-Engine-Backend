@@ -42,8 +42,8 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
         agg_sent_feature_matrix = super().create_aggregate_featured_matrix().copy()
         agg_sent_feature_matrix["twitter_sent_score"] = 0.0
         # for binance exchange time module
-        if self.data_creator.interval[-1] == 'h':   # if interval hourly otherwise daily
-            agg_sent_feature_matrix.index = agg_sent_feature_matrix.index + timedelta(hours=3)
+        # if self.data_creator.interval[-1] == 'h':   # if interval hourly otherwise daily
+        agg_sent_feature_matrix.index = agg_sent_feature_matrix.index + timedelta(hours=3)
         self.tweet_counts = 0
         return agg_sent_feature_matrix
     

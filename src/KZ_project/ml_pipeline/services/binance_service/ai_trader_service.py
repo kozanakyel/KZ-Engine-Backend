@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 from binance import ThreadedWebsocketManager
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from KZ_project.Infrastructure.logger.logger import Logger
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
@@ -12,8 +12,17 @@ from KZ_project.ml_pipeline.ai_model_creator.engines.forecast_engine import Fore
 
 class AITraderService():
     
-    def __init__(self, symbol: str, ticker: str, bar_length, client: BinanceClient, 
-                 units, interval: str, logger: Logger=None):
+    def __init__(
+        self, 
+        symbol: str, 
+        ticker: str, 
+        bar_length, 
+        client: BinanceClient, 
+        units, 
+        interval: str, 
+        logger: Logger=None, 
+        is_twitter: bool=True
+    ):
         self.symbol = symbol
         self.ticker = ticker
         self.bar_length = bar_length
@@ -26,6 +35,7 @@ class AITraderService():
         self.units = units
         self.logger = logger
         self.interval = interval
+        self.is_twitter = is_twitter
       
     def start_trading(self):
         
@@ -49,8 +59,11 @@ class AITraderService():
         close   = float(msg["k"]["c"])
         volume  = float(msg["k"]["v"])
         complete=       msg["k"]["x"]
-         
-        start_date = (event_time - timedelta(days=15)).strftime('%Y-%m-%d')
+        
+        if self.interval[-1] == 'h':
+            start_date = (event_time - timedelta(days=15)).strftime('%Y-%m-%d')
+        elif self.interval[-1] == 'd':
+            start_date = (event_time - timedelta(days=365)).strftime('%Y-%m-%d')
     
         # print out
         # print("Time: {} | Price: {} | Complete: {} | Symbol {}".format(event_time, close, complete, self.symbol))
@@ -58,8 +71,9 @@ class AITraderService():
         if complete:   
             data_creator = DataCreator(symbol=self.symbol, source='binance', range_list=[i for i in range(5,21)],
                                        period=None, interval=self.interval, start_date=start_date, client=self.client)  
-            sentiment_pipeline = ForecastEngine(data_creator, self.ticker)     
+            sentiment_pipeline = ForecastEngine(data_creator, self.ticker, is_twitter=self.is_twitter)     
             ai_type, Xt, next_candle_prediction = sentiment_pipeline.forecast_builder()  
+            print(f'prediction {Xt} {next_candle_prediction}')
             #self.execute_trades()
         # feed df (add new bar / update latest bar)
         self.data.loc[start_time] = [first, high, low, close, volume, complete]
@@ -119,26 +133,19 @@ class AITraderService():
 if __name__ == '__main__':
     import os
     from dotenv import load_dotenv
-    from datetime import datetime, timedelta
+    from datetime import timedelta
     from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
     from KZ_project.ml_pipeline.services.binance_service.ai_trader_service import AITraderService
-    import time
+
 
     load_dotenv()
     api_key = os.getenv('BINANCE_API_KEY')
     api_secret_key = os.getenv('BINANCE_SECRET_KEY')
 
     client = BinanceClient(api_key, api_secret_key) 
-
-    def get_history():
-        now = datetime.utcnow()
-        dff = client.get_history(symbol = "BTCUSDT", interval = "1h", 
-                                 start = str(now - timedelta(hours = 2)), end=None)
-        print(dff)
-
     
     def web_socket_trader_starter():
-        interval = '1h'
+        interval = '1d'
         cr_list = [
                    {"symbol":"BTCUSDT", "name":"btc", "bar_length":"5m"}, 
                    {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"5m"},
@@ -153,25 +160,14 @@ if __name__ == '__main__':
                 bar_length=coin_d["bar_length"], 
                 client=client, 
                 units=20, 
-                interval=interval
+                interval=interval,
+                is_twitter=False
                 )
             
             trader_c_list.append(trader_coin_d)
         
         for i in trader_c_list:
-            i.start_trading()    
-            
-    def web_socket_trader_starter_btc():
-        
-        trader_coin_d = AITraderService(
-                symbol="BTCUSDT", 
-                ticker="btc", 
-                bar_length="3m", 
-                client=client, 
-                units=20, 
-                interval='1h'
-                ) 
-        trader_coin_d.start_trading()   
+            i.start_trading()     
     
     web_socket_trader_starter()
     

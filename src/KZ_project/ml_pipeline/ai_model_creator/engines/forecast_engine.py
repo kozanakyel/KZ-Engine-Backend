@@ -14,15 +14,21 @@ class ForecastEngine():
         data_creator: DataCreator, 
         hashtag: str, 
         data_checker: DataChecker=None, 
-        is_backtest: bool=False
+        is_backtest: bool=False, 
+        is_twitter: bool=True
     ):
         self.data_creator = data_creator
         self.data_checker = data_checker
         self.hashtag = hashtag
         self.is_backtest = is_backtest
-        self.sentiment_featured_pipeline = SentimentFeaturedMatrixPipeline(data_creator, data_checker, hashtag)
+        self.is_twitter = is_twitter
+        self.sentiment_featured_pipeline = SentimentFeaturedMatrixPipeline(
+                                                    data_creator, 
+                                                    data_checker, 
+                                                    hashtag, 
+                                                    is_twitter=self.is_twitter)
         
-    def predict_next_hour(self, df_final):      
+    def predict_next_candle(self, df_final):      
         model_engine = ModelEngine(self.data_creator.symbol, self.hashtag, 'binance', self.data_creator.interval)
         dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(df_final)
         self.ai_type = model_engine.ai_type
@@ -38,7 +44,7 @@ class ForecastEngine():
     
     def forecast_builder(self):
         sentiment_featured_matrix = self.sentiment_featured_pipeline.create_sentiment_aggregate_feature_matrix()
-        datetime_t, next_candle_prediction, bt_json = self.predict_next_hour(sentiment_featured_matrix)
+        datetime_t, next_candle_prediction, bt_json = self.predict_next_candle(sentiment_featured_matrix)
         
         if not self.is_backtest:
             response_db = services.prediction_service_new_signaltracker(self.ai_type, datetime_t, next_candle_prediction,
