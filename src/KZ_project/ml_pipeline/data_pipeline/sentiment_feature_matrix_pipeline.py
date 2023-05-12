@@ -14,17 +14,17 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
         self, 
         data_creator: DataCreator, 
         data_checker: DataChecker, 
-        hashtag, lang: str="en", 
+        hashtag: str,         # use only ticker like the; btc, xrp, and also look coingecko name 
+        lang: str="en", 
         is_twitter: bool=True
     ):
         super().__init__(data_creator, data_checker)
-        if is_twitter:
-            self.client_twitter = TwitterCollection()
-            self.tsa = SentimentAnalyzer(lang=lang)
         self.tweet_counts = 0
         self.hashtag = hashtag
         self.is_twitter = is_twitter
-        
+        if is_twitter:
+            self.client_twitter = TwitterCollection()
+            self.tsa = SentimentAnalyzer(lang=lang)
         
     def create_sentiment_aggregate_feature_matrix(self) -> pd.DataFrame():
         if self.is_twitter:
@@ -42,7 +42,8 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
         agg_sent_feature_matrix = super().create_aggregate_featured_matrix().copy()
         agg_sent_feature_matrix["twitter_sent_score"] = 0.0
         # for binance exchange time module
-        agg_sent_feature_matrix.index = agg_sent_feature_matrix.index + timedelta(hours=3)
+        if self.data_creator.interval[-1] == 'h':   # if interval hourly otherwise daily
+            agg_sent_feature_matrix.index = agg_sent_feature_matrix.index + timedelta(hours=3)
         self.tweet_counts = 0
         return agg_sent_feature_matrix
     
@@ -53,10 +54,12 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
         return agg_sent_feature_matrix
             
         
-    def get_sentiment_hourly_scores(self, hastag: str, 
-                                           twitter_client: TwitterCollection,
-                                           tsa: SentimentAnalyzer,
-                                           hour: int=24*7):
+    def get_sentiment_hourly_scores(
+        self, hastag: str, 
+        twitter_client: TwitterCollection,
+        tsa: SentimentAnalyzer,
+        hour: int=24*7
+    ):
         df_tweets = twitter_client.get_tweets_with_interval(hastag, 'en', hour=hour, interval=int(self.interval[0]))
         self.tweet_counts = df_tweets.shape[0]
         path_df = f'./data/tweets_data/{hastag}/'
@@ -64,7 +67,9 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
         return daily_sents, hourly_sents 
     
     def construct_client_twt_tsa_hourly_twt_datamanipulation_logger(self, hastag: str) -> tuple:
-
+        """
+        Review code this method is not necessary refactor and extract from this class!!!!
+        """
         client_twt, tsa = self.client_twitter, self.tsa
         daily, hourly = self.get_sentiment_hourly_scores(hastag, client_twt, tsa)
 
@@ -106,8 +111,8 @@ if __name__ == '__main__':
     FEATURE_PATH = '/data/outputs/feature_data/'
     PREFIX_PATH = '.'
     SYMBOL = 'BTC-USD' 
-    PERIOD = "1mo"
-    INTERVAL = '1h'
+    PERIOD = "2y"
+    INTERVAL = '1d'
     START_DATE = '2021-06-30'
     END_DATE = '2022-07-01'
     HASHTAG = 'btc'
@@ -127,6 +132,6 @@ if __name__ == '__main__':
                     data_checker=f,
                     client=y)  
     
-    agg_matrix = SentimentFeaturedMatrixPipeline(d, None, HASHTAG)
+    agg_matrix = SentimentFeaturedMatrixPipeline(d, None, HASHTAG, is_twitter=False)
     amtrix = agg_matrix.create_sentiment_aggregate_feature_matrix()
     print(amtrix)

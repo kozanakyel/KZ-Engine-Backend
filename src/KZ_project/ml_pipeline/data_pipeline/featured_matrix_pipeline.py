@@ -1,5 +1,3 @@
-from datetime import timedelta
-import pandas as pd
 from KZ_project.Infrastructure.file_processor.data_checker import DataChecker
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
 from KZ_project.ml_pipeline.data_pipeline.feature_extractor import FeatureExtractor
@@ -22,8 +20,11 @@ our Forecaster model...
 """ 
 
 class FeaturedMatrixPipeline():
-    def __init__(self, data_creator: DataCreator, 
-                 data_checker: DataChecker):
+    def __init__(
+        self, 
+        data_creator: DataCreator, 
+        data_checker: DataChecker
+    ):
         self.data_creator = data_creator
         self.data_checker = data_checker
         

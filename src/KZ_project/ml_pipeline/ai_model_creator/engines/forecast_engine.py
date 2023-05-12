@@ -9,7 +9,13 @@ from KZ_project.webapi.entrypoints.flask_app import get_session
 
 class ForecastEngine():
     
-    def __init__(self, data_creator: DataCreator, hashtag, data_checker: DataChecker=None, is_backtest: bool=False):
+    def __init__(
+        self, 
+        data_creator: DataCreator, 
+        hashtag: str, 
+        data_checker: DataChecker=None, 
+        is_backtest: bool=False
+    ):
         self.data_creator = data_creator
         self.data_checker = data_checker
         self.hashtag = hashtag
@@ -21,21 +27,26 @@ class ForecastEngine():
         dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(df_final)
         self.ai_type = model_engine.ai_type
         
-        return str(dtt + timedelta(hours=int(self.data_creator.interval[0]))), int(y_pred), bt_json
+        if self.data_creator.interval[-1] == 'h':
+            datetime_t = str(dtt + timedelta(hours=int(self.data_creator.interval[0])))
+        elif self.data_creator.interval[-1] == 'd':
+            datetime_t = str(dtt + timedelta(days=int(self.data_creator.interval[0])))
+        
+        return datetime_t, int(y_pred), bt_json
     
     
     
     def forecast_builder(self):
         sentiment_featured_matrix = self.sentiment_featured_pipeline.create_sentiment_aggregate_feature_matrix()
-        Xt, next_candle_prediction, bt_json = self.predict_next_hour(sentiment_featured_matrix)
+        datetime_t, next_candle_prediction, bt_json = self.predict_next_hour(sentiment_featured_matrix)
         
         if not self.is_backtest:
-            response_db = services.prediction_service_new_signaltracker(self.ai_type, Xt, next_candle_prediction,
+            response_db = services.prediction_service_new_signaltracker(self.ai_type, datetime_t, next_candle_prediction,
                                                   self.data_creator.symbol, self.data_creator.interval, self.hashtag, 
                                                   self.sentiment_featured_pipeline.tweet_counts, bt_json, get_session())
             print(f'db commit signal: {response_db}')
 
-        return self.ai_type, Xt, next_candle_prediction
+        return self.ai_type, datetime_t, next_candle_prediction
         
         
         

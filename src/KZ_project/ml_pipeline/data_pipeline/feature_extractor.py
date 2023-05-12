@@ -7,7 +7,13 @@ from KZ_project.ml_pipeline.data_pipeline.Ibinary_feature_label import IBinaryFe
 
 class FeatureExtractor(IBinaryFeatureLabel):
     
-    def __init__(self, df: pd.DataFrame(), range_list: list, interval: str, logger: Logger=None):
+    def __init__(
+        self, 
+        df: pd.DataFrame(), 
+        range_list: list, 
+        interval: str, 
+        logger: Logger=None
+    ):
         self.logger = logger
         self.range_list = range_list
         self.interval = interval
@@ -46,9 +52,9 @@ class FeatureExtractor(IBinaryFeatureLabel):
     def add_datetime_features(self, sample):
         sample['month'] = sample.index.month
         sample['weekday'] = sample.index.weekday
-        if self.interval[-1] == 'h':
+        if self.interval[-1] == 'h':        # Beause we can want to clled interval with day or week paramaeter
             sample['hour'] = sample.index.hour
-        else:
+        else:                               # '1d' or oher day intervals
             sample['hour'] = 0
         sample['is_quarter_end'] = sample.index.is_quarter_end*1
         self.log(f'Add Datetime fetures for extracted feature data')  

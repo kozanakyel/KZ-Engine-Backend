@@ -1,7 +1,7 @@
 import pandas as pd
 import talib
 from tqdm import tqdm
-import pandas_ta as ta
+import pandas_ta as ta   # for the fischer indicator only It is necessary
 
 from KZ_project.Infrastructure.logger.logger import Logger
 from KZ_project.ml_pipeline.indicators.base_indicator import BaseIndicator
@@ -9,7 +9,12 @@ from KZ_project.ml_pipeline.japanese_candlestick.japanese_candlestick_creator im
                                                                           
 class TalibIndicator(BaseIndicator):
     
-    def __init__(self, df: pd.DataFrame()=None, range_list: list=None, logger: Logger=None):
+    def __init__(
+        self, 
+        df: pd.DataFrame()=None, 
+        range_list: list=None, 
+        logger: Logger=None
+    ):
         self.range_list = range_list
         self.logger = logger
         self.df = df.copy()
