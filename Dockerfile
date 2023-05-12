@@ -25,5 +25,3 @@ COPY . .
 RUN ["pip", "install", "-r", "requirements.txt"]
 RUN ["pip", "install", "-e", "src/"]
 RUN python -m nltk.downloader stopwords
-
-RUN python src/KZ_project/webapi/app.py 
