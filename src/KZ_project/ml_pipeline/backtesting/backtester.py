@@ -4,7 +4,6 @@ import pandas as pd
 from KZ_project.ml_pipeline.ai_model_creator.engines.model_engine import ModelEngine
 from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
-from KZ_project.ml_pipeline.data_pipeline.featured_matrix_pipeline import FeaturedMatrixPipeline
 from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
 from KZ_project.ml_pipeline.services.service_client.abstract_service_client import IServiceClient
 
@@ -118,12 +117,18 @@ if __name__ == '__main__':
     data = pd.DataFrame(bt.backtest_data, columns=['date', 'accuracy', 'signal', 'actual'])
     data['date'] = pd.to_datetime(data['date'])
     
+    
     # Plot the data
     plt.plot(data['date'], data['accuracy'], label='Accuracy')
     # plt.plot(data['date'], data['signal'], label='Signal')
     # plt.plot(data['date'], data['actual'], label='Actual')
     plt.legend()
     plt.show()
+    
+    data.index = data['date']
+    data_creator.df['signal'] = data['signal']
+    print(data_creator.df[['log_return', 'signal']])
+    data_creator.df.to_csv('./data/backtest_rt.csv')
     
     # gcv = bt.grid_backtest()
     # print(f'best params: {gcv}')

@@ -56,7 +56,7 @@ class TalibIndicator(BaseIndicator):
         fishert = self.df.ta.fisher()
         fishert.columns = ['fishert', 'fisherts']
         self.df = pd.concat([self.df, fishert], axis=1) 
-
+          
         JapaneseCandlestickCreator.create_candle_columns(self.df)
         JapaneseCandlestickCreator.create_candle_label(self.df)
 
