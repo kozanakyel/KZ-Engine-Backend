@@ -54,7 +54,7 @@ class Backtester():
         return ei
         
      
-    def _predict_next_hour(self, df: pd.DataFrame) -> tuple:      
+    def _predict_next_candle(self, df: pd.DataFrame) -> tuple:      
         model_engine = ModelEngine(self.data_creator.symbol, None, self.data_creator.source, self.data_creator.interval, is_backtest=True)
         dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(df)
         
@@ -70,6 +70,11 @@ class Backtester():
         best_params = GridSearchableCV.bestparams_gridcv([100, 200, 400], [0.1, 0.3], [1, 3, 5], model_gcv, xgb.X_train, xgb.y_train, verbose=3)
         return best_params    # 0.1, 1, 100
     
+    def remove_columns_with_prefix(self, df, prefix):
+        columns_to_remove = [col for col in df.columns if col.startswith(prefix)]
+        df = df.drop(columns=columns_to_remove)
+        return df
+    
     def backtest(self, backtest_counts: int) -> float:
         fm = self.featured_matrix
         true_accuracy = []
@@ -78,7 +83,7 @@ class Backtester():
         for i in range(backtest_counts):
             df = self._get_interval_df(i)
             # df.to_csv(f"./data/outputs/model_fine_tuned_data/prompt_{i}.csv")
-            dt, signal, bt, accuracy_score = self._predict_next_hour(df)
+            dt, signal, bt, accuracy_score = self._predict_next_candle(df)
             ei = self._get_end_index(i)
             actual_result = (fm.loc[fm.index[ei+1]]["log_return"] > 0).astype(int)
             # log_return = fm.loc[fm.index[ei+1]]["log_return"]
@@ -107,10 +112,18 @@ if __name__ == '__main__':
 
     client = BinanceClient(api_key, api_secret_key) 
     data_creator = DataCreator(symbol="BNBUSDT", source='binance', range_list=[i for i in range(5,21)],
-                                       period=None, interval="1d", start_date="2019-01-06", client=client)
-    bt = Backtester(150, client, data_creator)
+                                       period=None, interval="1h", start_date="2022-01-06", client=client)
+    bt = Backtester(7, client, data_creator)
+    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'tema')
+    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'sma')
+    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'dema')
+    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'kama')
+    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 't3')
+    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'willr')
+    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'natr')
+    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'willr')
     
-    result_score = bt.backtest(200)
+    result_score = bt.backtest(300)
     print(f'ACCURACY SKOR FOR LAST BACKTEST: {result_score}')
     
     # Assuming self.backtest_data is a list of tuples
@@ -124,11 +137,6 @@ if __name__ == '__main__':
     # plt.plot(data['date'], data['actual'], label='Actual')
     plt.legend()
     plt.show()
-    
-    data.index = data['date']
-    data_creator.df['signal'] = data['signal']
-    print(data_creator.df[['log_return', 'signal']])
-    data_creator.df.to_csv('./data/backtest_rt.csv')
     
     # gcv = bt.grid_backtest()
     # print(f'best params: {gcv}')
