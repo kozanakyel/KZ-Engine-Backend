@@ -114,14 +114,8 @@ if __name__ == '__main__':
     data_creator = DataCreator(symbol="BNBUSDT", source='binance', range_list=[i for i in range(5,21)],
                                        period=None, interval="1h", start_date="2022-01-06", client=client)
     bt = Backtester(7, client, data_creator)
-    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'tema')
-    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'sma')
-    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'dema')
-    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'kama')
-    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 't3')
-    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'willr')
-    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'natr')
-    bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'willr')
+    # bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'tema')
+    # bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'sma')
     
     result_score = bt.backtest(300)
     print(f'ACCURACY SKOR FOR LAST BACKTEST: {result_score}')

@@ -134,4 +134,5 @@ if __name__ == '__main__':
     
     agg_matrix = SentimentFeaturedMatrixPipeline(d, None, HASHTAG, is_twitter=False)
     amtrix = agg_matrix.create_sentiment_aggregate_feature_matrix()
+    amtrix.to_csv('./data/amtrix_test.csv')
     print(amtrix)
