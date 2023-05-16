@@ -2,7 +2,6 @@ from datetime import timedelta
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.metrics import accuracy_score, confusion_matrix
 import json
 
 from KZ_project.ml_pipeline.ai_model_creator.engines.Ibacktestable import IBacktestable
@@ -18,6 +17,7 @@ class ModelEngine(IBacktestable):
         self.interval = interval
         self.symbol_cut = symbol_cut
         self.is_backtest = is_backtest
+        self.xgb = XgboostBinaryForecaster()
         self.data_plot_path = f'./data/plots/model_evaluation/'
         self.model_plot_path = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_backtest.png'
         self.model_importance_feature = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_importance.png'
@@ -31,6 +31,20 @@ class ModelEngine(IBacktestable):
         X_pd["cstrategy"] = X_pd["strategy"].cumsum().apply(np.exp) 
         X_pd["creturns"] = X_pd.log_return.cumsum().apply(np.exp) 
         
+        valuable_features = self.xgb.get_n_importance_features()
+        index_col = X_pd.index
+
+        X_pd['importance_features'] = ""
+        len_index = len(index_col)
+        len_features = len(valuable_features)
+        
+        if len_index >= len_features: len_cols = len_features
+        else: len_cols = len_index
+            
+        for i in range(len_cols):
+            X_pd.at[index_col[i], "importance_features"] = valuable_features[i]
+        
+        
     def trade_fee_net_returns(self, X_pd: pd.DataFrame()):    
         X_pd["trades"] = X_pd.position.diff().fillna(0).abs()    
         commissions = 0.00075 # reduced Binance commission 0.075%
@@ -42,7 +56,7 @@ class ModelEngine(IBacktestable):
     
         # X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(figsize = (12 , 8),  title = f"{self.symbol} - Buy and Hold")
         # plt.savefig(self.model_plot_path)
-        return X_pd[["creturns", "cstrategy", "cstrategy_net"]].to_json()
+        return X_pd[["creturns", "cstrategy", "cstrategy_net", "importance_features"]].to_json()
     
        
         
@@ -50,19 +64,14 @@ class ModelEngine(IBacktestable):
         y = df_final.feature_label
         X = df_final.drop(columns=['feature_label'], axis=1)
 
-        xgb = XgboostBinaryForecaster()
-        self.ai_type = xgb.__class__.__name__
-        xgb.create_train_test_data(X, y, test_size=0.2)
+        self.ai_type = self.xgb.__class__.__name__
+        self.xgb.create_train_test_data(X, y, test_size=0.2)
         
-        xgb.fit()
+        self.xgb.fit()
         
         self.model_name = f'test_{self.symbol}_{self.source}_model_price_{self.interval}_feature_numbers_{X.shape[1]}.json'
-        valuable_features = xgb.get_n_importance_features()
-        print(f'valuable features: {valuable_features}')
         
-        # try for instant model evaluation for one week    
-        
-        score = xgb.get_score()
+        score = self.xgb.get_score()
 
         print(f'Accuracy Score: {score}')
         #xgb.plot_learning_curves()
@@ -76,8 +85,8 @@ class ModelEngine(IBacktestable):
         
         # print(f'Confusion Matrix:\n{confusion_matrix(ytest, ypred_reg)}')   
         
-        xtest = xgb.X_test    # last addeded tro backtest data for modeliing hourly
-        ytest = xgb.y_test
+        xtest = self.xgb.X_test    # last addeded tro backtest data for modeliing hourly
+        ytest = self.xgb.y_test
         
         if not self.is_backtest:   # if backtest status is True
             # xgb.save_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}')
@@ -97,10 +106,9 @@ class ModelEngine(IBacktestable):
             #     self.symbol
             #     )
     
-        
         self.create_retuns_data(xtest, ytest)
         bt_json = self.trade_fee_net_returns(xtest)
-        # print(f'bt: method inside: {json.dumps(bt_json)}')
+        print(f'bt: method inside: {json.dumps(bt_json)}')
         
         return xtest.index[-1], ytest[-1], json.dumps(bt_json), score
        
@@ -110,21 +118,20 @@ class ModelEngine(IBacktestable):
         y = df_final.feature_label
         X = df_final.drop(columns=['feature_label'], axis=1)
 
-        xgb = XgboostBinaryForecaster()
-        self.ai_type = xgb.__class__.__name__
-        xgb.create_train_test_data(X, y, test_size=0.2)
+        self.ai_type = self.xgb.__class__.__name__
+        self.xgb.create_train_test_data(X, y, test_size=0.2)
         
-        xgb.fit()
+        self.xgb.fit()
         
         self.model_name = f'test_{self.symbol}_{self.source}_model_price_{self.interval}_feature_numbers_{X.shape[1]}.json'
         
         # try for instant model evaluation for one week    
         
-        accuracy_score = xgb.get_score()
+        accuracy_score = self.xgb.get_score()
 
         print(f'Accuracy Score: {accuracy_score}')
-        xtest = xgb.X_test    # last addeded tro backtest data for modeliing hourly
-        ytest = xgb.y_test
+        xtest = self.xgb.X_test    # last addeded tro backtest data for modeliing hourly
+        ytest = self.xgb.y_test
         return xtest, ytest, accuracy_score, xtest.index[-1], ytest[-1]
     
     def get_strategy_return(self, xtest, ytest):
