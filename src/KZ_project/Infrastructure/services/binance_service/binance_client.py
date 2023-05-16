@@ -3,7 +3,7 @@ from binance.client import Client
 from binance import ThreadedWebsocketManager
 
 from KZ_project.Infrastructure.logger.logger import Logger
-from KZ_project.ml_pipeline.services.service_client.abstract_service_client import IServiceClient
+from KZ_project.Infrastructure.services.service_client.abstract_service_client import IServiceClient
 
 # binance API icin zaman sorunsalini wsl2 da cozer
 # sudo apt install ntpdate

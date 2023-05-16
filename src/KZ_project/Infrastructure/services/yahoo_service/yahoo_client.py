@@ -2,7 +2,7 @@ import yfinance as yf
 import pandas as pd
 
 from KZ_project.Infrastructure.logger.logger import Logger
-from KZ_project.ml_pipeline.services.service_client.abstract_service_client import IServiceClient
+from KZ_project.Infrastructure.services.service_client.abstract_service_client import IServiceClient
 
 class YahooClient(IServiceClient):
     def __init__(self, logger: Logger=None):

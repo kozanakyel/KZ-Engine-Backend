@@ -5,7 +5,7 @@ from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
 from KZ_project.ml_pipeline.data_pipeline.featured_matrix_pipeline import FeaturedMatrixPipeline
 from KZ_project.Infrastructure.file_processor.file_data_checker import FileDataChecker
 from KZ_project.ml_pipeline.sentiment_analyzer.sentiment_analyzer import SentimentAnalyzer
-from KZ_project.ml_pipeline.services.twitter_service.twitter_collection import TwitterCollection
+from KZ_project.Infrastructure.services.twitter_service.twitter_collection import TwitterCollection
 
 
 class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):

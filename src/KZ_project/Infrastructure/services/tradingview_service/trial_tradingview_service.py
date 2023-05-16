@@ -1,4 +1,4 @@
-from KZ_project.ml_pipeline.services.tradingview_service.tradingview_service import TradingViewService
+from KZ_project.Infrastructure.services.tradingview_service.tradingview_service import TradingViewService
 
 #screener="turkey"
 #exchange="BIST"

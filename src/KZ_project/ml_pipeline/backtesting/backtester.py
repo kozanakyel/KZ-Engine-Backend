@@ -5,8 +5,7 @@ from KZ_project.ml_pipeline.ai_model_creator.engines.model_engine import ModelEn
 from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
 from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
-from KZ_project.ml_pipeline.services.service_client.abstract_service_client import IServiceClient
-
+from KZ_project.Infrastructure.services.service_client.abstract_service_client import IServiceClient
 
 class Backtester():
     
@@ -92,7 +91,7 @@ class Backtester():
     
 
 if __name__ == '__main__':
-    from KZ_project.ml_pipeline.services.binance_service.binance_client import BinanceClient
+    from KZ_project.Infrastructure.services.binance_service.binance_client import BinanceClient
     from KZ_project.ml_pipeline.ai_model_creator.forecasters.gridsearchable_cv import GridSearchableCV
     from dotenv import load_dotenv
     import os
