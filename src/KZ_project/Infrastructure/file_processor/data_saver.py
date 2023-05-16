@@ -1,19 +1,9 @@
 import os, shutil
-from abc import ABC, abstractmethod
 import pandas as pd
 
-
-class DataSaver(ABC):
+from KZ_project.core.interfaces.Idata_saver import IDataSaver
     
-    @abstractmethod
-    def save_data(self) -> None:
-        pass
-    
-    @abstractmethod
-    def remove_directory(self) -> None:
-        pass
-    
-class CSVDataSaver(DataSaver):
+class CSVDataSaver(IDataSaver):
     """ this class save pure, output ind, and features,
         get main, pure and featured path,
         MAybe you can use default path,
@@ -32,7 +22,7 @@ class CSVDataSaver(DataSaver):
         else:
             print(f'The path is not exist. {path}')
             
-class NoDataSaver(DataSaver):
+class NoDataSaver(IDataSaver):
     
     def save_data(self, df: pd.DataFrame(), path: str, file: str) -> None:
         pass

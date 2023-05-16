@@ -3,14 +3,14 @@ from binance.client import Client
 from binance import ThreadedWebsocketManager
 
 from KZ_project.Infrastructure.logger.logger import Logger
-from KZ_project.Infrastructure.services.service_client.abstract_service_client import IServiceClient
+from KZ_project.core.interfaces.Iclient_service import IClientService
 
 # binance API icin zaman sorunsalini wsl2 da cozer
 # sudo apt install ntpdate
 # sudo ntpdate -sb time.nist.gov
 
 
-class BinanceClient(IServiceClient):
+class BinanceClient(IClientService):
     
     def __init__(self, api_key: str, api_secret_key: str, logger: Logger=None):
         self.api_key = api_key

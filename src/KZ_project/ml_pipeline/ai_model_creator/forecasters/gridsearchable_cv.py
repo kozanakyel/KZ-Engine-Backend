@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy
 from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
-from KZ_project.ml_pipeline.ai_model_creator.forecasters.abstract_forecaster import AbstractForecaster
+from KZ_project.core.domain.abstract_forecaster import AbstractForecaster
 
 
 class GridSearchableCV():

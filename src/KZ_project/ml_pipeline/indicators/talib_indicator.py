@@ -4,7 +4,7 @@ from tqdm import tqdm
 import pandas_ta as ta   # for the fischer indicator only It is necessary
 
 from KZ_project.Infrastructure.logger.logger import Logger
-from KZ_project.ml_pipeline.indicators.base_indicator import BaseIndicator
+from KZ_project.core.domain.base_indicator import BaseIndicator
 from KZ_project.ml_pipeline.japanese_candlestick.japanese_candlestick_creator import JapaneseCandlestickCreator
                                                                           
 class TalibIndicator(BaseIndicator):

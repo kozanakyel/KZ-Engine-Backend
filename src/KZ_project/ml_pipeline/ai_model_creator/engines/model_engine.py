@@ -3,13 +3,14 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 import json
+from KZ_project.core.interfaces.Ifee_calculateable import IFeeCalculateable
+from KZ_project.core.interfaces.Ireturn_data_creatable import IReturnDataCreatable
 
-from KZ_project.ml_pipeline.ai_model_creator.engines.Ibacktestable import IBacktestable
 from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
 from KZ_project.webapi.services import services
 from KZ_project.webapi.entrypoints.flask_app import get_session
 
-class ModelEngine(IBacktestable):
+class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
     
     def __init__(self, symbol, symbol_cut, source, interval, is_backtest: bool=False):
         self.symbol = symbol

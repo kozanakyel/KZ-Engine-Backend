@@ -135,7 +135,7 @@ if __name__ == '__main__':
     from dotenv import load_dotenv
     from datetime import timedelta
     from KZ_project.Infrastructure.services.binance_service.binance_client import BinanceClient
-    from KZ_project.ml_pipeline.services.binance_service.ai_trader_service import AITraderService
+    from KZ_project.Infrastructure.services.binance_service.ai_trader_service import AITraderService
 
 
     load_dotenv()
@@ -145,11 +145,11 @@ if __name__ == '__main__':
     client = BinanceClient(api_key, api_secret_key) 
     
     def web_socket_trader_starter():
-        interval = '1d'
+        interval = '1h'
         cr_list = [
-                   {"symbol":"BTCUSDT", "name":"btc", "bar_length":"5m"}, 
-                   {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"5m"},
-                   {"symbol":"ETHUSDT", "name":"eth", "bar_length":"5m"},
+                   {"symbol":"BTCUSDT", "name":"btc", "bar_length":"15m"}, 
+                   {"symbol":"BNBUSDT", "name":"bnb", "bar_length":"15m"},
+                   {"symbol":"ETHUSDT", "name":"eth", "bar_length":"15m"},
                    ]
         trader_c_list = []
         for coin_d in cr_list:
@@ -161,7 +161,7 @@ if __name__ == '__main__':
                 client=client, 
                 units=20, 
                 interval=interval,
-                is_twitter=False
+                is_twitter=True
                 )
             
             trader_c_list.append(trader_coin_d)

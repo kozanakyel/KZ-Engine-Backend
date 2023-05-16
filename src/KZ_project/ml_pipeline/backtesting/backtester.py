@@ -5,14 +5,14 @@ from KZ_project.ml_pipeline.ai_model_creator.engines.model_engine import ModelEn
 from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
 from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
-from KZ_project.Infrastructure.services.service_client.abstract_service_client import IServiceClient
+from KZ_project.core.interfaces.Iclient_service import IClientService
 
 class Backtester():
     
     def __init__(
         self, 
         period: str, 
-        client: IServiceClient, 
+        client: IClientService, 
         data_creator: DataCreator
     ):
         self.client = client

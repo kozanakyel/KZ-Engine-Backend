@@ -9,7 +9,7 @@ from xgboost import XGBClassifier
 from xgboost import plot_importance
 
 from KZ_project.Infrastructure.logger.logger import Logger
-from KZ_project.ml_pipeline.ai_model_creator.forecasters.abstract_forecaster import AbstractForecaster
+from KZ_project.core.domain.abstract_forecaster import AbstractForecaster
 
 
 class XgboostBinaryForecaster(AbstractForecaster):

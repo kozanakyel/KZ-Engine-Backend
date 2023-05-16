@@ -3,7 +3,7 @@ from tqdm import tqdm
 import pandas_ta as ta
 
 from KZ_project.Infrastructure.logger.logger import Logger
-from KZ_project.ml_pipeline.indicators.base_indicator import BaseIndicator
+from KZ_project.core.domain.base_indicator import BaseIndicator
 
 
 class PandasTaIndicator(BaseIndicator):

@@ -2,9 +2,9 @@ import yfinance as yf
 import pandas as pd
 
 from KZ_project.Infrastructure.logger.logger import Logger
-from KZ_project.Infrastructure.services.service_client.abstract_service_client import IServiceClient
+from KZ_project.core.interfaces.Iclient_service import IClientService
 
-class YahooClient(IServiceClient):
+class YahooClient(IClientService):
     def __init__(self, logger: Logger=None):
         self.df = None
         self.logger = logger

@@ -1,8 +1,8 @@
 import pandas as pd
 from KZ_project.Infrastructure.logger.logger import Logger
-from KZ_project.ml_pipeline.data_pipeline.Ibinary_feature_label import IBinaryFeatureLabel
+from KZ_project.core.interfaces.Ibinary_feature_label import IBinaryFeatureLabel
 from KZ_project.Infrastructure.file_processor.data_checker import DataChecker
-from KZ_project.Infrastructure.services.service_client.abstract_service_client import IServiceClient
+from KZ_project.core.interfaces.Iclient_service import IClientService
 
 
 class DataCreator(IBinaryFeatureLabel):
@@ -19,7 +19,7 @@ class DataCreator(IBinaryFeatureLabel):
         saved_to_csv: bool=False,
         logger: Logger=None, 
         data_checker: DataChecker=None, 
-        client: IServiceClient=None
+        client: IClientService=None
     ):  
         self.symbol = symbol
         self.source = source
