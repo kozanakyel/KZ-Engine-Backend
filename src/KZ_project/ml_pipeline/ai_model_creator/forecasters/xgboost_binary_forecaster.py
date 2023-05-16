@@ -79,12 +79,29 @@ class XgboostBinaryForecaster(AbstractForecaster):
         self.model.load_model(file_name)        
         
 
-    def get_n_importance_features(self, n: int):
-        col_list = self.X_train.columns.to_list()
-        dict_importance = {col_list[i]: self.model.feature_importances_[i] for i in range(len(col_list))}
-        sorted_d = dict(sorted(dict_importance.items(), key=operator.itemgetter(1), reverse=True))
-        n_features = dict(itertools.islice(sorted_d.items(), n)) 
-        return n_features
+    def get_n_importance_features(self) -> list:
+        valuable_features = []
+        
+        importances = self.model.feature_importances_
+        column_names = self.X_train.columns.tolist()
+
+        # Zip feature importances with column names and sort them
+        importance_tuples = sorted(zip(column_names, importances), key=lambda x: x[1], reverse=True)
+
+        # Get the first 50 important features
+        top_50_features = importance_tuples[:50]
+
+        # Print the first 50 important features with their importances
+        for feature, importance in importance_tuples:
+            if importance > 0:
+                valuable_features.append(feature)
+                print(f"{feature}: {importance}")
+        # col_list = self.X_train.columns.to_list()
+        # dict_importance = {col_list[i]: self.model.feature_importances_[i] for i in range(len(col_list))}
+        # sorted_d = dict(sorted(dict_importance.items(), key=operator.itemgetter(1), reverse=True))
+        # n_features = dict(itertools.islice(sorted_d.items(), n)) 
+        # return n_features
+        return valuable_features
 
     def plot_feature_importance(self, file_path, symbol):
         fig, ax = plt.subplots(1,1,figsize=(20,30))

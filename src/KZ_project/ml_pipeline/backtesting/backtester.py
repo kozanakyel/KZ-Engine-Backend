@@ -31,9 +31,6 @@ class Backtester():
     def _create_featured_matrix(self) -> pd.DataFrame:
         pipeline = SentimentFeaturedMatrixPipeline(self.data_creator, None, None, is_twitter=False)
         featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
-        # pipeline = FeaturedMatrixPipeline(self.data_creator, None)
-        # featured_matrix = pipeline.create_aggregate_indicator_matrix()
-        # featured_matrix = featured_matrix.drop(columns=["candlestick_pattern"])
         
         return featured_matrix
         
@@ -70,10 +67,6 @@ class Backtester():
         best_params = GridSearchableCV.bestparams_gridcv([100, 200, 400], [0.1, 0.3], [1, 3, 5], model_gcv, xgb.X_train, xgb.y_train, verbose=3)
         return best_params    # 0.1, 1, 100
     
-    def remove_columns_with_prefix(self, df, prefix):
-        columns_to_remove = [col for col in df.columns if col.startswith(prefix)]
-        df = df.drop(columns=columns_to_remove)
-        return df
     
     def backtest(self, backtest_counts: int) -> float:
         fm = self.featured_matrix
@@ -114,10 +107,8 @@ if __name__ == '__main__':
     data_creator = DataCreator(symbol="BNBUSDT", source='binance', range_list=[i for i in range(5,21)],
                                        period=None, interval="1h", start_date="2022-01-06", client=client)
     bt = Backtester(7, client, data_creator)
-    # bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'tema')
-    # bt.featured_matrix = bt.remove_columns_with_prefix(bt.featured_matrix, 'sma')
     
-    result_score = bt.backtest(300)
+    result_score = bt.backtest(1)
     print(f'ACCURACY SKOR FOR LAST BACKTEST: {result_score}')
     
     # Assuming self.backtest_data is a list of tuples

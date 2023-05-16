@@ -23,7 +23,7 @@ class FeatureExtractor(IBinaryFeatureLabel):
     def create_featured_matrix(self):
         self.featured_matrix = self.normalized_all_indicators_col(self.df)
         self.add_datetime_features(self.featured_matrix)
-        self.featured_matrix['candle_label'] = self.df.candle_label
+        self.featured_matrix['japanese_candlestick_label'] = self.df.candle_label
         self.featured_matrix['vol_delta'] = (self.featured_matrix['volume'].pct_change() > 0).astype(int)
         self.featured_matrix['log_return'] = self.df.log_return    #### sacma olmus duzelt
         self.add_lags(self.featured_matrix, self.df, 24)
@@ -31,6 +31,13 @@ class FeatureExtractor(IBinaryFeatureLabel):
         self.log(f'Lags for features and log return vol_delta with binary label')
 
         self.featured_matrix.drop(columns=['close', 'volume'], axis=1, inplace=True)
+        
+        columns_list = []
+        for i in self.range_list:
+            columns_list.append(f"st_adx_{i}")
+        columns_list.append("log_return_binary")
+        self.featured_matrix.drop(columns=columns_list, axis=1, inplace=True)
+        
         self.featured_matrix = self.featured_matrix.replace([np.inf, -np.inf], np.nan).dropna()
         self.featured_matrix['kz_score'] = self.featured_matrix.sum(axis = 1)/100
         self.log(f'Add KZ score and Index label')
@@ -54,6 +61,7 @@ class FeatureExtractor(IBinaryFeatureLabel):
         self.norm_range_interval(sample, matrix_data, 'cci', self.range_list, [100, -100])
         self.norm_range_interval(sample, matrix_data, 'willr', self.range_list, [-30, -70])
         self.norm_adx_roc_ind(sample, matrix_data, self.range_list)
+        self.strategy_obv_ad_volume_ind(sample, matrix_data)
         self.log(f'Normalized features for indicators values to 1 and 0')
         return sample
                 
@@ -78,19 +86,15 @@ class FeatureExtractor(IBinaryFeatureLabel):
         sampledf['ad_pct'] = (df['ad'].pct_change() > 0).astype(int)
         sampledf['log_return_binary'] = (df['log_return'].pct_change() > 0).astype(int)
         
-        sampledf['strategy_ob'] = -1  # Default value is -1 for no divergence
-    
+        sampledf['st_ob'] = -1  # Default value is -1 for no divergence
         # Positive divergence (OBV and log return have different signs)
         sampledf.loc[(sampledf['obv_pct'] == 1) & (sampledf['log_return_binary'] == 0), 'strategy_ob'] = 1
-    
         # Negative divergence (OBV and log return have the same sign)
         sampledf.loc[(sampledf['obv_pct'] == 0) & (sampledf['log_return_binary'] == 0), 'strategy_ob'] = 0
     
-        sampledf['strategy_ad'] = -1  # Default value is -1 for no divergence
-    
+        sampledf['st_ad'] = -1  # Default value is -1 for no divergence
         # Positive divergence (AD and log return have different signs)
         sampledf.loc[(sampledf['ad_pct'] == 1) & (sampledf['log_return_binary'] == 0), 'strategy_ad'] = 1
-    
         # Negative divergence (AD and log return have the same sign)
         sampledf.loc[(sampledf['ad_pct'] == 0) & (sampledf['log_return_binary'] == 0), 'strategy_ad'] = 0
 

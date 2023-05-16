@@ -57,6 +57,8 @@ class ModelEngine(IBacktestable):
         xgb.fit()
         
         self.model_name = f'test_{self.symbol}_{self.source}_model_price_{self.interval}_feature_numbers_{X.shape[1]}.json'
+        valuable_features = xgb.get_n_importance_features()
+        print(f'valuable features: {valuable_features}')
         
         # try for instant model evaluation for one week    
         
