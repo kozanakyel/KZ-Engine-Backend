@@ -18,7 +18,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         self.interval = interval
         self.symbol_cut = symbol_cut
         self.is_backtest = is_backtest
-        self.xgb = XgboostBinaryForecaster()
+        self.xgb = XgboostBinaryForecaster(early_stopping_rounds=0)
         self.data_plot_path = f'./data/plots/model_evaluation/'
         self.model_plot_path = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_backtest.png'
         self.model_importance_feature = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_importance.png'
@@ -58,8 +58,8 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         # X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(figsize = (12 , 8),  title = f"{self.symbol} - Buy and Hold")
         # plt.savefig(self.model_plot_path)
         return X_pd[["creturns", "cstrategy", "cstrategy_net", "importance_features"]].to_json()
-    
-       
+
+        
         
     def create_model_and_strategy_return(self, df_final: pd.DataFrame()):
         y = df_final.feature_label
@@ -74,7 +74,18 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         
         score = self.xgb.get_score()
 
+        # with valuable features
         print(f'Accuracy Score: {score}')
+        # valuable_features = self.xgb.get_n_importance_features()
+
+        # valuable_X = X[valuable_features[:10]].copy()
+        # self.xgb.create_train_test_data(valuable_X, y, test_size=0.2, shuffle=False)
+        
+        # self.xgb.fit()
+        # score = self.xgb.get_score()
+
+        # print(f'CV best params Accuracy Score: {score}')
+        
         #xgb.plot_learning_curves()
         # best_params = GridSearchableCV.bestparams_gridcv([100, 200], [0.1], [1, 3], verbose=3)
 
@@ -85,7 +96,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         # print(f'Last accuracy: {acc_score}')
         
         # print(f'Confusion Matrix:\n{confusion_matrix(ytest, ypred_reg)}')   
-        
+        # self.xgb.create_train_test_data(X, y, test_size=0.2, shuffle=False)
         xtest = self.xgb.X_test    # last addeded tro backtest data for modeliing hourly
         ytest = self.xgb.y_test
         

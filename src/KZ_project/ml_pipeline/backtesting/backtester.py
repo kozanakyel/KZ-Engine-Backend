@@ -103,11 +103,11 @@ if __name__ == '__main__':
     api_secret_key = os.getenv('BINANCE_SECRET_KEY')
 
     client = BinanceClient(api_key, api_secret_key) 
-    data_creator = DataCreator(symbol="BNBUSDT", source='binance', range_list=[i for i in range(5,21)],
-                                       period=None, interval="1h", start_date="2022-01-06", client=client)
-    bt = Backtester(7, client, data_creator)
+    data_creator = DataCreator(symbol="ETHUSDT", source='binance', range_list=[i for i in range(5,21)],
+                                       period=None, interval="1h", start_date="2022-06-06", client=client)
+    bt = Backtester(14, client, data_creator)
     
-    result_score = bt.backtest(1)
+    result_score = bt.backtest(300)
     print(f'ACCURACY SKOR FOR LAST BACKTEST: {result_score}')
     
     # Assuming self.backtest_data is a list of tuples

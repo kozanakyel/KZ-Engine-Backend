@@ -16,7 +16,7 @@ class XgboostBinaryForecaster(AbstractForecaster):
 
     def __init__(self, n_estimators: int=100, tree_method: str='gpu_hist', eta: float=0.1, 
                     max_depth: int=1, eval_metric: str='logloss', 
-                    cv: int=0, is_kfold: bool=False, logger: Logger=None):
+                    cv: int=0, is_kfold: bool=False, early_stopping_rounds: int=20, logger: Logger=None):
         self.n_estimators = n_estimators
         self.tree_method = tree_method
         self.eta = eta
@@ -26,8 +26,9 @@ class XgboostBinaryForecaster(AbstractForecaster):
         self.cv = cv
         self.is_kfold = is_kfold
         self.logger = logger
+        self.early_stopping_rounds = early_stopping_rounds
         self.model = XGBClassifier(n_estimators=self.n_estimators, tree_method=self.tree_method, 
-                    eta=self.eta, max_depth=self.max_depth, early_stopping_rounds = 0)
+                    eta=self.eta, max_depth=self.max_depth, early_stopping_rounds = self.early_stopping_rounds)
 
     def log(self, text):
         if self.logger:
@@ -36,8 +37,8 @@ class XgboostBinaryForecaster(AbstractForecaster):
             print(text)
         
 
-    def create_train_test_data(self, x, y, test_size):
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(x, y, test_size=test_size, shuffle=False)
+    def create_train_test_data(self, x, y, test_size, shuffle: bool=False):
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(x, y, test_size=test_size, shuffle=shuffle)
         self.evalset = [(self.X_train, self.y_train), (self.X_test, self.y_test)] 
         self.log(f'Creating X_train, X_test, y_train, y_test, evalset') 
 
