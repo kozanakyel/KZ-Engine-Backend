@@ -100,7 +100,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         self.create_retuns_data(xtest, ytest)
         bt_json = self.trade_fee_net_returns(xtest)
 
-        print(f'Accuracy Score: {score} and shape: {X.shape}')
+        print(f'Accuracy Score: {score} last datetime_t: {X.index[-1]}')
         
         return xtest.index[-1], ytest[-1], json.dumps(bt_json), score
        
@@ -121,7 +121,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         
         accuracy_score = self.xgb.get_score()
 
-        print(f'Accuracy Score: {accuracy_score}')
+        print(f'Accuracy Score: {accuracy_score} last datetime_t: {X.index[-1]}')
         xtest = self.xgb.X_test    # last addeded tro backtest data for modeliing hourly
         ytest = self.xgb.y_test
         return xtest, ytest, accuracy_score, xtest.index[-1], ytest[-1]
@@ -147,9 +147,9 @@ if __name__ == '__main__':
     api_secret_key = os.getenv('BINANCE_SECRET_KEY')
 
     client = BinanceClient(api_key, api_secret_key) 
-    data_creator = DataCreator(symbol="BTCUSDT", source='binance', range_list=[i for i in range(5, 21)],
+    data_creator = DataCreator(symbol="DOGEUSDT", source='binance', range_list=[i for i in range(5, 21)],
                                        period=None, interval="1h", start_date="2018-01-06", end_date="2023-01-01", client=client)  
-    model_engine = ModelEngine(data_creator.symbol, 'btc', data_creator.source, data_creator.interval, is_backtest=True)
+    model_engine = ModelEngine(data_creator.symbol, 'doge', data_creator.source, data_creator.interval, is_backtest=True)
     pipeline = SentimentFeaturedMatrixPipeline(data_creator, None, None, is_twitter=False)
     featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
     dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(featured_matrix)

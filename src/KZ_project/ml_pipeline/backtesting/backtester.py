@@ -53,14 +53,14 @@ class Backtester():
      
     def _predict_next_candle(self, df: pd.DataFrame) -> tuple:      
         model_engine = ModelEngine(self.data_creator.symbol, None, self.data_creator.source, self.data_creator.interval, is_backtest=True)
-        model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/eth/test_ETHUSDT_binance_model_price_1h_feature_numbers_129.json")
+        # model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/eth/test_ETHUSDT_binance_model_price_1h_feature_numbers_129.json")
         dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(df)        
         
         return str(dtt + timedelta(hours=int(self.data_creator.interval[0]))), int(y_pred), bt_json, acc_score
     
     def _predict_next_candle_from_model(self, df: pd.DataFrame) -> tuple:      
         model_engine = ModelEngine(self.data_creator.symbol, None, self.data_creator.source, self.data_creator.interval, is_backtest=True)
-        model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/eth/test_ETHUSDT_binance_model_price_1h_feature_numbers_129.json")
+        model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/doge/test_DOGEUSDT_binance_model_price_1h_feature_numbers_129.json")
         # dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(df)
         y = df.feature_label
         X = df.drop(columns=['feature_label'], axis=1)
@@ -115,12 +115,12 @@ if __name__ == '__main__':
     api_secret_key = os.getenv('BINANCE_SECRET_KEY')
 
     client = BinanceClient(api_key, api_secret_key) 
-    data_creator = DataCreator(symbol="ETHUSDT", source='binance', range_list=[i for i in range(5, 21)],
+    data_creator = DataCreator(symbol="DOGEUSDT", source='binance', range_list=[i for i in range(5, 21)],
                                        period=None, interval="1h", start_date="2023-01-01", client=client)
     bt = Backtester(7, client, data_creator)
-    eth_score = bt._predict_next_candle_from_model(bt.featured_matrix)
+    score = bt._predict_next_candle_from_model(bt.featured_matrix)
     # result_score = bt.backtest(1)
-    print(f'ACCURACY SKOR FOR LAST BACKTEST: {eth_score} last shape: {bt.featured_matrix.shape}')
+    print(f'ACCURACY SKOR FOR LAST BACKTEST: {score} last shape: {bt.featured_matrix.shape}')
     
     # # Assuming self.backtest_data is a list of tuples
     # data = pd.DataFrame(bt.backtest_data, columns=['date', 'accuracy', 'signal', 'actual'])
