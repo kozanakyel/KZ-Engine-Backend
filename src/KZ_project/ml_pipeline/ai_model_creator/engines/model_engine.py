@@ -20,7 +20,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         self.interval = interval
         self.symbol_cut = symbol_cut
         self.is_backtest = is_backtest
-        self.xgb = XgboostBinaryForecaster(n_estimators=1200, eta=0.9, max_depth=1, early_stopping_rounds=0, cv=5, is_kfold=True)
+        self.xgb = XgboostBinaryForecaster(n_estimators=9000, eta=0.9, max_depth=1, early_stopping_rounds=0, cv=5, is_kfold=True)
         self.data_plot_path = f'./data/plots/model_evaluation/'
         self.model_plot_path = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_backtest.png'
         self.model_importance_feature = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_importance.png'    
@@ -70,15 +70,13 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         
         self.xgb.fit()
         
-        self.model_name = f'test_{self.symbol}_{self.source}_model_price_{self.interval}_feature_numbers_{X.shape[1]}.json'
+        self.model_name = f'est_{self.xgb.model.n_estimators}_{self.symbol}_{self.source}_model_price_{self.interval}_feature_numbers_{X.shape[1]}.json'
         
         score = self.xgb.get_score()
 
         print(f'Accuracy Score: {score} and shape: {X.shape}')        
         # best_params = GridSearchableCV.bestparams_gridcv([100, 200], [0.1], [1, 3], verbose=3)
-        
-        # print(f'Confusion Matrix:\n{confusion_matrix(ytest, ypred_reg)}')   
-        # self.xgb.create_train_test_data(X, y, test_size=0.2, shuffle=False)
+
         xtest = self.xgb.X_test    # last addeded tro backtest data for modeliing hourly
         ytest = self.xgb.y_test
         
@@ -94,7 +92,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
                                                           self.interval, self.ai_type,
                                                           datetime_t)
             print(f'model engine model save: {res_str}')
-    
+        
         self.xgb.save_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}")    
 
         self.create_retuns_data(xtest, ytest)
@@ -134,7 +132,6 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
     
 if __name__ == '__main__':
     from KZ_project.Infrastructure.services.binance_service.binance_client import BinanceClient
-    from KZ_project.ml_pipeline.ai_model_creator.forecasters.gridsearchable_cv import GridSearchableCV
     from dotenv import load_dotenv
     import os
     import pandas as pd
@@ -147,9 +144,9 @@ if __name__ == '__main__':
     api_secret_key = os.getenv('BINANCE_SECRET_KEY')
 
     client = BinanceClient(api_key, api_secret_key) 
-    data_creator = DataCreator(symbol="DOGEUSDT", source='binance', range_list=[i for i in range(5, 21)],
+    data_creator = DataCreator(symbol="BTCUSDT", source='binance', range_list=[i for i in range(5, 21)],
                                        period=None, interval="1h", start_date="2018-01-06", end_date="2023-01-01", client=client)  
-    model_engine = ModelEngine(data_creator.symbol, 'doge', data_creator.source, data_creator.interval, is_backtest=True)
+    model_engine = ModelEngine(data_creator.symbol, 'btc', data_creator.source, data_creator.interval, is_backtest=True)
     pipeline = SentimentFeaturedMatrixPipeline(data_creator, None, None, is_twitter=False)
     featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
     dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(featured_matrix)

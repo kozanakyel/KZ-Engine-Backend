@@ -27,8 +27,8 @@ class GridSearchableCV():
                 grid_result=grid_result,
                 max_depth_list=max_depth_list,
                 n_estimators_list=n_estimators_list,
-                is_show=False,
-                is_save=True
+                is_show=True,
+                is_save=False
                 )
         
         return grid_result.best_params_  

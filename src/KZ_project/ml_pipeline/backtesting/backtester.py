@@ -60,7 +60,7 @@ class Backtester():
     
     def _predict_next_candle_from_model(self, df: pd.DataFrame) -> tuple:      
         model_engine = ModelEngine(self.data_creator.symbol, None, self.data_creator.source, self.data_creator.interval, is_backtest=True)
-        model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/doge/test_DOGEUSDT_binance_model_price_1h_feature_numbers_129.json")
+        model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/est_9000_BTCUSDT_binance_model_price_1h_feature_numbers_129.json")
         # dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(df)
         y = df.feature_label
         X = df.drop(columns=['feature_label'], axis=1)
@@ -75,7 +75,15 @@ class Backtester():
         xgb = XgboostBinaryForecaster(early_stopping_rounds=0)
         xgb.create_train_test_data(x, y, test_size=0.2)
         model_gcv = xgb.model
-        best_params = GridSearchableCV.bestparams_gridcv([100, 200, 400, 800, 1200], [0.1, 0.3, 0.5, 0.7, 0.9], [1, 3], model_gcv, xgb.X_train, xgb.y_train, verbose=3)
+        best_params = GridSearchableCV.bestparams_gridcv(
+            n_estimators_list=[2000, 3000, 5000, 6000, 7000, 9000], 
+            eta_list=[0.1, 0.3, 0.5, 0.7, 0.9], 
+            max_depth_list=[1, 3, 5], 
+            model=model_gcv, 
+            X_train=xgb.X_train, 
+            y_train=xgb.y_train, 
+            verbose=3
+        )
         return best_params    # 0.1, 1, 100
     
     
@@ -115,8 +123,14 @@ if __name__ == '__main__':
     api_secret_key = os.getenv('BINANCE_SECRET_KEY')
 
     client = BinanceClient(api_key, api_secret_key) 
-    data_creator = DataCreator(symbol="DOGEUSDT", source='binance', range_list=[i for i in range(5, 21)],
+    # for backtest last 5 months
+    data_creator = DataCreator(symbol="BTCUSDT", source='binance', range_list=[i for i in range(5, 21)],
                                        period=None, interval="1h", start_date="2023-01-01", client=client)
+    
+    # gridsearchable for best params
+    # data_creator = DataCreator(symbol="BTCUSDT", source='binance', range_list=[i for i in range(5, 21)],
+    #                                    period=None, interval="1h", start_date="2018-01-01", 
+    #                                    end_date="2023-01-01", client=client)
     bt = Backtester(7, client, data_creator)
     score = bt._predict_next_candle_from_model(bt.featured_matrix)
     # result_score = bt.backtest(1)
@@ -125,7 +139,6 @@ if __name__ == '__main__':
     # # Assuming self.backtest_data is a list of tuples
     # data = pd.DataFrame(bt.backtest_data, columns=['date', 'accuracy', 'signal', 'actual'])
     # data['date'] = pd.to_datetime(data['date'])
-    
     
     # # Plot the data
     # plt.plot(data['date'], data['accuracy'], label='Accuracy')
