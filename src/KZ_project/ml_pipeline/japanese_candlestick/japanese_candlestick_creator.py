@@ -61,9 +61,9 @@ class JapaneseCandlestickCreator():
         df['candle_label'] = np.nan
         for i, datetime in enumerate(df.index):
             if df.loc[datetime, 'candlestick_pattern'].endswith('Bull'):
-                df.loc[datetime, 'candle_label'] = 1
+                df.loc[datetime, 'candle_label'] = 3
             elif df.loc[datetime, 'candlestick_pattern'].endswith('Bear'):
-                df.loc[datetime, 'candle_label'] = -1
+                df.loc[datetime, 'candle_label'] = 1
             else:
-                df.loc[datetime, 'candle_label'] = 0
+                df.loc[datetime, 'candle_label'] = 2
         df = df.drop(columns=['candlestick_match_count'], axis=1)

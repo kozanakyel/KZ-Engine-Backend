@@ -24,44 +24,60 @@ class FeatureExtractor(IBinaryFeatureLabel):
         self.featured_matrix = self.normalized_all_indicators_col(self.df)
         self.add_datetime_features(self.featured_matrix)
         self.featured_matrix['japanese_candlestick_label'] = self.df.candle_label
-        self.featured_matrix['vol_delta'] = (self.featured_matrix['volume'].pct_change() > 0).astype(int)
+        self.featured_matrix['vol_delta'] = self.featured_matrix['volume'].pct_change() > 0    # no type binary???
         self.featured_matrix['log_return'] = self.df.log_return    #### sacma olmus duzelt
-        self.add_lags(self.featured_matrix, self.df, 24)
+        self.add_lags(self.featured_matrix, self.df, 3)
         self.create_binary_feature_label(self.featured_matrix)
         self.log(f'Lags for features and log return vol_delta with binary label')
 
         self.featured_matrix.drop(columns=['close', 'volume'], axis=1, inplace=True)
         
+        # st_adx remove columns cautions
+        self.remove_adx_columns()
+        
+        self.featured_matrix = self.featured_matrix.replace([np.inf, -np.inf], np.nan).dropna()
+        self.featured_matrix['kz_score'] = self.featured_matrix.sum(axis = 1)/100
+        
+        # thinkable_feature_list = ['kz_score', 'japanese_candlestick_label', 'vol_delta', 'log_return', 'lag_2', 'lag_3','feature_label']
+        # self.featured_matrix = self.featured_matrix[thinkable_feature_list].copy()
+        
+        self.log(f'Add KZ score and Index label')
+        
+    def remove_adx_columns(self):
         columns_list = []
         for i in self.range_list:
             columns_list.append(f"st_adx_{i}")
         columns_list.append("log_return_binary")
         self.featured_matrix.drop(columns=columns_list, axis=1, inplace=True)
         
-        self.featured_matrix = self.featured_matrix.replace([np.inf, -np.inf], np.nan).dropna()
-        self.featured_matrix['kz_score'] = self.featured_matrix.sum(axis = 1)/100
-        self.log(f'Add KZ score and Index label')
-    
+        
     def normalized_all_indicators_col(self, matrix_data):
         sample = self.pattern_helper_for_extract_feature(matrix_data)        
-        self.norm_features_ind(sample, matrix_data, 'ema', self.range_list)
-        # self.norm_features_ind(sample, matrix_data, 'mfi', self.range_list, 100)
-        self.norm_features_ind(sample, matrix_data, 'sma', self.range_list)
-        self.norm_features_ind(sample, matrix_data, 'wma', self.range_list)
-        self.norm_features_ind(sample, matrix_data, 'tema', self.range_list)
-        self.norm_features_ind(sample, matrix_data, 'kama', self.range_list)
-        self.norm_features_ind(sample, matrix_data, 'atrr', self.range_list)
-        self.norm_features_ind(sample, matrix_data, 'natr', self.range_list)
-        self.norm_features_ind(sample, matrix_data, 'dema', self.range_list)
-        self.norm_features_ind(sample, matrix_data, 'trima', self.range_list)
-        self.norm_features_ind(sample, matrix_data, 'rsi', self.range_list)
-        self.norm_range_interval(sample, matrix_data, 'rsi', self.range_list, [75, 25])
-        self.norm_range_interval(sample, matrix_data, 'mfi', self.range_list, [75, 25])
+        self.norm_features_ind(sample, matrix_data, 'ema', self.range_list)   ##
+        # self.norm_features_ind(sample, matrix_data, 'mfi', self.range_list, 100) 
+        # self.norm_features_ind(sample, matrix_data, 'sma', self.range_list)
+        # self.norm_pct_change(sample, matrix_data, 'sma', self.range_list)
+        self.norm_pct_change(sample, matrix_data, 'rsi', self.range_list)    ###
+        # self.norm_pct_change(sample, matrix_data, 'ema', self.range_list)
+        # self.norm_pct_change(sample, matrix_data, 'cci', self.range_list)
+        # self.norm_pct_change(sample, matrix_data, 'cmo', self.range_list)
+        # self.norm_pct_change(sample, matrix_data, 'willr', self.range_list)
+        # self.norm_pct_change(sample, matrix_data, 'mfi', self.range_list)
+        # self.norm_features_ind(sample, matrix_data, 'wma', self.range_list)
+        # self.norm_features_ind(sample, matrix_data, 'tema', self.range_list)
+        # self.norm_features_ind(sample, matrix_data, 'kama', self.range_list)
+        # self.norm_features_ind(sample, matrix_data, 'atrr', self.range_list)
+        # self.norm_features_ind(sample, matrix_data, 'natr', self.range_list)
+        # self.norm_features_ind(sample, matrix_data, 'dema', self.range_list)
+        # self.norm_features_ind(sample, matrix_data, 'trima', self.range_list)
+        # self.norm_features_ind(sample, matrix_data, 'rsi', self.range_list, 100)   ##
+        # self.norm_range_interval(sample, matrix_data, 'mfi', self.range_list, [75, 25]) ##
+        # self.norm_range_interval(sample, matrix_data, 'rsi', self.range_list, [75, 25])
         self.norm_range_interval(sample, matrix_data, 'cmo', self.range_list, [50, -50])
         self.norm_range_interval(sample, matrix_data, 'cci', self.range_list, [100, -100])
-        self.norm_range_interval(sample, matrix_data, 'willr', self.range_list, [-30, -70])
+        # self.norm_range_interval(sample, matrix_data, 'willr', self.range_list, [-30, -70])
         self.norm_adx_roc_ind(sample, matrix_data, self.range_list)
-        self.strategy_obv_ad_volume_ind(sample, matrix_data)
+        self.strategy_obv_ad_volume_ind(sample, matrix_data)   ##
         self.log(f'Normalized features for indicators values to 1 and 0')
         return sample
                 
@@ -100,7 +116,7 @@ class FeatureExtractor(IBinaryFeatureLabel):
 
     
     
-    def norm_features_ind(self, sampledf, df, ind, range_list) -> None:
+    def norm_features_ind(self, sampledf, df, ind, range_list, dividend=None) -> None:
         """Calculate crossover strategies to convert 1 and 0 for featured data matrix
            for all average indicators. sma, ema, wma, t3 etc...
 
@@ -114,12 +130,19 @@ class FeatureExtractor(IBinaryFeatureLabel):
         k = 0
         self.log(f'Start {ind} normalized label')
         for i in tqdm(range_list):
-            sampledf[f'st_{ind}_{i}'] = (df[f'{ind}_{i}'].pct_change() > 0).astype(int)
-            if k % 2 == 1:
-                sampledf[f'st_cut_{ind}_{range_list[k-1]}_{range_list[k]}'] = \
-                        (df[f'{ind}_{range_list[k-1]}'] > df[f'{ind}_{range_list[k]}']).astype(int)
-        k += 1
+            if dividend != None:
+                sampledf[f'st_{ind}_{i}'] = df[f'{ind}_{i}'] / dividend
+            else:
+                sampledf[f'st_{ind}_{i}'] = (df[f'{ind}_{i}'].pct_change() > 0).astype(int)
+                if k % 2 == 1:
+                    sampledf[f'st_cut_{ind}_{range_list[k-1]}_{range_list[k]}'] = \
+                            (df[f'{ind}_{range_list[k-1]}'] > df[f'{ind}_{range_list[k]}']).astype(int)
+            k += 1
         self.log(f'Add {ind} normalized label')
+        
+    def norm_pct_change(self, sampledf, df, ind, range_list):
+        for i in tqdm(range_list):
+            sampledf[f'st_{ind}_{i}_pct'] = df[f'{ind}_{i}'].pct_change()
 
     def norm_adx_roc_ind(self, sampledf, df, range_list) -> None:
         """Calculate ADX and DMI startegies for deatured data convert 1 and 0
@@ -163,11 +186,11 @@ class FeatureExtractor(IBinaryFeatureLabel):
             int: level 
         """
         if x >= params[0]: 
-            return 0
-        elif x >= params[1]:
-            return -1
-        else:
             return 1
+        elif x >= params[1]:
+            return 2
+        else:
+            return 3
 
     def pattern_helper_for_extract_feature(self, df) -> pd.DataFrame():
         """This method convert our strategy for hisses to binary and strategic values for modelling.
@@ -195,7 +218,7 @@ class FeatureExtractor(IBinaryFeatureLabel):
         sample['st_cut_sma10_close'] = (df['sma_10'] > df['close']).astype(int)
 
         sample['st_hisse'] = sample['st_stoch'] & sample['st_ich'] & sample['st_cut_ema5_sma10'] \
-                    & sample['st_macd'] & sample['st_ich_close'] & sample['st_dmi'] & sample['st_cut_sma10_close']
+                     & sample['st_macd'] & sample['st_ich_close'] & sample['st_dmi'] & sample['st_cut_sma10_close']
 
         
         # sample['st_mfi'] = df["mfi_15"].apply(lambda x: self.helper_divide_three(x, params=[75, 25]))

@@ -70,7 +70,8 @@ class XgboostBinaryForecaster(AbstractForecaster):
         ax.plot(self.results['validation_0'][self.eval_metric], label='train')
         ax.plot(self.results['validation_1'][self.eval_metric], label='test')
         ax.legend()
-        plt.savefig('learning_curves.png')
+        # plt.savefig('learning_curves.png')
+        plt.show()
         self.log('Learning curves ploting and saved')
 
     def save_model(self, file_name: str):
@@ -96,7 +97,7 @@ class XgboostBinaryForecaster(AbstractForecaster):
         for feature, importance in importance_tuples:
             if importance > 0:
                 valuable_features.append(feature)
-                print(f"{feature}: {importance}")
+                # print(f"{feature}: {importance}")
         # col_list = self.X_train.columns.to_list()
         # dict_importance = {col_list[i]: self.model.feature_importances_[i] for i in range(len(col_list))}
         # sorted_d = dict(sorted(dict_importance.items(), key=operator.itemgetter(1), reverse=True))
@@ -107,4 +108,5 @@ class XgboostBinaryForecaster(AbstractForecaster):
     def plot_feature_importance(self, file_path, symbol):
         fig, ax = plt.subplots(1,1,figsize=(20,30))
         plot_importance(self.model, ax=ax, title=f'{symbol} Feature Importance')
-        plt.savefig(file_path)
+        # plt.savefig(file_path)
+        plt.show()

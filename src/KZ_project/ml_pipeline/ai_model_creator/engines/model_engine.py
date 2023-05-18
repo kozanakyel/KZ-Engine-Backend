@@ -7,6 +7,8 @@ from KZ_project.core.interfaces.Ifee_calculateable import IFeeCalculateable
 from KZ_project.core.interfaces.Ireturn_data_creatable import IReturnDataCreatable
 
 from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
+
+
 from KZ_project.webapi.services import services
 from KZ_project.webapi.entrypoints.flask_app import get_session
 
@@ -18,12 +20,10 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         self.interval = interval
         self.symbol_cut = symbol_cut
         self.is_backtest = is_backtest
-        self.xgb = XgboostBinaryForecaster(early_stopping_rounds=0)
+        self.xgb = XgboostBinaryForecaster(n_estimators=1200, eta=0.9, max_depth=1, early_stopping_rounds=0, cv=5, is_kfold=True)
         self.data_plot_path = f'./data/plots/model_evaluation/'
         self.model_plot_path = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_backtest.png'
-        self.model_importance_feature = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_importance.png'
-    
-    
+        self.model_importance_feature = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_importance.png'    
     
     def create_retuns_data(self, X_pd, y_pred):
         X_pd["position"] = [y_pred[i] for i, _ in enumerate(X_pd.index)]    
@@ -74,34 +74,16 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         
         score = self.xgb.get_score()
 
-        # with valuable features
-        print(f'Accuracy Score: {score}')
-        # valuable_features = self.xgb.get_n_importance_features()
-
-        # valuable_X = X[valuable_features[:10]].copy()
-        # self.xgb.create_train_test_data(valuable_X, y, test_size=0.2, shuffle=False)
-        
-        # self.xgb.fit()
-        # score = self.xgb.get_score()
-
-        # print(f'CV best params Accuracy Score: {score}')
-        
-        #xgb.plot_learning_curves()
+        print(f'Accuracy Score: {score} and shape: {X.shape}')        
         # best_params = GridSearchableCV.bestparams_gridcv([100, 200], [0.1], [1, 3], verbose=3)
-
-        # modelengine works
-        
-        # ypred_reg = xgb.model.predict(xgb.X_test)
-        # acc_score = accuracy_score(ytest, ypred_reg)
-        # print(f'Last accuracy: {acc_score}')
         
         # print(f'Confusion Matrix:\n{confusion_matrix(ytest, ypred_reg)}')   
         # self.xgb.create_train_test_data(X, y, test_size=0.2, shuffle=False)
         xtest = self.xgb.X_test    # last addeded tro backtest data for modeliing hourly
         ytest = self.xgb.y_test
         
-        if not self.is_backtest:   # if backtest status is True
-            # xgb.save_model(f'./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}')
+        if not self.is_backtest:
+
             if self.interval[-1] == 'h':
                 datetime_t = str(xtest.index[-1] + timedelta(hours=int(self.interval[0])))
             elif self.interval[-1] == 'd':
@@ -113,14 +95,12 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
                                                           datetime_t)
             print(f'model engine model save: {res_str}')
     
-            # xgb.plot_feature_importance(
-            #     self.model_importance_feature, 
-            #     self.symbol
-            #     )
-    
+        self.xgb.save_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}")    
+
         self.create_retuns_data(xtest, ytest)
         bt_json = self.trade_fee_net_returns(xtest)
-        print(f'bt: method inside: {json.dumps(bt_json)}')
+
+        print(f'Accuracy Score: {score} and shape: {X.shape}')
         
         return xtest.index[-1], ytest[-1], json.dumps(bt_json), score
        
@@ -149,4 +129,27 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
     def get_strategy_return(self, xtest, ytest):
         self.create_retuns_data(xtest, ytest)
         bt_json = self.trade_fee_net_returns(xtest)
-        return json.dumps(bt_json)  
+        return json.dumps(bt_json)
+    
+    
+if __name__ == '__main__':
+    from KZ_project.Infrastructure.services.binance_service.binance_client import BinanceClient
+    from KZ_project.ml_pipeline.ai_model_creator.forecasters.gridsearchable_cv import GridSearchableCV
+    from dotenv import load_dotenv
+    import os
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
+    from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
+    
+    load_dotenv()
+    api_key = os.getenv('BINANCE_API_KEY')
+    api_secret_key = os.getenv('BINANCE_SECRET_KEY')
+
+    client = BinanceClient(api_key, api_secret_key) 
+    data_creator = DataCreator(symbol="BTCUSDT", source='binance', range_list=[i for i in range(5, 21)],
+                                       period=None, interval="1h", start_date="2018-01-06", end_date="2023-01-01", client=client)  
+    model_engine = ModelEngine(data_creator.symbol, 'btc', data_creator.source, data_creator.interval, is_backtest=True)
+    pipeline = SentimentFeaturedMatrixPipeline(data_creator, None, None, is_twitter=False)
+    featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
+    dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(featured_matrix)
