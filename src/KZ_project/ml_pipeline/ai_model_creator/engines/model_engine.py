@@ -70,7 +70,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         
         self.xgb.fit()
         
-        self.model_name = f'est_{self.xgb.model.n_estimators}_{self.symbol}_{self.source}_model_price_{self.interval}_feature_numbers_{X.shape[1]}.json'
+        self.model_name = f'extract_ad_est_{self.xgb.model.n_estimators}_{self.symbol}_{self.source}_model_price_{self.interval}_feature_numbers_{X.shape[1]}.json'
         
         score = self.xgb.get_score()
 

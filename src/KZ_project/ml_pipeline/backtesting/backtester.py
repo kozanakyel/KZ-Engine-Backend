@@ -31,7 +31,7 @@ class Backtester():
     def _create_featured_matrix(self) -> pd.DataFrame:
         pipeline = SentimentFeaturedMatrixPipeline(self.data_creator, None, None, is_twitter=False)
         featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
-        
+        featured_matrix.to_csv('./data/bt_featured.csv')
         return featured_matrix
         
     def _get_interval_df(self, start_index: int) -> pd.DataFrame:
@@ -60,13 +60,13 @@ class Backtester():
     
     def _predict_next_candle_from_model(self, df: pd.DataFrame) -> tuple:      
         model_engine = ModelEngine(self.data_creator.symbol, None, self.data_creator.source, self.data_creator.interval, is_backtest=True)
-        model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/est_9000_BTCUSDT_binance_model_price_1h_feature_numbers_129.json")
+        model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/extract_ad_est_9000_BTCUSDT_binance_model_price_1h_feature_numbers_123.json")
         # dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(df)
         y = df.feature_label
         X = df.drop(columns=['feature_label'], axis=1)
         y_pred = model_engine.xgb.model.predict(X)
         acc_score = accuracy_score(y_pred, y)
-        return acc_score
+        return acc_score, X.log_return, y, y_pred
     
     def grid_backtest(self) -> tuple:
         fm = self.featured_matrix.copy()
@@ -127,6 +127,7 @@ if __name__ == '__main__':
     data_creator = DataCreator(symbol="BTCUSDT", source='binance', range_list=[i for i in range(5, 21)],
                                        period=None, interval="1h", start_date="2023-01-01", client=client)
     
+    
     # gridsearchable for best params
     # data_creator = DataCreator(symbol="BTCUSDT", source='binance', range_list=[i for i in range(5, 21)],
     #                                    period=None, interval="1h", start_date="2018-01-01", 
@@ -134,7 +135,7 @@ if __name__ == '__main__':
     bt = Backtester(7, client, data_creator)
     score = bt._predict_next_candle_from_model(bt.featured_matrix)
     # result_score = bt.backtest(1)
-    print(f'ACCURACY SKOR FOR LAST BACKTEST: {score} last shape: {bt.featured_matrix.shape}')
+    print(f'ACCURACY SKOR FOR LAST BACKTEST: {score[0]} {score[1]} {score[2]} {score[3]} last shape: {bt.featured_matrix.shape}')
     
     # # Assuming self.backtest_data is a list of tuples
     # data = pd.DataFrame(bt.backtest_data, columns=['date', 'accuracy', 'signal', 'actual'])

@@ -47,7 +47,7 @@ class FeatureExtractor(IBinaryFeatureLabel):
         columns_list = []
         for i in self.range_list:
             columns_list.append(f"st_adx_{i}")
-        columns_list.append("log_return_binary")
+        # columns_list.append("log_return_binary")
         self.featured_matrix.drop(columns=columns_list, axis=1, inplace=True)
         
         
@@ -77,7 +77,7 @@ class FeatureExtractor(IBinaryFeatureLabel):
         self.norm_range_interval(sample, matrix_data, 'cci', self.range_list, [100, -100])
         # self.norm_range_interval(sample, matrix_data, 'willr', self.range_list, [-30, -70])
         self.norm_adx_roc_ind(sample, matrix_data, self.range_list)
-        self.strategy_obv_ad_volume_ind(sample, matrix_data)   ##
+        # self.strategy_obv_ad_volume_ind(sample, matrix_data)   ##
         self.log(f'Normalized features for indicators values to 1 and 0')
         return sample
                 
