@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 import json
+from KZ_project.Infrastructure.services.yahoo_service.yahoo_client import YahooClient
 from KZ_project.core.interfaces.Ifee_calculateable import IFeeCalculateable
 from KZ_project.core.interfaces.Ireturn_data_creatable import IReturnDataCreatable
 
@@ -20,7 +21,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         self.interval = interval
         self.symbol_cut = symbol_cut
         self.is_backtest = is_backtest
-        self.xgb = XgboostBinaryForecaster(n_estimators=9000, eta=0.9, max_depth=1, early_stopping_rounds=0, cv=5, is_kfold=True)
+        self.xgb = XgboostBinaryForecaster(n_estimators=11000, eta=0.9, max_depth=1, early_stopping_rounds=0, cv=5, is_kfold=True)
         self.data_plot_path = f'./data/plots/model_evaluation/'
         self.model_plot_path = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_backtest.png'
         self.model_importance_feature = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_importance.png'    
@@ -93,7 +94,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
                                                           datetime_t)
             print(f'model engine model save: {res_str}')
         
-        self.xgb.save_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}")    
+        # self.xgb.save_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}")    
 
         self.create_retuns_data(xtest, ytest)
         bt_json = self.trade_fee_net_returns(xtest)
@@ -143,9 +144,29 @@ if __name__ == '__main__':
     api_key = os.getenv('BINANCE_API_KEY')
     api_secret_key = os.getenv('BINANCE_SECRET_KEY')
 
-    client = BinanceClient(api_key, api_secret_key) 
-    data_creator = DataCreator(symbol="BTCUSDT", source='binance', range_list=[i for i in range(5, 21)],
-                                       period=None, interval="1h", start_date="2018-01-06", end_date="2023-01-01", client=client)  
+    # client = BinanceClient(api_key, api_secret_key) 
+    # data_creator = DataCreator(
+    #     symbol="BTCUSDT", 
+    #     source='binance', 
+    #     range_list=[i for i in range(5, 21)],
+    #     period=None, 
+    #     interval="1d", 
+    #     start_date="2018-01-01", 
+    #     end_date="2023-01-01", 
+    #     client=client
+    # )
+    
+    client_yahoo = YahooClient()
+    data_creator = DataCreator(
+        symbol="AAPL", 
+        source='yahoo', 
+        range_list=[i for i in range(5, 21)],
+        period='max', 
+        interval="1d", 
+        start_date="2018-01-01", 
+        end_date="2023-01-01", 
+        client=client_yahoo
+    )  
     model_engine = ModelEngine(data_creator.symbol, 'btc', data_creator.source, data_creator.interval, is_backtest=True)
     pipeline = SentimentFeaturedMatrixPipeline(data_creator, None, None, is_twitter=False)
     featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
