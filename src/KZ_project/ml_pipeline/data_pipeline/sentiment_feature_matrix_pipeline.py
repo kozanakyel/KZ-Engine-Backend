@@ -43,7 +43,7 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
         agg_sent_feature_matrix["twitter_sent_score"] = 0.0
         # for binance exchange time module
         # if self.data_creator.interval[-1] == 'h':   # if interval hourly otherwise daily
-        agg_sent_feature_matrix.index = agg_sent_feature_matrix.index + timedelta(hours=3)
+        agg_sent_feature_matrix.index = agg_sent_feature_matrix.index + timedelta(hours=4)   ###########
         self.tweet_counts = 0
         return agg_sent_feature_matrix
     
@@ -105,7 +105,7 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
     
     
 if __name__ == '__main__':
-    from KZ_project.ml_pipeline.services.yahoo_service.yahoo_client import YahooClient
+    from KZ_project.Infrastructure.services.yahoo_service.yahoo_client import YahooClient
     MAIN_PATH = '/data/outputs/data_ind/'
     PURE_PATH = '/data/pure_data/'
     FEATURE_PATH = '/data/outputs/feature_data/'

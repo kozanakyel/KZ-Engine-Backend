@@ -41,7 +41,6 @@ class ForecastEngine():
         return datetime_t, int(y_pred), bt_json
     
     
-    
     def forecast_builder(self):
         sentiment_featured_matrix = self.sentiment_featured_pipeline.create_sentiment_aggregate_feature_matrix()
         datetime_t, next_candle_prediction, bt_json = self.predict_next_candle(sentiment_featured_matrix)
@@ -53,6 +52,8 @@ class ForecastEngine():
             print(f'db commit signal: {response_db}')
 
         return self.ai_type, datetime_t, next_candle_prediction
+    
+    
         
         
         

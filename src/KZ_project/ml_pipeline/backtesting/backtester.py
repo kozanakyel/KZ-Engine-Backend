@@ -1,23 +1,23 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
+import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error, accuracy_score
 from KZ_project.Infrastructure.services.yahoo_service.yahoo_client import YahooClient
+from KZ_project.core.interfaces.Ifee_calculateable import IFeeCalculateable
+from KZ_project.core.interfaces.Ireturn_data_creatable import IReturnDataCreatable
 
 from KZ_project.ml_pipeline.ai_model_creator.engines.model_engine import ModelEngine
 from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
 from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
-from KZ_project.core.interfaces.Iclient_service import IClientService
 
-class Backtester():
+class Backtester(IFeeCalculateable, IReturnDataCreatable):
     
     def __init__(
         self, 
         period: str, 
-        client: IClientService, 
         data_creator: DataCreator
     ):
-        self.client = client
         self.data_creator = data_creator
         self.period = period
         self.featured_matrix = self._create_featured_matrix()
@@ -61,13 +61,17 @@ class Backtester():
     
     def _predict_next_candle_from_model(self, df: pd.DataFrame) -> tuple:      
         model_engine = ModelEngine(self.data_creator.symbol, None, self.data_creator.source, self.data_creator.interval, is_backtest=True)
-        model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/extract_ad_est_11000_AAPL_yahoo_model_price_1d_feature_numbers_123.json")
+        if self.data_creator.interval[-1] == 'h':
+            model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/extract_ad_est_9000_BTCUSDT_binance_model_price_1h_feature_numbers_123.json")
+        if self.data_creator.interval[-1] == 'd':
+            model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/extract_ad_est_11000_AAPL_yahoo_model_price_1d_feature_numbers_123.json")
         # dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(df)
         y = df.feature_label
         X = df.drop(columns=['feature_label'], axis=1)
         y_pred = model_engine.xgb.model.predict(X)
         acc_score = accuracy_score(y_pred, y)
-        return acc_score, X.log_return, y, y_pred
+        
+        return acc_score, X, y, y_pred
     
     def grid_backtest(self) -> tuple:
         fm = self.featured_matrix.copy()
@@ -110,6 +114,27 @@ class Backtester():
                 false_accuracy.append(accuracy_score)
         return succes_predict / len(self.backtest_data)
     
+    def create_retuns_data(self, X_pd, y_pred):
+        X_pd["position"] = [y_pred[i] for i, _ in enumerate(X_pd.index)]    
+        X_pd["strategy"] = X_pd.position.shift(1) * X_pd["log_return"]
+        X_pd[["log_return", "strategy"]].sum().apply(np.exp)
+        X_pd["cstrategy"] = X_pd["strategy"].cumsum().apply(np.exp) 
+        X_pd["creturns"] = X_pd.log_return.cumsum().apply(np.exp) 
+    
+    def trade_fee_net_returns(self, X_pd: pd.DataFrame()):    
+        X_pd["trades"] = X_pd.position.diff().fillna(0).abs()    
+        commissions = 0.00075 # reduced Binance commission 0.075%
+        other = 0.0001 # proportional costs for bid-ask spread & slippage (more detailed analysis required!)
+        ptc = np.log(1 - commissions) + np.log(1 - other)
+    
+        X_pd["strategy_net"] = X_pd.strategy + X_pd.trades * ptc # strategy returns net of costs
+        X_pd["cstrategy_net"] = X_pd.strategy_net.cumsum().apply(np.exp)
+    
+        X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(figsize = (12 , 8), title = f"{self.data_creator.symbol}")
+        plt.show()
+        return X_pd[["creturns", "cstrategy", "cstrategy_net"]]    
+    
+    
 
 if __name__ == '__main__':
     from KZ_project.Infrastructure.services.binance_service.binance_client import BinanceClient
@@ -122,16 +147,15 @@ if __name__ == '__main__':
     load_dotenv()
     api_key = os.getenv('BINANCE_API_KEY')
     api_secret_key = os.getenv('BINANCE_SECRET_KEY')
-
+    
     client = BinanceClient(api_key, api_secret_key) 
     data_creator = DataCreator(
         symbol="BTCUSDT", 
         source='binance', 
         range_list=[i for i in range(5, 21)],
         period=None, 
-        interval="1d", 
-        start_date="2018-01-01", 
-        end_date="2023-05-18", 
+        interval="1h", 
+        start_date="2023-05-14",
         client=client
     )
     
@@ -153,11 +177,13 @@ if __name__ == '__main__':
     # data_creator = DataCreator(symbol="BTCUSDT", source='binance', range_list=[i for i in range(5, 21)],
     #                                    period=None, interval="1h", start_date="2018-01-01", 
     #                                    end_date="2023-01-01", client=client)
-    bt = Backtester(7, client, data_creator)
-    score = bt._predict_next_candle_from_model(bt.featured_matrix)
+    backtrader = Backtester(7, data_creator)
+    acc_score, x, y, y_pred = backtrader._predict_next_candle_from_model(backtrader.featured_matrix)
     # result_score = bt.backtest(1)
-    print(f'ACCURACY SKOR FOR LAST BACKTEST: {score[0]} {score[1]} {score[2]} {score[3]} last shape: {bt.featured_matrix.shape}')
+    print(f'ACCURACY SCORE FOR LAST BACKTEST: {acc_score} {x} {y} {y_pred} last shape: {backtrader.featured_matrix.shape}')
     
+    backtrader.create_retuns_data(x, y)
+    bt_json = backtrader.trade_fee_net_returns(x)
     # # Assuming self.backtest_data is a list of tuples
     # data = pd.DataFrame(bt.backtest_data, columns=['date', 'accuracy', 'signal', 'actual'])
     # data['date'] = pd.to_datetime(data['date'])

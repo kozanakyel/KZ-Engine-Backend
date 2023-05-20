@@ -235,7 +235,8 @@ class FeatureExtractor(IBinaryFeatureLabel):
         """
         df['feature_label'] = (df['log_return'] > 0).astype(int)
         df['feature_label'] = df['feature_label'].shift(-1)
-        df["feature_label"][df.index[-1]] = df["feature_label"][df.index[-2]]
+        # Trying for lack data for NaN last value
+        # df["feature_label"][df.index[-1]] = df["feature_label"][df.index[-2]]    
 
 
     def normalized_df(self, df: pd.DataFrame(), column:str):

@@ -35,7 +35,7 @@ class FeaturedMatrixPipeline():
     
     def create_aggregate_indicator_matrix(self):
         agg_ind_matrix = self.data_creator.download_ohlc_from_client()
-        # print(agg_ind_matrix.close)
+        print(agg_ind_matrix.close)
         agg_ind_matrix = self.data_creator.create_datetime_index(agg_ind_matrix)
         agg_ind_matrix = self.data_creator.column_names_preparation(agg_ind_matrix, self.data_creator.range_list)
         indicator_df_result = FactoryIndicatorBuilder.create_indicators_columns(agg_ind_matrix, self.data_creator.range_list, logger=self.data_creator.logger)  
