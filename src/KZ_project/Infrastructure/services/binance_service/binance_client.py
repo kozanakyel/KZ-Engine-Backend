@@ -96,10 +96,22 @@ class BinanceClient(IClientService):
         for column in df.columns:
             df[column] = pd.to_numeric(df[column], errors = "coerce")
     
-        self.log(f'Fetch data from Binance API with OHLC from {start} and inbterval {interval}')
+        self.log(f'Fetch data from Binance API with OHLC from {start} and interval {interval}')
         return df  
     
- 
+if __name__ == '__main__':
+    from KZ_project.Infrastructure.services.binance_service.binance_client import BinanceClient
+    from dotenv import load_dotenv
+    import os
+    import pandas as pd
+    
+    load_dotenv()
+    api_key = os.getenv('BINANCE_API_KEY')
+    api_secret_key = os.getenv('BINANCE_SECRET_KEY')
+
+    client = BinanceClient(api_key, api_secret_key) 
+    k = client.get_history("BTCUSDT", "1h", "2023-05-14")
+    print(k)
 
         
         

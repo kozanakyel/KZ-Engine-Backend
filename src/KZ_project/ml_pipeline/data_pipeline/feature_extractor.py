@@ -24,7 +24,7 @@ class FeatureExtractor(IBinaryFeatureLabel):
         self.featured_matrix = self.normalized_all_indicators_col(self.df)
         self.add_datetime_features(self.featured_matrix)
         self.featured_matrix['japanese_candlestick_label'] = self.df.candle_label
-        self.featured_matrix['vol_delta'] = self.featured_matrix['volume'].pct_change() > 0    # no type binary???
+        self.featured_matrix['vol_delta'] = self.featured_matrix['volume'].pct_change()    # no type binary???
         self.featured_matrix['log_return'] = self.df.log_return    #### sacma olmus duzelt
         self.add_lags(self.featured_matrix, self.df, 3)
         self.create_binary_feature_label(self.featured_matrix)
@@ -37,7 +37,7 @@ class FeatureExtractor(IBinaryFeatureLabel):
         
         self.featured_matrix = self.featured_matrix.replace([np.inf, -np.inf], np.nan).dropna()
         self.featured_matrix['kz_score'] = self.featured_matrix.sum(axis = 1)/100
-        
+         
         # thinkable_feature_list = ['kz_score', 'japanese_candlestick_label', 'vol_delta', 'log_return', 'lag_2', 'lag_3','feature_label']
         # self.featured_matrix = self.featured_matrix[thinkable_feature_list].copy()
         

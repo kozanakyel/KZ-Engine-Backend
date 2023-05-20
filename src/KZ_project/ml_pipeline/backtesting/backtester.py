@@ -32,7 +32,7 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
     def _create_featured_matrix(self) -> pd.DataFrame:
         pipeline = SentimentFeaturedMatrixPipeline(self.data_creator, None, None, is_twitter=False)
         featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
-        featured_matrix.to_csv('./data/bt_featured.csv')
+        featured_matrix.to_csv('./data/bt_featured6.csv')
         return featured_matrix
         
     def _get_interval_df(self, start_index: int) -> pd.DataFrame:
@@ -48,7 +48,7 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         elif self.data_creator.interval == '1d':
             ei = start_index + self.period
         else:
-            raise ValueError(f'Enbd index is not available end_index: {ei}')
+            raise ValueError(f'Enb index is not available end_index: {ei}')
         return ei
         
      
@@ -68,6 +68,12 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         # dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(df)
         y = df.feature_label
         X = df.drop(columns=['feature_label'], axis=1)
+        last_row = X.tail(1).values
+        X.to_csv('./data/bt_featuredX.csv')
+        print(f"NExt candle last row prediction: {last_row}")
+        last_y = model_engine.xgb.model.predict(last_row)
+        print(f"NExt candle last row prediction: {last_y}")
+        
         y_pred = model_engine.xgb.model.predict(X)
         acc_score = accuracy_score(y_pred, y)
         
@@ -133,8 +139,7 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(figsize = (12 , 8), title = f"{self.data_creator.symbol}")
         plt.show()
         return X_pd[["creturns", "cstrategy", "cstrategy_net"]]    
-    
-    
+   
 
 if __name__ == '__main__':
     from KZ_project.Infrastructure.services.binance_service.binance_client import BinanceClient
@@ -165,10 +170,9 @@ if __name__ == '__main__':
     #     symbol="AAPL", 
     #     source='yahoo', 
     #     range_list=[i for i in range(5, 21)],
-    #     period='max', 
-    #     interval="1d", 
-    #     start_date="2018-01-01", 
-    #     end_date="2023-01-01", 
+    #     period='1mo', 
+    #     interval="1h", 
+    #     start_date="2023-05-10",
     #     client=client_yahoo
     # )
     
