@@ -62,17 +62,18 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
     def _predict_next_candle_from_model(self, df: pd.DataFrame) -> tuple:      
         model_engine = ModelEngine(self.data_creator.symbol, None, self.data_creator.source, self.data_creator.interval, is_backtest=True)
         if self.data_creator.interval[-1] == 'h':
-            model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/extract_ad_est_9000_BTCUSDT_binance_model_price_1h_feature_numbers_123.json")
+            model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/extract_ad_est_10000_BTCUSDT_binance_model_price_1h_feature_numbers_123.json")
         if self.data_creator.interval[-1] == 'd':
             model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/extract_ad_est_11000_AAPL_yahoo_model_price_1d_feature_numbers_123.json")
         # dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(df)
         y = df.feature_label
         X = df.drop(columns=['feature_label'], axis=1)
-        last_row = X.tail(1).values
-        X.to_csv('./data/bt_featuredX.csv')
-        print(f"NExt candle last row prediction: {last_row}")
-        last_y = model_engine.xgb.model.predict(last_row)
-        print(f"NExt candle last row prediction: {last_y}")
+        # last_rows = df.values
+        # last_row = X.tail(1).values
+        # X.to_csv('./data/bt_featuredX.csv')
+        # print(f"DF tails: {df.tail()}")
+        #last_y = model_engine.xgb.model.predict(X)
+        #print(f"NExt candle last row prediction: {last_y}")
         
         y_pred = model_engine.xgb.model.predict(X)
         acc_score = accuracy_score(y_pred, y)
@@ -87,9 +88,9 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         xgb.create_train_test_data(x, y, test_size=0.2)
         model_gcv = xgb.model
         best_params = GridSearchableCV.bestparams_gridcv(
-            n_estimators_list=[100, 300, 600, 900, 2000, 4000], 
-            eta_list=[0.1, 0.3, 0.5, 0.7, 0.9], 
-            max_depth_list=[1, 3, 5], 
+            n_estimators_list=[300, 900, 1500, 4000, 8000], 
+            eta_list=[0.01, 0.03, 0.05, 0.07, 0.1], 
+            max_depth_list=[1,3], 
             model=model_gcv, 
             X_train=xgb.X_train, 
             y_train=xgb.y_train, 
@@ -149,6 +150,7 @@ if __name__ == '__main__':
     import pandas as pd
     import matplotlib.pyplot as plt
     
+    
     load_dotenv()
     api_key = os.getenv('BINANCE_API_KEY')
     api_secret_key = os.getenv('BINANCE_SECRET_KEY')
@@ -160,7 +162,7 @@ if __name__ == '__main__':
         range_list=[i for i in range(5, 21)],
         period=None, 
         interval="1h", 
-        start_date="2023-05-14",
+        start_date="2022-06-01",
         client=client
     )
     
@@ -170,8 +172,8 @@ if __name__ == '__main__':
     #     symbol="AAPL", 
     #     source='yahoo', 
     #     range_list=[i for i in range(5, 21)],
-    #     period='1mo', 
-    #     interval="1h", 
+    #     period='max', 
+    #     interval="1d", 
     #     start_date="2023-05-10",
     #     client=client_yahoo
     # )
@@ -182,12 +184,14 @@ if __name__ == '__main__':
     #                                    period=None, interval="1h", start_date="2018-01-01", 
     #                                    end_date="2023-01-01", client=client)
     backtrader = Backtester(7, data_creator)
-    acc_score, x, y, y_pred = backtrader._predict_next_candle_from_model(backtrader.featured_matrix)
+    # acc_score, x, y, y_pred = backtrader._predict_next_candle_from_model(backtrader.featured_matrix)
     # result_score = bt.backtest(1)
-    print(f'ACCURACY SCORE FOR LAST BACKTEST: {acc_score} {x} {y} {y_pred} last shape: {backtrader.featured_matrix.shape}')
+    # acc_score= backtrader._predict_next_candle_from_model(backtrader.featured_matrix)
+    # print(f'ACCURACY SCORE FOR LAST BACKTEST: {acc_score} last shape: {backtrader.featured_matrix.shape}')
+    # print(f'ACCURACY SCORE FOR LAST BACKTEST: {acc_score} {x} {y} {y_pred} last shape: {backtrader.featured_matrix.shape}')
+    # backtrader.create_retuns_data(x, y_pred)
+    # bt_json = backtrader.trade_fee_net_returns(x)
     
-    backtrader.create_retuns_data(x, y)
-    bt_json = backtrader.trade_fee_net_returns(x)
     # # Assuming self.backtest_data is a list of tuples
     # data = pd.DataFrame(bt.backtest_data, columns=['date', 'accuracy', 'signal', 'actual'])
     # data['date'] = pd.to_datetime(data['date'])
@@ -199,8 +203,8 @@ if __name__ == '__main__':
     # plt.legend()
     # plt.show()
     
-    # gcv = bt.grid_backtest()
-    # print(f'best params: {gcv}')   # 0.5, 1, 400
+    gcv = backtrader.grid_backtest()
+    print(f'best params: {gcv}')   # 0.5, 1, 400
     # best params: {'eta': 0.9, 'max_depth': 1, 'n_estimators': 1200}
     
         

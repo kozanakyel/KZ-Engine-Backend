@@ -21,7 +21,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         self.interval = interval
         self.symbol_cut = symbol_cut
         self.is_backtest = is_backtest
-        self.xgb = XgboostBinaryForecaster(n_estimators=9000, eta=0.9, max_depth=1, early_stopping_rounds=0, cv=5, is_kfold=True)
+        self.xgb = XgboostBinaryForecaster(n_estimators=30000, eta=0.03, max_depth=1, early_stopping_rounds=0, cv=5, is_kfold=True)
         self.data_plot_path = f'./data/plots/model_evaluation/'
         self.model_plot_path = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_backtest.png'
         self.model_importance_feature = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_importance.png'    
@@ -94,7 +94,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
                                                           datetime_t)
             print(f'model engine model save: {res_str}')
         
-        self.xgb.save_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}")    
+        # self.xgb.save_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}")    
 
         self.create_retuns_data(xtest, ytest)
         bt_json = self.trade_fee_net_returns(xtest)
@@ -151,7 +151,7 @@ if __name__ == '__main__':
         range_list=[i for i in range(5, 21)],
         period=None, 
         interval="1h", 
-        start_date="2018-01-01", 
+        start_date="2018-01-15", 
         end_date="2023-01-01", 
         client=client
     )
