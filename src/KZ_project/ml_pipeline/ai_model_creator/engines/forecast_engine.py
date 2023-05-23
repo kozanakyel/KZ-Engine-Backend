@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from KZ_project.ml_pipeline.ai_model_creator.engines.model_engine import ModelEngine
 from KZ_project.Infrastructure.file_processor.data_checker import DataChecker
+from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
 from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
 from KZ_project.webapi.services import services
@@ -28,8 +29,15 @@ class ForecastEngine():
                                                     hashtag, 
                                                     is_twitter=self.is_twitter)
         
-    def predict_next_candle(self, df_final):      
-        model_engine = ModelEngine(self.data_creator.symbol, self.hashtag, 'binance', self.data_creator.interval)
+    def predict_next_candle(self, df_final):    
+        forecaster  = XgboostBinaryForecaster()  
+        model_engine = ModelEngine(
+            self.data_creator.symbol, 
+            self.hashtag, 
+            self.data_creator.source, 
+            self.data_creator.interval,
+            forecaster
+        )
         dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(df_final)
         self.ai_type = model_engine.ai_type
         
@@ -46,9 +54,17 @@ class ForecastEngine():
         datetime_t, next_candle_prediction, bt_json = self.predict_next_candle(sentiment_featured_matrix)
         
         if not self.is_backtest:
-            response_db = services.prediction_service_new_signaltracker(self.ai_type, datetime_t, next_candle_prediction,
-                                                  self.data_creator.symbol, self.data_creator.interval, self.hashtag, 
-                                                  self.sentiment_featured_pipeline.tweet_counts, bt_json, get_session())
+            response_db = services.prediction_service_new_signaltracker(
+                self.ai_type, 
+                datetime_t, 
+                next_candle_prediction,
+                self.data_creator.symbol, 
+                self.data_creator.interval, 
+                self.hashtag, 
+                self.sentiment_featured_pipeline.tweet_counts, 
+                bt_json, 
+                get_session()
+            )
             print(f'db commit signal: {response_db}')
 
         return self.ai_type, datetime_t, next_candle_prediction

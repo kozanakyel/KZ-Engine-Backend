@@ -16,7 +16,7 @@ class XgboostBinaryForecaster(AbstractForecaster):
 
     def __init__(self, n_estimators: int=100, tree_method: str='gpu_hist', eta: float=0.1, 
                     max_depth: int=1, eval_metric: str='logloss', 
-                    cv: int=0, is_kfold: bool=False, early_stopping_rounds: int=20, logger: Logger=None):
+                    cv: int=0, is_kfold: bool=False, early_stopping_rounds: int=0, logger: Logger=None):
         self.n_estimators = n_estimators
         self.tree_method = tree_method
         self.eta = eta
