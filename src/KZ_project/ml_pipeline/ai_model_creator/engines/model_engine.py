@@ -29,10 +29,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         self.symbol_cut = symbol_cut
         self.is_backtest = is_backtest
         self.xgb = forecaster
-        self.data_plot_path = f'./data/plots/model_evaluation/'
-        self.model_plot_path = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_backtest.png'
-        self.model_importance_feature = self.data_plot_path + f'{self.symbol_cut}/{self.symbol}_{self.source}_{self.interval}_model_importance.png'    
-    
+        
     def create_retuns_data(self, X_pd, y_pred):
         X_pd["position"] = [y_pred[i] for i, _ in enumerate(X_pd.index)]    
         X_pd["strategy"] = X_pd.position.shift(1) * X_pd["log_return"]

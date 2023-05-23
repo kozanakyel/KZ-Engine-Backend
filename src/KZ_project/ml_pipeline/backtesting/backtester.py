@@ -59,8 +59,16 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         
         return str(dtt + timedelta(hours=int(self.data_creator.interval[0]))), int(y_pred), bt_json, acc_score
     
-    def _predict_next_candle_from_model(self, df: pd.DataFrame) -> tuple:      
-        model_engine = ModelEngine(self.data_creator.symbol, None, self.data_creator.source, self.data_creator.interval, is_backtest=True)
+    def _predict_next_candle_from_model(self, df: pd.DataFrame) -> tuple:    
+        forecaster = XgboostBinaryForecaster(early_stopping_rounds=0)  
+        model_engine = ModelEngine(
+            self.data_creator.symbol, 
+            None, 
+            self.data_creator.source, 
+            self.data_creator.interval, 
+            forecaster,
+            is_backtest=True
+        )
         if self.data_creator.interval[-1] == 'h':
             model_engine.xgb.load_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc/extract_ad_est_10000_BTCUSDT_binance_model_price_1h_feature_numbers_123.json")
         if self.data_creator.interval[-1] == 'd':
