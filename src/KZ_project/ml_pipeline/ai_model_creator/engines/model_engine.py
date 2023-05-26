@@ -92,10 +92,17 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
             elif self.interval[-1] == 'd':
                 datetime_t = str(xtest.index[-1] + timedelta(days=int(self.interval[0])))
             
-            res_str = services.save_crypto_forecast_model_service(score, get_session(), self.symbol_cut, 
-                                                          self.symbol, self.source, X.shape[1], self.model_name,
-                                                          self.interval, self.ai_type,
-                                                          datetime_t)
+            res_str = services.save_crypto_forecast_model_service(
+                score, get_session(), 
+                self.symbol_cut, 
+                self.symbol, 
+                self.source, 
+                X.shape[1], 
+                self.model_name,
+                self.interval, 
+                self.ai_type,
+                datetime_t
+            )
             print(f'model engine model save: {res_str}')
         
         # self.xgb.save_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}")    
@@ -138,10 +145,18 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         elif self.interval[-1] == 'd':
             datetime_t = str(xtest.index[-1] + timedelta(days=int(self.interval[0])))
             
-        res_str = services.save_crypto_forecast_model_service(acc_score, get_session(), self.symbol_cut, 
-                                                          self.symbol, self.source, x_shape.shape[1], self.model_name,
-                                                          self.interval, self.ai_type,
-                                                          datetime_t)
+        res_str = services.save_crypto_forecast_model_service(
+            acc_score, 
+            get_session(), 
+            self.symbol_cut, 
+            self.symbol, 
+            self.source, 
+            x_shape.shape[1], 
+            self.model_name,
+            self.interval, 
+            self.ai_type,
+            datetime_t
+        )
         return res_str.status
     
     

@@ -29,11 +29,11 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
 
     def set_period(self, period: str) -> None:
         self.period = period
-
+    
     def _create_featured_matrix(self) -> pd.DataFrame:
         pipeline = SentimentFeaturedMatrixPipeline(self.data_creator, None, None, is_twitter=False)
         featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
-        featured_matrix.to_csv('./data/bt_featured6.csv')
+        featured_matrix.to_csv(os.path.join("data", "deneme1.csv"))
         return featured_matrix
 
     def _get_interval_df(self, start_index: int) -> pd.DataFrame:
@@ -77,11 +77,11 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         )
         if self.data_creator.interval[-1] == 'h':
             model_engine.xgb.load_model(
-                f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc"
+                f"src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc"
                 f"/extract_ad_est_10000_BTCUSDT_binance_model_price_1h_feature_numbers_123.json")
         if self.data_creator.interval[-1] == 'd':
             model_engine.xgb.load_model(
-                f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc"
+                f"src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc"
                 f"/extract_ad_est_11000_AAPL_yahoo_model_price_1d_feature_numbers_123.json")
 
         y = df.feature_label
