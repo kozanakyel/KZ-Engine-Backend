@@ -10,6 +10,7 @@ from KZ_project.ml_pipeline.ai_model_creator.engines.model_engine import ModelEn
 from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
 from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
+from KZ_project.Infrastructure.constant import ROOT_PATH, MODEL_STACK_PATH
 
 
 class Backtester(IFeeCalculateable, IReturnDataCreatable):
@@ -24,16 +25,16 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         self.featured_matrix = self._create_featured_matrix()
         self.backtest_data = []
 
-    def get_period(self) -> str:
+    def get_period(self) -> int:
         return self.period
 
-    def set_period(self, period: str) -> None:
+    def set_period(self, period: int) -> None:
         self.period = period
-    
+
     def _create_featured_matrix(self) -> pd.DataFrame:
         pipeline = SentimentFeaturedMatrixPipeline(self.data_creator, None, None, is_twitter=False)
         featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
-        featured_matrix.to_csv(os.path.join("data", "deneme1.csv"))
+        # featured_matrix.to_csv(os.path.join("data", "deneme1.csv"))
         return featured_matrix
 
     def _get_interval_df(self, start_index: int) -> pd.DataFrame:
@@ -60,12 +61,16 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
             self.data_creator.interval,
             is_backtest=True
         )
-        
+
         dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(df)
 
         return str(dtt + timedelta(hours=int(self.data_creator.interval[0]))), int(y_pred), bt_json, acc_score
 
-    def _predict_next_candle_from_model(self, df: pd.DataFrame) -> tuple:
+    def _predict_next_candle_from_model(
+            self,
+            df: pd.DataFrame,
+            hashtag: str
+    ) -> tuple:
         forecaster = XgboostBinaryForecaster(early_stopping_rounds=0)
         model_engine = ModelEngine(
             self.data_creator.symbol,
@@ -77,12 +82,20 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         )
         if self.data_creator.interval[-1] == 'h':
             model_engine.xgb.load_model(
-                f"src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc"
-                f"/extract_ad_est_10000_BTCUSDT_binance_model_price_1h_feature_numbers_123.json")
+                os.path.join(
+                    ROOT_PATH,
+                    MODEL_STACK_PATH + hashtag,
+                    "extract_ad_est_10000_BTCUSDT_binance_model_price_1h_feature_numbers_123.json"
+                )
+            )
         if self.data_creator.interval[-1] == 'd':
             model_engine.xgb.load_model(
-                f"src/KZ_project/ml_pipeline/ai_model_creator/model_stack/btc"
-                f"/extract_ad_est_11000_AAPL_yahoo_model_price_1d_feature_numbers_123.json")
+                os.path.join(
+                    ROOT_PATH,
+                    MODEL_STACK_PATH + hashtag,
+                    "extract_ad_est_11000_AAPL_yahoo_model_price_1d_feature_numbers_123.json"
+                )
+            )
 
         y = df.feature_label
         X = df.drop(columns=['feature_label'], axis=1)
@@ -191,7 +204,7 @@ if __name__ == '__main__':
     backtrader = Backtester(7, data_creator)
     # acc_score, x, y, y_pred = backtrader._predict_next_candle_from_model(backtrader.featured_matrix)
     # result_score = bt.backtest(1)
-    acc_score= backtrader._predict_next_candle_from_model(backtrader.featured_matrix)
+    acc_score = backtrader._predict_next_candle_from_model(backtrader.featured_matrix, 'btc')
     print(f'ACCURACY SCORE FOR LAST BACKTEST: {acc_score} last shape: {backtrader.featured_matrix.shape}')
     # print(f'ACCURACY SCORE FOR LAST BACKTEST: {acc_score} {x} {y} {y_pred} last shape: {backtrader.featured_matrix.shape}')
     # backtrader.create_retuns_data(x, y_pred)
