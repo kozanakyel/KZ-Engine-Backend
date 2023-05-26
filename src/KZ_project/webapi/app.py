@@ -1,3 +1,5 @@
 from KZ_project.webapi.entrypoints.flask_app import app
 
-app.run()
+
+if __name__ == '__main__':
+    app.run()

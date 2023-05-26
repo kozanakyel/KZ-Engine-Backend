@@ -43,17 +43,17 @@ signal_trackers = Table(
     Column("ticker", String(25)),
     Column("tweet_counts", Integer),
     Column("backtest_returns_data", String()),
-    Column("forecast_model_id", ForeignKey("forecast_models.id")),    
+    Column("forecast_model_id", ForeignKey("forecast_models.id")),
 )
 
-def start_mappers():    
-    
+
+def start_mappers():
     crypto_mapper = mapper_registry.map_imperatively(Crypto, cryptos)
-    forecast_model_mapper = mapper_registry.map_imperatively(ForecastModel, forecast_models, 
-                                   properties={
-                                       'crypto': relationship(crypto_mapper)
-                                   })
+    forecast_model_mapper = mapper_registry.map_imperatively(ForecastModel, forecast_models,
+                                                             properties={
+                                                                 'crypto': relationship(crypto_mapper)
+                                                             })
     mapper_registry.map_imperatively(SignalTracker, signal_trackers,
-           properties={
-               'forecast_model': relationship(forecast_model_mapper)
-           })
+                                     properties={
+                                         'forecast_model': relationship(forecast_model_mapper)
+                                     })
