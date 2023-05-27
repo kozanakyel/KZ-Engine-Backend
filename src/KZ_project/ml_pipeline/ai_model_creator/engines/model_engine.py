@@ -44,8 +44,10 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         len_index = len(index_col)
         len_features = len(valuable_features)
         
-        if len_index >= len_features: len_cols = len_features
-        else: len_cols = len_index
+        if len_index >= len_features:
+            len_cols = len_features
+        else: 
+            len_cols = len_index
             
         for i in range(len_cols):
             X_pd.at[index_col[i], "importance_features"] = valuable_features[i]

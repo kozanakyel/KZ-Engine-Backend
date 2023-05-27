@@ -1,30 +1,31 @@
 import pandas as pd
 import talib
 from tqdm import tqdm
-import pandas_ta as ta   # for the fischer indicator only It is necessary
+import pandas_ta as ta  # for the fischer indicator only It is necessary
 
 from KZ_project.Infrastructure.logger.logger import Logger
 from KZ_project.core.domain.base_indicator import BaseIndicator
 from KZ_project.ml_pipeline.japanese_candlestick.japanese_candlestick_creator import JapaneseCandlestickCreator
-                                                                          
+
+
 class TalibIndicator(BaseIndicator):
-    
+
     def __init__(
-        self, 
-        df: pd.DataFrame()=None, 
-        range_list: list=None, 
-        logger: Logger=None
+            self,
+            df: pd.DataFrame() = None,
+            range_list: list = None,
+            logger: Logger = None
     ):
         self.range_list = range_list
         self.logger = logger
         self.df = df.copy()
-    
+
     def log(self, text):
         if self.logger:
             self.logger.append_log(text)
         else:
             print(text)
-    
+
     def create_ind_cols(self) -> None:
         self.create_ind_with_ct(self.df, 'sma', talib.SMA, self.range_list)
         self.create_bband_t(self.df, talib.BBANDS, self.range_list)
@@ -51,12 +52,12 @@ class TalibIndicator(BaseIndicator):
         self.create_ind_with_ct(self.df, 'roc', talib.ROC, self.range_list)
         self.create_ind_with_c_stoch(self.df, talib.STOCHRSI)
         self.create_ichmiouk_kijunsen(self.df)
-        self.create_ichmiouk_tenkansen(self.df) 
+        self.create_ichmiouk_tenkansen(self.df)
 
         fishert = self.df.ta.fisher()
         fishert.columns = ['fishert', 'fisherts']
-        self.df = pd.concat([self.df, fishert], axis=1) 
-          
+        self.df = pd.concat([self.df, fishert], axis=1)
+
         JapaneseCandlestickCreator.create_candle_columns(self.df)
         JapaneseCandlestickCreator.create_candle_label(self.df)
 
@@ -64,14 +65,14 @@ class TalibIndicator(BaseIndicator):
         self.df['daily_return'] = self.df['close'].pct_change()
         self.df['log_return'] = self.df.ta.log_return()
 
-    
     def create_ind_with_ct(self, dft: pd.DataFrame(), ind: str, func_ta, range_list: list) -> None:
         for i in tqdm(range_list):
-            dft[ind+'_'+str(i)] = func_ta(dft['close'], timeperiod=i)
+            dft[ind + '_' + str(i)] = func_ta(dft['close'], timeperiod=i)
         self.log(f'Calculated {ind.upper()} for range {range_list}')
 
     def create_ind_with_c_stoch(self, dft: pd.DataFrame(), func_ta) -> None:
-        dft['stoch_k'], dft['stoch_d'] = func_ta(dft['close'], timeperiod=14, fastk_period=3, fastd_period=3, fastd_matype=0)
+        dft['stoch_k'], dft['stoch_d'] = func_ta(dft['close'], timeperiod=14, fastk_period=3, fastd_period=3,
+                                                 fastd_matype=0)
 
     def create_ichmiouk_kijunsen(self, dft: pd.DataFrame()) -> None:
         period26_high = dft['high'].rolling(window=26).max()
@@ -85,25 +86,25 @@ class TalibIndicator(BaseIndicator):
 
     def create_ind_with_hlcvt(self, dft: pd.DataFrame(), ind: str, func_ta, range_list: list) -> None:
         for i in range_list:
-            dft[ind+'_'+str(i)] = func_ta(dft['high'], dft['low'], dft['close'], dft['volume'], timeperiod=i) 
+            dft[ind + '_' + str(i)] = func_ta(dft['high'], dft['low'], dft['close'], dft['volume'], timeperiod=i)
         self.log(f'Calculated {ind.upper()} for range {range_list}')
 
     def create_ind_with_hlct(self, dft: pd.DataFrame(), ind: str, func_ta, range_list: list) -> None:
         for i in range_list:
-            dft[ind+'_'+str(i)] = func_ta(dft['high'], dft['low'], dft['close'], timeperiod=i)
+            dft[ind + '_' + str(i)] = func_ta(dft['high'], dft['low'], dft['close'], timeperiod=i)
         self.log(f'Calculated {ind.upper()} for range {range_list}')
 
     def create_bband_t(self, dft: pd.DataFrame(), func_ta, range_list: list, nbdevup=1, nbdevdn=1, matype=0) -> None:
         for i in range_list:
-            dft['upband_'+str(i)], dft['midband_'+str(i)], dft['lowband_'+str(i)] = \
-                        func_ta(dft['close'], timeperiod=i, nbdevup=nbdevup, nbdevdn=nbdevdn, matype=matype)
+            dft['upband_' + str(i)], dft['midband_' + str(i)], dft['lowband_' + str(i)] = \
+                func_ta(dft['close'], timeperiod=i, nbdevup=nbdevup, nbdevdn=nbdevdn, matype=matype)
         self.log(f'Calculated BOLLINGERBAND for range {range_list}')
 
     def create_macd(self, dft: pd.DataFrame(), func_ta, fastperiod=12, slowperiod=26, signalperiod=9) -> None:
         dft['macd'], dft['macdsignal'], dft['macdhist'] = \
-                func_ta(dft['close'], fastperiod=fastperiod, slowperiod=slowperiod, signalperiod=signalperiod)
+            func_ta(dft['close'], fastperiod=fastperiod, slowperiod=slowperiod, signalperiod=signalperiod)
         self.log(f'Calculated MACD')
-    
+
     def create_ind_cv(self, dft: pd.DataFrame(), ind: str, func_ta):
         dft[ind] = func_ta(dft['close'], dft['volume'])
         self.log(f'Calculated {ind.upper()}')
@@ -112,10 +113,9 @@ class TalibIndicator(BaseIndicator):
         dft[ind] = func_ta(dft['high'], dft['low'], dft['close'], dft['volume'])
         self.log(f'Calculated {ind.upper()}')
 
-    
     def volatility(self, dft: pd.DataFrame()):
         """
         It needs firstly be calculated log_return columns
         """
-        dft['volatility'] = dft['log_return'].std()*252**.5
+        dft['volatility'] = dft['log_return'].std() * 252 ** .5
         self.log(f'Calculated Volatility')

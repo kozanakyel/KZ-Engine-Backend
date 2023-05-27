@@ -16,9 +16,9 @@ from KZ_project.Infrastructure.constant import ROOT_PATH, MODEL_STACK_PATH
 class Backtester(IFeeCalculateable, IReturnDataCreatable):
 
     def __init__(
-            self,
-            period: int,
-            data_creator: DataCreator
+        self,
+        period: int,
+        data_creator: DataCreator
     ):
         self.data_creator = data_creator
         self.period = period
@@ -74,7 +74,7 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         forecaster = XgboostBinaryForecaster(early_stopping_rounds=0)
         model_engine = ModelEngine(
             self.data_creator.symbol,
-            None,
+            hashtag,
             self.data_creator.source,
             self.data_creator.interval,
             forecaster,
@@ -151,6 +151,8 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         X_pd[["log_return", "strategy"]].sum().apply(np.exp)
         X_pd["cstrategy"] = X_pd["strategy"].cumsum().apply(np.exp)
         X_pd["creturns"] = X_pd.log_return.cumsum().apply(np.exp)
+
+
 
     def trade_fee_net_returns(self, X_pd: pd.DataFrame()):
         X_pd["trades"] = X_pd.position.diff().fillna(0).abs()

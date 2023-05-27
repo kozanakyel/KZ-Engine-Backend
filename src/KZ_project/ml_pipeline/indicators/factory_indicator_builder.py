@@ -2,7 +2,7 @@ from KZ_project.ml_pipeline.indicators.pandasta_indicator import PandasTaIndicat
 from KZ_project.ml_pipeline.indicators.talib_indicator import TalibIndicator
 
 
-class FactoryIndicatorBuilder():
+class FactoryIndicatorBuilder:
     
     @staticmethod
     def create_indicators_columns(df, range_list, logger) -> None:
