@@ -45,14 +45,6 @@ class TalibIndicator(BaseIndicator):
         self.logger = logger
         self.df = df.copy()
 
-    def log(self, text):
-        """
-        Logger implementations for log process
-        """
-        if self.logger:
-            self.logger.append_log(text)
-        else:
-            print(text)
 
     def create_ind_cols(self) -> None:
         """
@@ -316,3 +308,12 @@ class TalibIndicator(BaseIndicator):
         """
         dft['volatility'] = dft['log_return'].std() * 252 ** .5
         self.log(f'Calculated Volatility')
+
+    def log(self, text):
+        """
+        Logger implementations for log process
+        """
+        if self.logger:
+            self.logger.append_log(text)
+        else:
+            print(text)
