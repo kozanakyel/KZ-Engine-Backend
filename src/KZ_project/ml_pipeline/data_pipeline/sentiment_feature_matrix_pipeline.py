@@ -1,3 +1,4 @@
+import os.path
 from datetime import timedelta
 import pandas as pd
 from KZ_project.Infrastructure.file_processor.data_checker import DataChecker
@@ -6,6 +7,7 @@ from KZ_project.ml_pipeline.data_pipeline.featured_matrix_pipeline import Featur
 from KZ_project.Infrastructure.file_processor.file_data_checker import FileDataChecker
 from KZ_project.ml_pipeline.sentiment_analyzer.sentiment_analyzer import SentimentAnalyzer
 from KZ_project.Infrastructure.services.twitter_service.twitter_collection import TwitterCollection
+from KZ_project.Infrastructure.constant import *
 
 
 class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
@@ -63,7 +65,7 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
     ):
         df_tweets = twitter_client.get_tweets_with_interval(hastag, 'en', hour=hour, interval=int(self.interval[0]))
         self.tweet_counts = df_tweets.shape[0]
-        path_df = f'./data/tweets_data/{hastag}/'
+        path_df = os.path.join(DATA_PATH, f'tweets_data/{hastag}/')
         daily_sents, hourly_sents = tsa.create_sent_results_df(hastag, df_tweets, path_df, saved=False)
         return daily_sents, hourly_sents 
     

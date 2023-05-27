@@ -30,7 +30,7 @@ class ForecastEngine():
                                                     is_twitter=self.is_twitter)
         
     def predict_next_candle(self, df_final):    
-        forecaster  = XgboostBinaryForecaster()  
+        forecaster = XgboostBinaryForecaster(eta=0.3)
         model_engine = ModelEngine(
             self.data_creator.symbol, 
             self.hashtag, 
