@@ -1,8 +1,5 @@
 import pandas as pd
-import numpy as np
-
 from binance import ThreadedWebsocketManager
-from datetime import timedelta
 
 from KZ_project.Infrastructure.logger.logger import Logger
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
@@ -21,8 +18,10 @@ class AITrackerService:
             units,
             interval: str,
             logger: Logger = None,
-            is_twitter: bool = True
+            is_twitter: bool = True,
+            twm: ThreadedWebsocketManager = None
     ):
+        self.twm = twm
         self.symbol = symbol
         self.ticker = ticker
         self.bar_length = bar_length
@@ -38,12 +37,9 @@ class AITrackerService:
         self.interval = interval
         self.is_twitter = is_twitter
 
-
-
     def start_trading(self):
 
-        self.twm = ThreadedWebsocketManager()
-        self.twm.start()
+        # self.twm.start()
 
         if self.bar_length in self.available_intervals:
             self.twm.start_kline_socket(callback=self.stream_candles,
@@ -114,7 +110,10 @@ if __name__ == '__main__':
 
 
     def web_socket_trader_starter():
-        interval = '1d'
+
+        twm = ThreadedWebsocketManager()    # for avoid thread sockets errors
+        twm.start()
+        interval = '1h'
         cr_list = [
             {"symbol": "BTCUSDT", "name": "btc", "bar_length": "5m"},
             {"symbol": "BNBUSDT", "name": "bnb", "bar_length": "5m"},
@@ -129,7 +128,8 @@ if __name__ == '__main__':
                 client=client,
                 units=20,
                 interval=interval,
-                is_twitter=False
+                is_twitter=True,
+                twm=twm
             )
 
             trader_c_list.append(trader_coin_d)
