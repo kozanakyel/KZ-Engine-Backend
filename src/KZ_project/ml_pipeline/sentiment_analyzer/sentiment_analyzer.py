@@ -1,4 +1,3 @@
-import pandas as pd
 from collections import Counter
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 # nltk.download('stopwords')
@@ -24,12 +23,6 @@ class SentimentAnalyzer:
         self.lang = lang
         self.logger = logger
         self.sid = SentimentIntensityAnalyzer()
-
-    def log(self, text):
-        if self.logger:
-            self.logger.append_log(text)
-        else:
-            print(text)
 
     def create_sentiment_scores(self, df_tweets: pd.DataFrame()) -> pd.DataFrame():
         df = self.cleaning_tweet_data(df_tweets)
@@ -115,7 +108,8 @@ class SentimentAnalyzer:
         return score
 
     def translate_text(self, text, src='tr', dest='en'):
-        """For translate sentences Checking task the input is None or not None,
+        """
+        For translate sentences Checking task the input is None or not None,
            Because mostly you can encounter the TypeError because of error inside the googletranslator
            bug.
 
@@ -136,14 +130,9 @@ class SentimentAnalyzer:
 
     def get_sentiment_scores(self, df: pd.DataFrame()):
         df_temp = df.copy()
-        tweet_col = 'text'
         if self.lang == 'tr':
-            tweet_col = 'text_to_en'
             self.log(f'Started Turkish to English translate Process')
-            # translator = Translator(service_urls=['translate.googleapis.com'])
             df_temp['text'] = df_temp['text'].progress_apply(self.translate_text, src='tr', dest='en')
-            # df_temp[tweet_col] = df_temp['text'].apply(translator.translate,src='tr',dest='en').progress_apply(
-            # getattr,args=('text',))
 
         df_temp['scores'] = df_temp['text'].apply(lambda review: self.sid.polarity_scores(review))
         df_temp['compound'] = df_temp['scores'].apply(lambda score_dict: score_dict['compound'])
@@ -271,3 +260,9 @@ class SentimentAnalyzer:
                                        'verticalalignment': 'bottom'})
         plt.axis('off')
         plt.tight_layout()
+
+    def log(self, text):
+        if self.logger:
+            self.logger.append_log(text)
+        else:
+            print(text)
