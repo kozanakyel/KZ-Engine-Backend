@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Blueprint
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from flask_sqlalchemy import SQLAlchemy
@@ -19,6 +19,9 @@ orm.metadata.create_all(engine)
 
 app = Flask(__name__)
 
+kz_blueprint = Blueprint('kz', __name__)
+
+
 # CORs policy from local development problem
 CORS(app)
 
@@ -28,7 +31,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 
-@app.route("/crypto", methods=["GET"])
+@kz_blueprint.route("/crypto", methods=["GET"])
 def get_crypto():
     session = get_session()
     repo = CryptoRepository(session)
@@ -45,7 +48,7 @@ def get_crypto():
     return result.json(), 201
 
 
-@app.route("/forecast_model", methods=["GET"])
+@kz_blueprint.route("/forecast_model", methods=["GET"])
 def get_forecast_model():
     session = get_session()
     repo = ForecastModelRepository(session)
@@ -63,7 +66,7 @@ def get_forecast_model():
         return {"message": "Searching AI model is not found!"}, 400
 
 
-@app.route("/signal_tracker", methods=["POST"])
+@kz_blueprint.route("/signal_tracker", methods=["POST"])
 def get_signal_tracker():
     session = get_session()
     repo_fm = ForecastModelRepository(session)
@@ -91,7 +94,7 @@ def get_signal_tracker():
         return {"message": "This AI model is not found!"}, 400
 
 
-@app.route("/signal_tracker_all", methods=["POST"])
+@kz_blueprint.route("/signal_tracker_all", methods=["POST"])
 def get_signal_tracker_all():
     """Fetch all unique models with symbol and last created date but 
     if we have models that same paramaters and 
