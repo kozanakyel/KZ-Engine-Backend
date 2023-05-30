@@ -17,16 +17,16 @@ engine = create_engine(config.get_postgres_uri())
 get_session = sessionmaker(bind=engine)
 orm.metadata.create_all(engine)
 
-
 app = Flask(__name__)
 
 # CORs policy from local development problem
-CORS(app) 
+CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = config.get_postgres_uri()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
 
 @app.route("/crypto", methods=["GET"])
 def get_crypto():
@@ -38,8 +38,8 @@ def get_crypto():
             repo,
             session
         )
-        
-    except (services.InvalidName) as e:
+
+    except services.InvalidName as e:
         return {"message": str(e)}, 400
 
     return result.json(), 201
@@ -49,14 +49,14 @@ def get_crypto():
 def get_forecast_model():
     session = get_session()
     repo = ForecastModelRepository(session)
-    
+
     result = services.get_forecast_model(
-            request.json["symbol"],
-            request.json["interval"],
-            request.json["ai_type"],
-            repo,
-            session
-        )
+        request.json["symbol"],
+        request.json["interval"],
+        request.json["ai_type"],
+        repo,
+        session
+    )
     if result:
         return result.json(), 201
     else:
@@ -68,15 +68,15 @@ def get_signal_tracker():
     session = get_session()
     repo_fm = ForecastModelRepository(session)
     repo = SignalTrackerRepository(session)
-    
+
     result_fm = services.get_forecast_model(
-            request.json["symbol"],
-            request.json["interval"],
-            request.json["ai_type"],
-            repo_fm,
-            session
-        )
-    
+        request.json["symbol"],
+        request.json["interval"],
+        request.json["ai_type"],
+        repo_fm,
+        session
+    )
+
     if result_fm:
         result = services.get_signal_tracker(
             result_fm.id,
@@ -89,7 +89,8 @@ def get_signal_tracker():
             return {"message": "This Tracker is not found!"}, 400
     else:
         return {"message": "This AI model is not found!"}, 400
-    
+
+
 @app.route("/signal_tracker_all", methods=["POST"])
 def get_signal_tracker_all():
     """Fetch all unique models with symbol and last created date but 
@@ -102,27 +103,27 @@ def get_signal_tracker_all():
     session = get_session()
     repo_fm = ForecastModelRepository(session)
     repo_sg = SignalTrackerRepository(session)
-    
+
     model_list = services.get_fm_models_list_all_unique_symbols(
         request.json["interval"],
-        request.json["ai_type"],        
-        repo_fm, 
+        request.json["ai_type"],
+        repo_fm,
         session
     )
-    #print(model_list)
+    # print(model_list)
     signal_tracker_list = []
     for i in model_list:
-        
-        #print(i.id)
+
+        # print(i.id)
         res_signal = services.get_signal_tracker(
             i.id, repo_sg, session
         )
-        #print(i.symbol)
+        # print(i.symbol)
         if res_signal:
             signal_tracker_list.append(res_signal.json())
-    
-    #json_obj_list = [i.json() for i in model_list]
-    #print(json_obj_list)
+
+    # json_obj_list = [i.json() for i in model_list]
+    # print(json_obj_list)
     # json_output = json.dumps(json_obj_list)
     return signal_tracker_list, 201
 
@@ -144,7 +145,6 @@ def add_crypto():
         return {"message": str(e)}, 400
     return "OK", 201
 """
-
 
 """
 @app.route("/add_signal_tracker", methods=["POST"])

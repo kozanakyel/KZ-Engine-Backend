@@ -59,7 +59,8 @@ API_HOST=127.0.0.1
 Then we can ready for running application. Firstly you must start the web api project part.
 
 ```
-$ python src/app.py
+$ export FLASK_APP=src/KZ_project/webapi/app.py
+$ flask run
 ```
 
 If ypu can track and getting instantly model prediction for 5 coins(BTCUSDT, BNBUSDT, ETHUSDT, XRPUSDT, DOGEUSDT). you must run this command:
