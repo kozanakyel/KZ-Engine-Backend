@@ -23,7 +23,7 @@ kz_blueprint = Blueprint('kz', __name__)
 
 
 # CORs policy from local development problem
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST"], "headers": "Content-Type"}})
 
 app.config['SQLALCHEMY_DATABASE_URI'] = config.get_postgres_uri()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
