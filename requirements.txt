@@ -23,3 +23,5 @@ flask_cors
 flask-sqlalchemy
 gunicorn
 pytest
+langchain
+openai

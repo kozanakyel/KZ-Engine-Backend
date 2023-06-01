@@ -22,7 +22,7 @@ app = Flask(__name__)
 kz_blueprint = Blueprint('kz', __name__)
 
 
-# CORs policy from local development problem
+# CORS policy from local development problem
 CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST"], "headers": "Content-Type"}})
 
 app.config['SQLALCHEMY_DATABASE_URI'] = config.get_postgres_uri()
