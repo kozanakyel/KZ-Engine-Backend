@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 import os
 import re
 
+from KZ_project.webapi.services.trading_advice_service import *
+
 load_dotenv()
 
 gpt_blueprint = Blueprint('gptverse', __name__)
@@ -30,3 +32,22 @@ def post_question_to_llm():
 
     # Return the extracted response as JSON
     return jsonify({'response': extract_n[2:]})
+
+
+@gpt_blueprint.route('/trading_advisor', methods=['POST'])
+def post_trade_advice():
+    symbol = request.json['symbol']
+    try:
+        rsi_l, ema7_l, ema13_l = get_ohlc_data(symbol)
+    except KeyError as e:
+        return {"message": str(e)}, 400
+    openai = create_openai_model()
+    fewshot = create_fewshot_template()
+
+    if ema7_l >= ema13_l:
+        query_test = create_rsi_ema_query(10, rsi_l, 7, 13)
+    else:
+        query_test = create_rsi_ema_query(10, rsi_l, 13, 7)
+    advice_test = get_response_llm(openai, fewshot, query_test)
+
+    return jsonify({'response': advice_test[2:]}), 201

@@ -2,7 +2,7 @@ from KZ_project.webapi.entrypoints.flask_app import app, kz_blueprint
 from KZ_project.webapi.entrypoints.gptverse_app import gpt_blueprint
 
 # gunicorn --chdir /mnt/c/Users/kozan/Desktop/Sen_Des_Proj/
-# KZ-forecasting-engine-Backend/src/KZ_project/webapi --bind 127.0.0.1:5005 app:app
+# KZ-forecasting-engine-Backend/src/KZ_project/webapi --bind 0.0.0.0:5005 app:app
 
 # export FLASK_APP=src/KZ_project/webapi/app.py
 # flask run
