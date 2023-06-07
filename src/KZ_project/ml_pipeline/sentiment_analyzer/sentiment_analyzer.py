@@ -190,42 +190,12 @@ class SentimentAnalyzer:
         self.log(f'Concatenation for sentiment score tweets and indicator Matrix data')
         return result
 
-    def create_sent_results_df(self, symbol: str, df_tweets: pd.DataFrame(), path_df: str, saved: bool = True) -> tuple:
-        sent_day_file_df = f'{symbol}_day.csv'
-        sent_hour_file_df = f'{symbol}_hour.csv'
-        if not os.path.exists(os.path.join(path_df, sent_day_file_df)):
-            os.makedirs(path_df, exist_ok=True)
-            with open(os.path.join(path_df, sent_day_file_df), mode='a'):
-                pass
-            df = self.create_sentiment_scores(df_tweets)
+    def create_sent_results_df(self, df_tweets: pd.DataFrame()) -> tuple:
 
-            df_result_day = self.get_sent_with_mean_interval(df, interval='1d')
-            df_result_hour = self.get_sent_with_mean_interval(df, interval='1h')
+        df = self.create_sentiment_scores(df_tweets)
 
-            if saved:
-                df_result_day.to_csv(os.path.join(path_df, sent_day_file_df))
-                df_result_hour.to_csv(os.path.join(path_df, sent_hour_file_df))
-                self.log(f'Sentiment scores Wrote to file {sent_day_file_df} {sent_hour_file_df}')
-        else:
-            sent_day_df = pd.read_csv(os.path.join(path_df, sent_day_file_df), index_col=[0], parse_dates=True)
-            sent_hour_df = pd.read_csv(os.path.join(path_df, sent_hour_file_df), index_col=[0], parse_dates=True)
-
-            df = self.create_sentiment_scores(df_tweets)
-
-            df_result_day = self.get_sent_with_mean_interval(df, interval='1d')
-            df_result_day.index = pd.to_datetime(df_result_day.index)
-            sent_tweets_d = pd.concat([sent_day_df, df_result_day[df_result_day.index > sent_day_df.index[-1]]])
-
-            df_result_hour = self.get_sent_with_mean_interval(df, interval='1h')
-            df_result_hour.index = pd.to_datetime(df_result_hour.index)
-            sent_tweets_h = pd.concat([sent_hour_df, df_result_hour[df_result_hour.index > sent_hour_df.index[-1]]])
-
-            # print(f'snet_tweets_h : {sent_tweets_h}\nsen_hour_df {sent_hour_df}\ndf_result_hour {df_result_hour}')
-
-            if saved:
-                sent_tweets_d.to_csv(os.path.join(path_df, sent_day_file_df))
-                sent_tweets_h.to_csv(os.path.join(path_df, sent_hour_file_df))
-                self.log(f'Sentiment scores Writed to file {sent_day_file_df} {sent_hour_file_df}')
+        df_result_day = self.get_sent_with_mean_interval(df, interval='1d')
+        df_result_hour = self.get_sent_with_mean_interval(df, interval='1h')
 
         return df_result_day, df_result_hour
 

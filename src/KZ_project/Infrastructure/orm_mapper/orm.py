@@ -4,10 +4,19 @@ from sqlalchemy.orm import relationship, registry
 from KZ_project.core.domain.crypto import Crypto
 from KZ_project.core.domain.forecast_model import ForecastModel
 from KZ_project.core.domain.signal_tracker import SignalTracker
+from KZ_project.core.domain.user import User
 
 mapper_registry = registry()
 
 metadata = MetaData()
+
+users = Table(
+    "users",
+    metadata,
+    Column("wallet", String(200), primary_key=True),
+    Column("username", String(40)),
+    Column("email", String(100))
+)
 
 cryptos = Table(
     "cryptos",
@@ -48,6 +57,7 @@ signal_trackers = Table(
 
 
 def start_mappers():
+    user_mapper = mapper_registry.map_imperatively(User, users)
     crypto_mapper = mapper_registry.map_imperatively(Crypto, cryptos)
     forecast_model_mapper = mapper_registry.map_imperatively(ForecastModel, forecast_models,
                                                              properties={

@@ -65,8 +65,7 @@ class SentimentFeaturedMatrixPipeline(FeaturedMatrixPipeline):
     ):
         df_tweets = twitter_client.get_tweets_with_interval(hastag, 'en', hour=hour, interval=int(self.interval[0]))
         self.tweet_counts = df_tweets.shape[0]
-        path_df = os.path.join(DATA_PATH, f'tweets_data/{hastag}/')
-        daily_sents, hourly_sents = tsa.create_sent_results_df(hastag, df_tweets, path_df, saved=False)
+        daily_sents, hourly_sents = tsa.create_sent_results_df(df_tweets)
         return daily_sents, hourly_sents 
     
     def construct_client_twt_tsa_hourly_twt_datamanipulation_logger(self, hastag: str) -> tuple:

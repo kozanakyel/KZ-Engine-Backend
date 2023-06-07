@@ -1,5 +1,5 @@
-import tweepy, datetime
-from tweepy import OAuthHandler
+import datetime
+from tweepy import OAuth1UserHandler
 import tweepy
 import pandas as pd
 import os
@@ -8,25 +8,35 @@ import datetime
 from datetime import timedelta as td
 from KZ_project.Infrastructure.logger.logger import Logger
 import warnings
+
 warnings.filterwarnings('ignore')
 
 load_dotenv()
 
-access_token=os.getenv('TW_access_token')
-access_token_secret=os.getenv('TW_access_token_secret')
-consumer_key=os.getenv('TW_consumer_key')
-consumer_secret=os.getenv('TW_consumer_secret')
-MY_BEARER_TOKEN=os.getenv('TW_BEARER_TOKEN')
+access_tokent = os.getenv('TW_access_token')
+access_token_secrett = os.getenv('TW_access_token_secret')
+consumer_keyt = os.getenv('TW_consumer_key')
+consumer_secrett = os.getenv('TW_consumer_secret')
+MY_BEARER_TOKENt = os.getenv('TW_BEARER_TOKEN')
+
 
 class TwitterCollection():
-    def __init__(self, access_token=access_token, access_token_secret=access_token_secret,
-                    consumer_key=consumer_key, consumer_secret=consumer_secret, 
-                    bearer_token=MY_BEARER_TOKEN, logger: Logger=None, connection: bool=True):
+    def __init__(
+            self,
+            access_token=access_tokent,
+            access_token_secret=access_token_secrett,
+            consumer_key=consumer_keyt,
+            consumer_secret=consumer_secrett,
+            bearer_token=MY_BEARER_TOKENt,
+            logger: Logger = None,
+            connection: bool = True
+    ):
+        self.api = None
         self.access_token = access_token
-        self.access_token_secret=access_token_secret
-        self.consumer_key=consumer_key
-        self.consumer_secret=consumer_secret
-        self.bearer_token=bearer_token
+        self.access_token_secret = access_token_secret
+        self.consumer_key = consumer_key
+        self.consumer_secret = consumer_secret
+        self.bearer_token = bearer_token
         self.logger = logger
         self.connect = connection
         if connection:
@@ -41,23 +51,46 @@ class TwitterCollection():
 
     def connect_twitter(self):
         try:
-            auth = OAuthHandler(self.consumer_key, self.consumer_secret)
-            auth.set_access_token(self.access_token, self.access_token_secret)
-            api = tweepy.API(auth, wait_on_rate_limit=True)
+            print(
+                f'tww cred acc {access_tokent} accs {access_token_secrett} cons {consumer_keyt} ttype {type(consumer_keyt)} conss {consumer_secrett} bea {MY_BEARER_TOKENt}')
+            # auth = OAuth1UserHandler(self.consumer_key, self.consumer_secret)
+            # auth.set_access_token(self.access_token, self.access_token_secret)
+            self.api = tweepy.Client(
+                access_token=self.access_token,
+                access_token_secret=self.access_token_secret,
+                consumer_key=self.consumer_key,
+                consumer_secret=self.consumer_secret,
+                bearer_token=self.bearer_token,
+                wait_on_rate_limit=True
+            )
             self.log("Authentication Successfull")
         except:
             self.log("Error: Authentication Failed")
 
+    def post_tweet_with_media(self, tweet: str, media_path: str = None):
+        tweet = tweet
+        media_path = media_path
+
+        if media_path:
+            media = self.api.media_upload(media_path)
+
+            # Post the tweet with the media ID
+            response = self.api.create_tweet(text=tweet, media_ids=[media.media_id])
+        else:
+            response = self.api.create_tweet(text=tweet)
+        return response
+
     def get_tweets(self, search_query: str, lang: str, start_time: str, end_time: str):
         query = f"#{search_query} lang:{lang} -is:retweet"
         tweets = self.client.search_recent_tweets(query=query,
-                                         start_time=start_time,
-                                         end_time=end_time,
-                                         tweet_fields = ["created_at", "text", "source"],
-                                         user_fields = ["name", "username", "location", "verified", "description"],
-                                         max_results = 17,      # max result is 100
-                                         expansions='author_id'
-                                        ) 
+                                                  start_time=start_time,
+                                                  end_time=end_time,
+                                                  tweet_fields=["created_at", "text", "source"],
+                                                  user_fields=["name", "username", "location", "verified",
+                                                               "description"],
+                                                  max_results=17,  # max result is 100
+                                                  expansions='author_id'
+                                                  )
         return tweets
 
     def converts_tweets_pd(self, tweets: dict) -> pd.DataFrame():
@@ -65,21 +98,21 @@ class TwitterCollection():
         for user in tweets.includes.get('users', ''):
             for tweet, user in zip(tweets.data, tweets.includes['users']):
                 tweet_info = {
-                'created_at': tweet.created_at,
-                'text': tweet.text,
-                'source': tweet.source,
-                'name': user.name,
-                'username': user.username,
-                'location': user.location,
-                'verified': user.verified,
-                'description': user.description
+                    'created_at': tweet.created_at,
+                    'text': tweet.text,
+                    'source': tweet.source,
+                    'name': user.name,
+                    'username': user.username,
+                    'location': user.location,
+                    'verified': user.verified,
+                    'description': user.description
                 }
                 tweet_info_ls.append(tweet_info)
         tweets_df = pd.DataFrame(tweet_info_ls)
         return tweets_df
 
-
-    def get_tweets_with_interval(self, hashtag: str, lang: str, start_time=None, finish_time=None, hour=24, interval = 1) -> pd.DataFrame():
+    def get_tweets_with_interval(self, hashtag: str, lang: str, start_time=None, finish_time=None, hour=24,
+                                 interval=1) -> pd.DataFrame():
         now = datetime.datetime.now(datetime.timezone.utc)
         if start_time == None:
             start_time = now - td(hours=hour)
@@ -87,7 +120,8 @@ class TwitterCollection():
             finish_time = now
         end_time = start_time + td(hours=interval)
 
-        self.log(f'For hashtag {hashtag.upper()} with language {lang.upper()} start time: {start_time}, end time: {start_time + td(hours=hour)}')
+        self.log(
+            f'For hashtag {hashtag.upper()} with language {lang.upper()} start time: {start_time}, end time: {start_time + td(hours=hour)}')
         result_tweets = pd.DataFrame()
         while end_time <= finish_time - td(hours=interval):
             temp_tweets = self.get_tweets(hashtag, lang, start_time.isoformat(), end_time.isoformat())
@@ -106,17 +140,18 @@ class TwitterCollection():
         df_tweets.drop(columns=['source', 'name', 'location', 'verified', 'description'], axis=1, inplace=True)
         blanks = []  # start with an empty list
 
-        for i, created_at, text, *others in df_tweets.itertuples():  
-            if type(text)==str:            
-                if text.isspace():         
-                    blanks.append(i)    
-    
+        for i, created_at, text, *others in df_tweets.itertuples():
+            if type(text) == str:
+                if text.isspace():
+                    blanks.append(i)
+
         df_tweets.drop(blanks, inplace=True)
 
     def write_tweets_csv(self, df: pd.DataFrame(), pathdf: str, filedf: str) -> None:
         if not os.path.exists(os.path.join(pathdf, filedf)):
             os.makedirs(pathdf, exist_ok=True)
-            with open(os.path.join(pathdf, filedf), mode='a'): pass
+            with open(os.path.join(pathdf, filedf), mode='a'):
+                pass
             print
             df.to_csv(os.path.join(pathdf, filedf))
             self.log(f'Tweeets writes to File to first time: {pathdf} {filedf}')
@@ -146,7 +181,7 @@ class TwitterCollection():
 
     def throw_unnamed_cols(self, df_tweet) -> pd.DataFrame():
         index_columns_list = ['created_at', 'text', 'source', 'name', 'username',
-              'location', 'verified', 'description']
+                              'location', 'verified', 'description']
         df_tweet = df_tweet.drop([i for i in df_tweet.columns.to_list() if i not in index_columns_list], axis=1)
         df_tweet.reset_index(inplace=True)
         if 'index' in df_tweet.columns:

@@ -8,7 +8,7 @@ from KZ_project.Infrastructure.services.binance_service.binance_client import Bi
 from KZ_project.ml_pipeline.sentiment_analyzer.sentiment_analyzer import SentimentAnalyzer
 from KZ_project.Infrastructure.services.twitter_service.twitter_collection import TwitterCollection
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
-from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
+from KZ_project.Infrastructure.constant import DATA_PATH
 
 
 def the_most(dataframe, percent=2, length=8, MAtype=1) -> pd.DataFrame:
@@ -59,6 +59,14 @@ if __name__ == '__main__':
     from dotenv import load_dotenv
 
     load_dotenv()
+
+    symbol = "btc"
+    client_twitter = TwitterCollection()
+    tsa = SentimentAnalyzer()
+    df_tweets = client_twitter.get_tweets_with_interval("btc", 'en', hour=24 * 2, interval=2)
+    daily_sents, hourly_sents = tsa.create_sent_results_df(df_tweets)
+    print(daily_sents)
+
     api_key = os.getenv('BINANCE_API_KEY')
     api_secret_key = os.getenv('BINANCE_SECRET_KEY')
 
@@ -71,19 +79,9 @@ if __name__ == '__main__':
         range_list=[i for i in range(5, 21)],
         period=None,
         interval="1h",
-        start_date="2022-12-01",
+        start_date="2023-02-01",
         client=client
     )
-
-    symbol = "btc"
-    # client_twitter = TwitterCollection()
-    # tsa = SentimentAnalyzer()
-    # df_tweets = client_twitter.get_tweets_with_interval("btc", 'en', hour=24 * 7, interval=1)
-    # path_df = f'./KZ_project/data/tweets_data/{symbol}/'
-    # file_df = f'{symbol}_tweets.csv'
-    # # df_tweets = client_twitter.get_tweets_df(symbol, path_df, file_df)
-    # # client_twitter.write_tweets_csv(df_tweets, path_df, file_df)
-    # daily_sents, hourly_sents = tsa.create_sent_results_df(symbol, df_tweets, path_df, saved=False)
 
     df = the_most(dataf, MAtype=1)
     df = df.iloc[30:].copy()
@@ -91,7 +89,7 @@ if __name__ == '__main__':
     up_to_down = (df['Trend_8_2'].shift(1) == 'up') & (df['Trend_8_2'] == 'down')
     down_to_up = (df['Trend_8_2'].shift(1) == 'down') & (df['Trend_8_2'] == 'up')
 
-    df.plot(y=["close", "MA_8_2", "MOST_8_2"])
+    df.plot(y=["close", "MA_8_2", "MOST_8_2"], title='BTCUSDT MOST indicator')
 
     plt.scatter(df.index[up_to_down], df['close'][up_to_down], marker='^', color='green', label='Buy')
     plt.scatter(df.index[down_to_up], df['close'][down_to_up], marker='v', color='red', label='Sell')
@@ -113,14 +111,13 @@ if __name__ == '__main__':
             capital = capital * (1 + pl)  # Update capital
 
     plt.legend()
-    plt.show()
+    plt.savefig(os.path.join(DATA_PATH, 'tweet_plot.png'))
 
     # Calculate the cumulative return
     cumulative_return = (capital - 1000) / 1000
-
-    # Print the cumulative return
-    print("Cumulative Return: {:.2%}".format(cumulative_return))
-
-    # df = df.rename(columns={'compound_total': 'twt_sentiment_score'})
-    # daily_sents.plot()
-    # plt.show()
+    c_return_string = f"MOST indicator trend is: {df['Trend_8_2'].iloc[-1].upper()}.\n"
+    output_string = daily_sents.to_string(header=False)
+    twitter_sent_scores = f'Last 3 day Twitter Sentiment Scores for #Bitcoin:\n{output_string}\n'
+    last_tweet_update = c_return_string + twitter_sent_scores
+    response_twt = client_twitter.post_tweet_with_media(last_tweet_update, os.path.join(DATA_PATH, 'tweet_plot.png'))
+    print(response_twt)

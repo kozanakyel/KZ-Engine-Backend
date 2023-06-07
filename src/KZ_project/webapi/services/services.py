@@ -8,10 +8,41 @@ from KZ_project.core.domain.signal_tracker import SignalTracker
 
 from KZ_project.core.domain.crypto import Crypto
 from KZ_project.core.adapters.repository import AbstractBaseRepository
+from KZ_project.core.domain.user import User
 
 
 class InvalidName(Exception):
     pass
+
+
+def add_user(
+        wallet: str, username: str, email: str,
+        repo: AbstractBaseRepository, session,
+) -> None:
+    # print(f'wallet list: {wallet} and type {type(username)}')
+    user_list = repo.list()
+    # print(f'wallet list: {user_list} and type {type(user_list)}')
+    user_wallet_list = [x.wallet for x in user_list]
+    # print(f'wallet list: {user_wallet_list} and type {type(user_wallet_list)}')
+
+    if wallet in user_wallet_list:
+        raise InvalidName(f'Error This Wallet is exist: {wallet}')
+    repo.add(User(wallet, username, email))
+    session.commit()
+
+
+def get_user(
+        wallet: str,
+        repo: AbstractBaseRepository, session,
+):
+    user_list = repo.list()
+    user_wallet_list = [x.wallet for x in user_list]
+
+    if wallet not in user_wallet_list:
+        raise InvalidName(f'Error This Wallet is not exist: {wallet}')
+    result = repo.get(wallet)
+    session.commit()
+    return result
 
 
 def add_crypto(

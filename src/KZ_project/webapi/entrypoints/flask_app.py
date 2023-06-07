@@ -9,6 +9,7 @@ from KZ_project.Infrastructure.orm_mapper import orm
 from KZ_project.core.adapters.crypto_repository import CryptoRepository
 from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
 from KZ_project.core.adapters.signaltracker_repository import SignalTrackerRepository
+from KZ_project.core.adapters.user_repository import UserRepository
 from KZ_project.webapi.services import services
 import KZ_project.Infrastructure.config as config
 
@@ -21,7 +22,6 @@ app = Flask(__name__)
 
 kz_blueprint = Blueprint('kz', __name__)
 
-
 # CORS policy from local development problem
 CORS(app, resources={r"/*": {"origins": "*", "methods": ["GET", "POST"], "headers": "Content-Type"}})
 
@@ -29,6 +29,40 @@ app.config['SQLALCHEMY_DATABASE_URI'] = config.get_postgres_uri()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+
+@kz_blueprint.route("/add_user", methods=["POST"])
+def add_user():
+    session = get_session()
+    repo = UserRepository(session)
+    try:
+        services.add_user(
+            request.json["wallet"],
+            request.json["username"],
+            request.json["email"],
+            repo,
+            session,
+        )
+    except services.InvalidName as e:
+        return {"message": str(e)}, 400
+    return "OK", 201
+
+
+@kz_blueprint.route("/user", methods=["POST"])
+def get_user():
+    session = get_session()
+    repo = UserRepository(session)
+    try:
+        result = services.get_user(
+            request.json["wallet"],
+            repo,
+            session
+        )
+
+    except services.InvalidName as e:
+        return {"message": str(e)}, 400
+
+    return result.json(), 201
 
 
 @kz_blueprint.route("/crypto", methods=["GET"])
