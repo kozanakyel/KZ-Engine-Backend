@@ -6,7 +6,7 @@ from KZ_project.webapi.entrypoints.gptverse_app import gpt_blueprint
 
 # export FLASK_APP=src/KZ_project/webapi/app.py
 # flask run
-# flask run --host=0.0.0.0 --port=5000
+# flask run --host=0.0.0.0 --port=5005
 
 app.register_blueprint(kz_blueprint)
 app.register_blueprint(gpt_blueprint)
