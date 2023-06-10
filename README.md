@@ -1,4 +1,4 @@
-# KZ Forecasting Engine with Sentiment Analysis and Decision Trees
+# GPTVERSE Forecasting Engine with Sentiment Analysis and Decision Trees
 The objective of this project is to use various techniques such as Decision Trees, Sentiment Analysis with Natural Language Processing, and Japanese Candlestick Art to forecast the structure of the next candle for popular cryptocurrencies like Bitcoin, Ethereum, Binance coin, Ripple, and Doge coin. The predictions will be made using a binary format and will aim to determine whether the price movement of the cryptocurrencies in the market will increase or decrease within the next 1-2 hours based on the candle structure.
 
 In addition to these techniques, the research also involves studying other technical analysis and indicator structures, as well as incorporating Twitter data and sentiment analysis scores into the model.
@@ -80,7 +80,7 @@ Below picture you can see model importance for this model and DOGE coin
 
 ![DOGE coin Feature importance for AI model](/data/plots/model_evaluation/doge/DOGEUSDT_binance_1h_model_importance.png)
 
-## AI pipeline and KZ Engine Logic
+## AI pipeline and GPTVERSE Engine Logic
 
 ![Project Logic Flow](/assets/images/KZ_project.jpg)
 
