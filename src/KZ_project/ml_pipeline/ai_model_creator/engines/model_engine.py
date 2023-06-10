@@ -106,13 +106,14 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
             print(f'model engine model save: {res_str}')
 
         # self.xgb.save_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}")    
-
-        self.create_retuns_data(xtest, ytest)
+        y_pred = self.xgb.model.predict(xtest)
+        self.create_retuns_data(xtest, y_pred)
         bt_json = self.trade_fee_net_returns(xtest)
 
         print(f'Accuracy Score: {score} last datetime_t: {X.index[-1]}')
 
-        return xtest.index[-1], ytest[-1], json.dumps(bt_json), score
+
+        return xtest.index[-1], y_pred[-1], json.dumps(bt_json), score
 
     def create_model_and_prediction(self, df_final: pd.DataFrame()) -> tuple:
         y = df_final.feature_label
@@ -130,6 +131,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         print(f'Accuracy Score: {accuracy_score} last datetime_t: {X.index[-1]}')
         xtest = self.xgb.X_test  # last addeded tro backtest data for modeliing hourly
         ytest = self.xgb.y_test
+        y_pred = self.xgb.model.pr
         return xtest, ytest, accuracy_score, xtest.index[-1], ytest[-1]
 
     def get_strategy_return(self, xtest, ytest):
