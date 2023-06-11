@@ -34,24 +34,31 @@ class FeaturedMatrixPipeline():
         return self.data_creator.interval
     
     def create_aggregate_indicator_matrix(self):
+        """Return Calculated and reindexed sorted Indicators colum dataframe...
+
+        Returns:
+            Dataframe
+        """
         agg_ind_matrix = self.data_creator.download_ohlc_from_client()
-        # print(agg_ind_matrix.close)
         agg_ind_matrix = self.data_creator.create_datetime_index(agg_ind_matrix)
         agg_ind_matrix = self.data_creator.column_names_preparation(agg_ind_matrix, self.data_creator.range_list)
-        indicator_df_result = FactoryIndicatorBuilder.create_indicators_columns(agg_ind_matrix, self.data_creator.range_list, logger=self.data_creator.logger)  
+        indicator_df_result = FactoryIndicatorBuilder.create_indicators_columns(
+            agg_ind_matrix, 
+            self.data_creator.range_list, 
+            logger=self.data_creator.logger
+            )  
         agg_ind_matrix = indicator_df_result
         agg_ind_matrix = self.data_creator.reindex_and_sorted_cols(agg_ind_matrix)
         return agg_ind_matrix
         
     def create_aggregate_featured_matrix(self):
         agg_ind_matrix = self.create_aggregate_indicator_matrix()
-        # self.data_creator.df = self.data_creator.download_ohlc_from_client()
-        # self.data_creator.df = self.data_creator.create_datetime_index(self.data_creator.df)
-        # self.data_creator.df = self.data_creator.column_names_preparation(self.data_creator.df, self.data_creator.range_list)
-        # indicator_df_result = FactoryIndicatorBuilder.create_indicators_columns(self.data_creator.df, self.data_creator.range_list, logger=self.data_creator.logger)  
-        # self.data_creator.df = indicator_df_result
-        # self.data_creator.df = self.data_creator.reindex_and_sorted_cols(self.data_creator.df)
-        feature_extractor = FeatureExtractor(agg_ind_matrix, self.data_creator.range_list, self.data_creator.interval, self.data_creator.logger)
+        feature_extractor = FeatureExtractor(
+            agg_ind_matrix, 
+            self.data_creator.range_list, 
+            self.data_creator.interval, 
+            self.data_creator.logger
+            )
         feature_extractor.create_featured_matrix()
         self.agg_featured_matrix = feature_extractor.featured_matrix 
         return self.agg_featured_matrix        

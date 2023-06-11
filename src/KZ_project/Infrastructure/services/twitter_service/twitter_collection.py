@@ -51,8 +51,6 @@ class TwitterCollection():
 
     def connect_twitter(self):
         try:
-            print(
-                f'tww cred acc {access_tokent} accs {access_token_secrett} cons {consumer_keyt} ttype {type(consumer_keyt)} conss {consumer_secrett} bea {MY_BEARER_TOKENt}')
             # auth = OAuth1UserHandler(self.consumer_key, self.consumer_secret)
             # auth.set_access_token(self.access_token, self.access_token_secret)
             self.api = tweepy.Client(
