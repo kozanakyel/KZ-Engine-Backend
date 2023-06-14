@@ -24,6 +24,7 @@ API_PORT = os.getenv('API_PORT')
 API_HOST = os.getenv('API_HOST')
 
 
+
 class YahooConfig:
     SYMBOL = 'BTC-USD'
     SYMBOL_NAME = 'Bitcoin'
