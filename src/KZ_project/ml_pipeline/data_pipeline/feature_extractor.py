@@ -55,24 +55,24 @@ class FeatureExtractor(IBinaryFeatureLabel):
         sample = self.pattern_helper_for_extract_feature(matrix_data)        
         self.norm_features_ind(sample, matrix_data, 'ema', self.range_list)   ##
         # self.norm_features_ind(sample, matrix_data, 'mfi', self.range_list, 100) 
-        # self.norm_features_ind(sample, matrix_data, 'sma', self.range_list)
+        self.norm_features_ind(sample, matrix_data, 'sma', self.range_list)
         # self.norm_pct_change(sample, matrix_data, 'sma', self.range_list)
         self.norm_pct_change(sample, matrix_data, 'rsi', self.range_list)    ###
         # self.norm_pct_change(sample, matrix_data, 'ema', self.range_list)
-        # self.norm_pct_change(sample, matrix_data, 'cci', self.range_list)
-        # self.norm_pct_change(sample, matrix_data, 'cmo', self.range_list)
-        # self.norm_pct_change(sample, matrix_data, 'willr', self.range_list)
-        # self.norm_pct_change(sample, matrix_data, 'mfi', self.range_list)
+        self.norm_pct_change(sample, matrix_data, 'cci', self.range_list)
+        self.norm_pct_change(sample, matrix_data, 'cmo', self.range_list)
+        self.norm_pct_change(sample, matrix_data, 'willr', self.range_list)
+        self.norm_pct_change(sample, matrix_data, 'mfi', self.range_list)
         # self.norm_features_ind(sample, matrix_data, 'wma', self.range_list)
         # self.norm_features_ind(sample, matrix_data, 'tema', self.range_list)
-        # self.norm_features_ind(sample, matrix_data, 'kama', self.range_list)
+        self.norm_features_ind(sample, matrix_data, 'kama', self.range_list)
         # self.norm_features_ind(sample, matrix_data, 'atrr', self.range_list)
         # self.norm_features_ind(sample, matrix_data, 'natr', self.range_list)
         # self.norm_features_ind(sample, matrix_data, 'dema', self.range_list)
         # self.norm_features_ind(sample, matrix_data, 'trima', self.range_list)
         # self.norm_features_ind(sample, matrix_data, 'rsi', self.range_list, 100)   ##
-        # self.norm_range_interval(sample, matrix_data, 'mfi', self.range_list, [75, 25]) ##
-        # self.norm_range_interval(sample, matrix_data, 'rsi', self.range_list, [75, 25])
+        self.norm_range_interval(sample, matrix_data, 'mfi', self.range_list, [75, 25]) ##
+        self.norm_range_interval(sample, matrix_data, 'rsi', self.range_list, [75, 25])
         self.norm_range_interval(sample, matrix_data, 'cmo', self.range_list, [50, -50])
         self.norm_range_interval(sample, matrix_data, 'cci', self.range_list, [100, -100])
         # self.norm_range_interval(sample, matrix_data, 'willr', self.range_list, [-30, -70])
