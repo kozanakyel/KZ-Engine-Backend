@@ -6,7 +6,7 @@ from redis.commands.search.field import VectorField
 from redis.commands.search.field import TextField, NumericField
 from redis.commands.search.query import Query
 
-from config import EMBEDDINGS_MODEL, PREFIX, VECTOR_FIELD_NAME
+from KZ_project.Infrastructure.redis_db.config import EMBEDDINGS_MODEL, PREFIX, VECTOR_FIELD_NAME
 
 # Get a Redis connection
 def get_redis_connection(host='localhost',port='6379',db=0):

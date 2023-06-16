@@ -3,6 +3,7 @@ from langchain.llms import OpenAI
 from dotenv import load_dotenv
 import os
 import re
+from KZ_project.Infrastructure.services.redis_chatbot_service.index_redis_service import IndexRedisService
 
 from KZ_project.webapi.services.trading_advice_service import *
 
@@ -32,6 +33,14 @@ def post_question_to_llm():
 
     # Return the extracted response as JSON
     return jsonify({'response': extract_n[2:]})
+
+
+@gpt_blueprint.route('/ai_project_assistant', methods=['POST'])
+def post_assistant_response():
+    f1_query = request.json['f1_query']
+    redis_service = IndexRedisService()
+    response_f1 = redis_service.response_f1_query(f1_query)
+    return jsonify({'response': response_f1}), 201
 
 
 @gpt_blueprint.route('/trading_advisor', methods=['POST'])

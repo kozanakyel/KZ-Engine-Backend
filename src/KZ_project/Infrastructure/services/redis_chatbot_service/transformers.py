@@ -4,8 +4,8 @@ import openai
 import pandas as pd
 import numpy as np
 
-from config import TEXT_EMBEDDING_CHUNK_SIZE, EMBEDDINGS_MODEL
-from database import load_vectors
+from KZ_project.Infrastructure.redis_db.config import TEXT_EMBEDDING_CHUNK_SIZE, EMBEDDINGS_MODEL
+from KZ_project.Infrastructure.redis_db.database import load_vectors
 
 
 def get_col_average_from_list_of_lists(list_of_lists):

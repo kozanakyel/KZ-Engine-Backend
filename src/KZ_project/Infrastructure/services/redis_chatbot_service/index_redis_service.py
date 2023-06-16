@@ -5,8 +5,7 @@ import textract
 from dotenv import load_dotenv
 from tqdm import tqdm
 
-from database import get_redis_connection
-from database import get_redis_results
+from KZ_project.Infrastructure.redis_db.database import get_redis_connection, get_redis_results
 
 # Setup Redis
 from redis import Redis
@@ -21,12 +20,12 @@ from redis.commands.search.indexDefinition import (
     IndexType
 )
 
-from config import COMPLETIONS_MODEL, EMBEDDINGS_MODEL, CHAT_MODEL, TEXT_EMBEDDING_CHUNK_SIZE, VECTOR_FIELD_NAME
-
-from transformers import handle_file_string
+from KZ_project.Infrastructure.redis_db.config import COMPLETIONS_MODEL, EMBEDDINGS_MODEL, CHAT_MODEL, TEXT_EMBEDDING_CHUNK_SIZE, VECTOR_FIELD_NAME
+from KZ_project.Infrastructure.services.redis_chatbot_service.transformers import handle_file_string
+from KZ_project.Infrastructure.constant import DATA_PATH
 
 load_dotenv()
-openai_api_key = os.getenv('T_OPENAI_API_KEY')
+openai_api_key = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_KEY'] = openai_api_key
 
 # Constants
@@ -91,7 +90,7 @@ class IndexRedisService:
             handle_file_string((pdf_file, text.decode("utf-8")), tokenizer, self.redis_client, VECTOR_FIELD_NAME,INDEX_NAME)
 
     def get_data_dir(self):
-        return os.path.join('/mnt/c/Users/kozan/Desktop/Sen_Des_Proj/GPT-4-KZEngine-Signal-Interpretation/trading-chat-bot','data')    # change to DATA_PATH pdfs folders
+        return os.path.join(DATA_PATH,'kz_pdfs')    # change to DATA_PATH pdfs folders
     
     def get_pdf_files(self):
         pdf_files = sorted([x for x in os.listdir(self.get_data_dir()) if 'DS_Store' not in x])
@@ -118,9 +117,9 @@ class IndexRedisService:
     
 if __name__ == '__main__':
     redis_service = IndexRedisService()
-    # pdf_files = redis_service.get_pdf_files()
-    # redis_service.index_checker()
-    # redis_service.initiliaze_tokenizer()
-    response_f1 = redis_service.response_f1_query("what are the motivation concept for kzengine?")  
-    print(f'response from our service: {response_f1}')
+    pdf_files = redis_service.get_pdf_files()
+    redis_service.index_checker()
+    redis_service.initiliaze_tokenizer()
+    # response_f1 = redis_service.response_f1_query("what are the motivation concept for kzengine?")  
+    # print(f'response from our service: {response_f1}')
     
