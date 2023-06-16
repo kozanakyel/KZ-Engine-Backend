@@ -25,3 +25,6 @@ gunicorn
 pytest
 langchain
 openai
+redis
+tiktoken
+textract
