@@ -16,8 +16,8 @@ os.environ['OPENAI_API_KEY'] = openai_api_key
 
 
 def create_openai_model(
-        model_name: str = 'text-curie-001',
-        temperature: float = 0.5
+        model_name: str = 'text-davinci-003',
+        temperature: float = 0.7
 ):
     openai = OpenAI(
         # model_name='text-davinci-003',
@@ -148,6 +148,6 @@ if __name__ == '__main__':
     openai = create_openai_model()
     fewshot = create_fewshot_template()
     df = get_ohlc_data(symbol)
-    query_test = create_query(df)
+    query_test = create_query(df, symbol)
     advice_test = get_response_llm(openai, fewshot, query_test)
     print(advice_test)

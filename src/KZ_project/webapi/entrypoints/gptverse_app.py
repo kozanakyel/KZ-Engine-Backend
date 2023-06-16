@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 import os
 import re
 from KZ_project.Infrastructure.services.redis_chatbot_service.index_redis_service import IndexRedisService
-
 from KZ_project.webapi.services.trading_advice_service import *
 
 load_dotenv()
@@ -46,17 +45,11 @@ def post_assistant_response():
 @gpt_blueprint.route('/trading_advisor', methods=['POST'])
 def post_trade_advice():
     symbol = request.json['symbol']
-    try:
-        rsi_l, ema7_l, ema13_l = get_ohlc_data(symbol)
-    except KeyError as e:
-        return {"message": str(e)}, 400
+    print(symbol)
     openai = create_openai_model()
     fewshot = create_fewshot_template()
-
-    if ema7_l >= ema13_l:
-        query_test = create_rsi_ema_query(10, rsi_l, 7, 13)
-    else:
-        query_test = create_rsi_ema_query(10, rsi_l, 13, 7)
+    df = get_ohlc_data(symbol)
+    query_test = create_query(df, symbol)
     advice_test = get_response_llm(openai, fewshot, query_test)
 
-    return jsonify({'response': advice_test[2:]}), 201
+    return jsonify({'response': f'For {symbol}: {advice_test[2:]}'}), 201
