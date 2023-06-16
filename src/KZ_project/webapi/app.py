@@ -1,3 +1,4 @@
+from KZ_project.Infrastructure.services.redis_chatbot_service.index_redis_service import IndexRedisService
 from KZ_project.webapi.entrypoints.flask_app import app, kz_blueprint
 from KZ_project.webapi.entrypoints.gptverse_app import gpt_blueprint
 
@@ -12,4 +13,8 @@ app.register_blueprint(kz_blueprint)
 app.register_blueprint(gpt_blueprint)
 
 if __name__ == '__main__':
+    redis_service = IndexRedisService()
+    pdf_files = redis_service.get_pdf_files()
+    redis_service.index_checker()
+    redis_service.initiliaze_tokenizer()
     app.run(port=5005, host='0.0.0.0')
