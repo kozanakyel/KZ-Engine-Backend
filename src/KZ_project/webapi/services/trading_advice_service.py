@@ -1,20 +1,13 @@
-from datetime import date, timedelta
-
 from dotenv import load_dotenv
 import os
 import pandas as pd
 import pandas_ta as ta
-
-
-import os
-
-load_dotenv()
+import yfinance as yf
 
 from langchain import OpenAI
 from langchain import PromptTemplate
 from langchain import FewShotPromptTemplate
 
-from KZ_project.Infrastructure.services.binance_service.binance_client import BinanceClient
 
 load_dotenv()
 
@@ -114,32 +107,47 @@ def create_fewshot_template():
 def get_response_llm(model, fewshot_template, query: str):
     return model(fewshot_template.format(query=query))
 
+def fetch_data(symbol: str, period: str, interval: str):
+    # Fetch Bitcoin data from Yahoo Finance
+    ohlc_data = yf.download(tickers=symbol, period=period, interval=interval, progress=False)
+    return ohlc_data
+
+
+def calculate_dmi_rsi_mfi(data):
+    data.ta.adx(length=14, append=True)
+    data.ta.rsi(length=14, append=True)
+    data.ta.mfi(length=14, append=True)
+    data = data.dropna(axis=0)
+    return data
+
 
 def create_query(
-    indicator_data
+    indicator_data,
+    symbol
 ):
     rsi_14 = indicator_data.RSI_14.iloc[-1]
     mfi_14 = indicator_data.MFI_14.iloc[-1]
     dmp_14 = indicator_data.DMP_14.iloc[-1]
     dmn_14 = indicator_data.DMN_14.iloc[-1]
     adx_14 = indicator_data.ADX_14.iloc[-1]
-    query = f"RSI indicator value is {rsi_14:.2f}, MFI indicator value is {mfi_14:.2f}, DMP indicator value is {dmp_14:.2f}," \
+    query = f"For {symbol}: RSI indicator value is {rsi_14:.2f}, MFI indicator value is {mfi_14:.2f}, DMP indicator value is {dmp_14:.2f}," \
         f" DMN indicator value is {dmn_14:.2f} and ADX indicator value is {adx_14:.2f}." \
         f" What is your advice for trading for those indicator values?"
     return query
 
 
 def get_ohlc_data(symbol: str):   # 'BTC-USD'
-    df = fetch_data(symbol, '3mo', '1d')
+    df = fetch_data(symbol, '1mo', '1h')
     indicator_data = calculate_dmi_rsi_mfi(df)
 
     return indicator_data
 
 
 if __name__ == '__main__':
+    symbol = 'BTC-USD'
     openai = create_openai_model()
     fewshot = create_fewshot_template()
-    df = get_ohlc_data('BTC-USD')
+    df = get_ohlc_data(symbol)
     query_test = create_query(df)
     advice_test = get_response_llm(openai, fewshot, query_test)
     print(advice_test)
