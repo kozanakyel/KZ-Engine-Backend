@@ -1,22 +1,17 @@
-from flask import Flask, request, jsonify, Blueprint
-from langchain.llms import OpenAI
+from flask import request, jsonify, Blueprint
 from dotenv import load_dotenv
-import os
-import re
-from KZ_project.Infrastructure.services.redis_chatbot_service.index_redis_service import IndexRedisService
+
 from KZ_project.webapi.services.trading_advice_service import *
 
 load_dotenv()
 
 gpt_blueprint = Blueprint('gptverse', __name__)
 
-
-@gpt_blueprint.route('/ai_project_assistant', methods=['POST'])
+@gpt_blueprint.route('/ai_assistant', methods=['POST'])
 def post_assistant_response():
-    f1_query = request.json['f1_query']
-    redis_service = IndexRedisService()
-    response_f1 = redis_service.response_f1_query(f1_query)
-    return jsonify({'response': response_f1}), 201
+    query = request.json['query']
+    response = gptverse_agent.get_response(query)    # gptverse_agent created in servie file
+    return jsonify({'response': response}), 201
 
 
 @gpt_blueprint.route('/trading_advisor', methods=['POST'])

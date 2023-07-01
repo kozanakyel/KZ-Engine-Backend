@@ -7,6 +7,9 @@ import yfinance as yf
 from langchain import OpenAI
 from langchain import PromptTemplate
 from langchain import FewShotPromptTemplate
+from langchain.chat_models import ChatOpenAI
+
+from KZ_project.Infrastructure.services.gptverse_ai_assistant.gptverse_assistant import GptVerseAssistant
 
 
 load_dotenv()
@@ -14,6 +17,39 @@ load_dotenv()
 openai_api_key = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_KEY'] = openai_api_key
 
+
+
+
+verbose = True
+llm = ChatOpenAI(temperature=0.9, openai_api_key=openai_api_key)
+
+conversation_stages = {
+    "1": "Introduction: Begin the conversation with a polite greeting and a brief introduction about the company and its services.",
+    "2": "Discover Preferences: Ask the client about their hobbies, interests or other personal information to provide a more personalized service.",
+    "3": "Education Service Presentation: Provide more detailed information about the education services offered by the company.",
+    "4": "AI Trading Service Presentation: Provide more detailed information about the AI trading services offered by the company.",
+    "5": "Close: Ask if they want to proceed with the service. This could be starting a trial, setting up a meeting, or any other suitable next step.",
+    "6": "Company Info: Provide general information about company like what is company and what are purposes and aimed etc.",
+    "7": "Trading Advice Service Presentation: Provide and give detailed trading advice about to asked specific coin or asset"
+}
+
+config = dict(
+    agent_name="AI Assistant",
+    agent_role="Service Representative",
+    company_name="GptVerse",
+    company_values="Our vision is adaptive people to metaverse with AI process, education and ai trading systems. So people act like a metaverse platform.",
+    conversation_purpose="Choosing the right service for the client and showing them the best option.",
+    conversation_history=[
+    ],
+    conversation_type="talking",
+    conversation_stage=conversation_stages.get(
+        "1",
+        "Introduction: Begin the conversation with a polite greeting and a brief introduction about the company and its services.",
+    ),
+)
+
+gptverse_agent = GptVerseAssistant.from_llm(llm, verbose=False, **config)
+gptverse_agent.seed_agent()
 
 def create_openai_model(
         model_name: str = 'text-davinci-003',
@@ -25,7 +61,6 @@ def create_openai_model(
         temperature=temperature
     )
     return openai
-
 
 def create_fewshot_template():
     examples = [
