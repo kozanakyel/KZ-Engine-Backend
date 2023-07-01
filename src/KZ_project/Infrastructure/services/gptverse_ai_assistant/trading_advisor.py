@@ -15,7 +15,8 @@ os.environ['OPENAI_API_KEY'] = openai_api_key
 openai = OpenAI(
     #model_name='text-davinci-003',
     model_name='text-davinci-003',
-    temperature=0.7
+    temperature=0.7,
+    openai_api_key=openai_api_key
 )
 
 

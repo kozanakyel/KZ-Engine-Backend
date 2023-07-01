@@ -6,12 +6,11 @@ from langchain import OpenAI
 load_dotenv()
 
 openai_api_key = os.getenv('OPENAI_API_KEY')
-os.environ['OPENAI_API_KEY'] = openai_api_key
-
 openai = OpenAI(
     #model_name='text-davinci-003',
     model_name='text-davinci-003',
-    temperature=0
+    temperature=0,
+    openai_api_key=openai_api_key
 )
 
 examples = [
