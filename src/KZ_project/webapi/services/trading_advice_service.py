@@ -130,7 +130,8 @@ def create_query(
     dmp_14 = indicator_data.DMP_14.iloc[-1]
     dmn_14 = indicator_data.DMN_14.iloc[-1]
     adx_14 = indicator_data.ADX_14.iloc[-1]
-    query = f"For {symbol}: RSI indicator value is {rsi_14:.2f}, MFI indicator value is {mfi_14:.2f}, DMP indicator value is {dmp_14:.2f}," \
+    query = f"For {symbol}: RSI indicator value is {rsi_14:.2f}, MFI indicator value is \
+            {mfi_14:.2f}, DMP indicator value is {dmp_14:.2f}," \
         f" DMN indicator value is {dmn_14:.2f} and ADX indicator value is {adx_14:.2f}." \
         f" What is your advice for trading for those indicator values?"
     return query

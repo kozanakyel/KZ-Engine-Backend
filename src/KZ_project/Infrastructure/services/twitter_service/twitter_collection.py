@@ -86,7 +86,7 @@ class TwitterCollection():
                                                   tweet_fields=["created_at", "text", "source"],
                                                   user_fields=["name", "username", "location", "verified",
                                                                "description"],
-                                                  max_results=17,  # max result is 100
+                                                  max_results=100,  # max result is 100
                                                   expansions='author_id'
                                                   )
         return tweets
@@ -185,3 +185,9 @@ class TwitterCollection():
         if 'index' in df_tweet.columns:
             df_tweet.drop(columns=['index'], axis=1, inplace=True)
         return df_tweet
+    
+    
+if __name__ == '__main__':
+    client = TwitterCollection()
+    df = client.get_tweets('#btc', 'en', '2023-06-23', '2023-06-25')
+    print(df)
