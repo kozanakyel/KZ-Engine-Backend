@@ -1,4 +1,4 @@
-# GPTVERSE Forecasting Engine with Sentiment Analysis and Decision Trees
+# KZENGINE Forecasting Engine with Sentiment Analysis and Decision Trees
 The objective of this project is to use various techniques such as Decision Trees, Sentiment Analysis with Natural Language Processing, and Japanese Candlestick Art to forecast the structure of the next candle for popular cryptocurrencies like Bitcoin, Ethereum, Binance coin, Ripple, and Doge coin. The predictions will be made using a binary format and will aim to determine whether the price movement of the cryptocurrencies in the market will increase or decrease within the next 1-2 hours based on the candle structure.
 
 In addition to these techniques, the research also involves studying other technical analysis and indicator structures, as well as incorporating Twitter data and sentiment analysis scores into the model.
@@ -94,6 +94,9 @@ This indicator shows the all the indicators says strong buy signal and the botto
 ![KZ_INDEX/SCORE](/assets/images/kz_index.png)
 
 Twitter and telegram APIs will be purchased for natural language process operations, and the related data will be provided with data mining and its APIs, and the effect of new features and people's thoughts and sentiments on this subject on the price will be monitored. With the process to be added to the data pipeline, the optimization and effects of the model will be observed. The results obtained in the last stage will be evaluated as both technical, deep learning and sentimental analysis, and it will be tried to determine where the price can go in the next candle. It seems like a topic that has been mentioned in many places, but when you enter it, it will be noticed how small the visible part of the iceberg is. My purpose in choosing this subject, which has been talked about so much and information pollution is at a high level. It comes from my curiosity to determine how price algorithms move in scientific ways.
+
+For Business Partnership;
+kozanakyel@gmail.com
 
 Lets take a coffe;
 USDT -> (TRC20): TEMt1TQE1MNtMQDcrEN165tPv8wWzEF4Dr
