@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 import os
-import matplotlib.pyplot as plt
 from KZ_project.Infrastructure.utilities.ohlc_data_process import calculate_dmi_rsi_mfi, fetch_data, analyze_ichimoku, analyze_supertrend, calculate_supertrend
 from langchain import OpenAI
 from langchain.chat_models import ChatOpenAI
@@ -14,7 +13,7 @@ os.environ['OPENAI_API_KEY'] = openai_api_key
 
 openai = OpenAI(
     #model_name='text-davinci-003',
-    model_name='text-davinci-003',
+    model_name='text-ada-001',
     temperature=0.7,
     openai_api_key=openai_api_key
 )
@@ -60,27 +59,27 @@ trend_prefix = """Answer the question based on the context below.
 
 # create our examples
 rsi_examples = [
-{
-    "query": f"RSI,70.34,MFI,59.02,DMP,31.3,"
-                f" DMN,12.77,ADX,41.26"
-                f" What is your advice for trading for those indicator values?",
-    "answer": "The RSI indicator value being above 70 at this moment indicates an overbought zone has been entered."
-                "The MFI value trending above the average confirms the flow of money. On the DMi side, "
-                "the DMP (positive directional movement indicator) value is above "
-                "the DMN (negative directional movement indicator) value, "
-                "and ADX is strongly trending above 25 and at 40 levels, "
-                "indicating a strong bull trend that has entered in a short period of time. "
-                "When considering the flow of money and the overbought zone, it may be advisable "
-                "to take some profits and waiting next market movements."
-}, {
-    "query": f"RSI,40.14, MFI,41, DMP,21.01,"
-                f"DMN,23.67,ADX,20.76."
-                f" What is your advice for trading for those indicator values?",
-    "answer": "The RSI indicator value dropping around 40 indicates approaching the selling zone. "
-                "The MFI index also dropping around 40 supports this. Although ADX suggests that there is no strong trend below 25, "
-                "it can be observed that DMN is above DMP, creating selling pressure. "
-                "My recommendation would be to wait for a better buying opportunity at this point."
-}
+    {
+        "query": f"RSI,70.34,MFI,59.02,DMP,31.3,"
+                    f" DMN,12.77,ADX,41.26"
+                    f" What is your advice for trading for those indicator values?",
+        "answer": "The RSI indicator value being above 70 at this moment indicates an overbought zone has been entered."
+                    "The MFI value trending above the average confirms the flow of money. On the DMi side, "
+                    "the DMP (positive directional movement indicator) value is above "
+                    "the DMN (negative directional movement indicator) value, "
+                    "and ADX is strongly trending above 25 and at 40 levels, "
+                    "indicating a strong bull trend that has entered in a short period of time. "
+                    "When considering the flow of money and the overbought zone, it may be advisable "
+                    "to take some profits and waiting next market movements."
+    }, {
+        "query": f"RSI,40.14, MFI,41, DMP,21.01,"
+                    f"DMN,23.67,ADX,20.76."
+                    f" What is your advice for trading for those indicator values?",
+        "answer": "The RSI indicator value dropping around 40 indicates approaching the selling zone. "
+                    "The MFI index also dropping around 40 supports this. Although ADX suggests that there is no strong trend below 25, "
+                    "it can be observed that DMN is above DMP, creating selling pressure. "
+                    "My recommendation would be to wait for a better buying opportunity at this point."
+    }
 ]
 
 # create a example template

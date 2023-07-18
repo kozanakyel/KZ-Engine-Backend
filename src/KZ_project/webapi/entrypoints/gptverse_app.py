@@ -10,7 +10,7 @@ gpt_blueprint = Blueprint('gptverse', __name__)
 @gpt_blueprint.route('/ai_assistant', methods=['POST'])
 def post_assistant_response():
     query = request.json['query']
-    response = gptverse_agent.get_response(query)    # gptverse_agent created in servie file
+    response = kayze_agent.get_response(query)    # kayze_agent created in servie file
     return jsonify({'response': response}), 201
 
 

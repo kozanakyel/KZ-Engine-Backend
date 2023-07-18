@@ -9,15 +9,13 @@ from langchain import PromptTemplate
 from langchain import FewShotPromptTemplate
 from langchain.chat_models import ChatOpenAI
 
-from KZ_project.Infrastructure.services.gptverse_ai_assistant.gptverse_assistant import GptVerseAssistant
+from KZ_project.Infrastructure.services.kayze_assistant_service.kayze_assistant import KayzeAssistant
 
 
 load_dotenv()
 
 openai_api_key = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_KEY'] = openai_api_key
-
-
 
 
 verbose = True
@@ -34,10 +32,10 @@ conversation_stages = {
 }
 
 config = dict(
-    agent_name="AI Assistant",
+    agent_name="KayZe",
     agent_role="Service Representative",
-    company_name="GptVerse",
-    company_values="Our vision is adaptive people to metaverse with AI process, education and ai trading systems. So people act like a metaverse platform.",
+    company_name="KZEngine",
+    company_values="Our vision is helping people trading decision when buy and sell decion process, via the Artificial Intelligence and MAchine Learning process.",
     conversation_purpose="Choosing the right service for the client and showing them the best option.",
     conversation_history=[
     ],
@@ -48,8 +46,8 @@ config = dict(
     ),
 )
 
-gptverse_agent = GptVerseAssistant.from_llm(llm, verbose=False, **config)
-gptverse_agent.seed_agent()
+kayze_agent = KayzeAssistant.from_llm(llm, verbose=False, **config)
+kayze_agent.seed_agent()
 
 def create_openai_model(
         model_name: str = 'text-davinci-003',

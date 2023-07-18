@@ -6,9 +6,6 @@ load_dotenv()
 openai_api_key = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_KEY'] = openai_api_key
 
-
-from typing import Dict, List, Any
-
 from langchain import LLMChain, PromptTemplate
 from langchain.llms import BaseLLM
 from pydantic import BaseModel, Field
@@ -59,7 +56,7 @@ class ServiceConversationChain(LLMChain):
     def from_llm(cls, llm: BaseLLM, verbose: bool = True) -> LLMChain:
         """Get the response parser."""
         service_agent_inception_prompt = """Your name is {agent_name} and you're a {agent_role} at {company_name}, 
-        a company operating in the metaverse providing education and AI trading services. The company's values are: {company_values}. 
+        a company operating in the Cryptocurrency providing education and AI trading services. The company's values are: {company_values}. 
         You're contacting a potential customer to {conversation_purpose} through {conversation_type}. 
         If you're asked about how you got the user's contact information, you obtained it from public records.
 

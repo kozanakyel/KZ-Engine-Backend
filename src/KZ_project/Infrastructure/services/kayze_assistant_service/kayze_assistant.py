@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
-from KZ_project.Infrastructure.services.gptverse_ai_assistant.service_chains import ServiceConversationChain
-from KZ_project.Infrastructure.services.gptverse_ai_assistant.service_chains import ServiceSelectionChain
+from KZ_project.Infrastructure.services.kayze_assistant_service.service_chains import ServiceConversationChain
+from KZ_project.Infrastructure.services.kayze_assistant_service.service_chains import ServiceSelectionChain
 
 from typing import Dict, List, Any
 
@@ -10,11 +10,11 @@ from pydantic import BaseModel, Field
 from langchain.chains.base import Chain
 from langchain.chat_models import ChatOpenAI
 
-from KZ_project.Infrastructure.services.gptverse_ai_assistant.symbol_generation_service import SymboGenerationPromptService
-from KZ_project.Infrastructure.services.gptverse_ai_assistant.trading_advisor import TradingAdvisor
+from KZ_project.Infrastructure.services.kayze_assistant_service.symbol_generation_service import SymboGenerationPromptService
+from KZ_project.Infrastructure.services.kayze_assistant_service.trading_advisor import TradingAdvisor
 from KZ_project.Infrastructure.services.redis_chatbot_service.index_redis_service import IndexRedisService
 
-class GptVerseAssistant(Chain, BaseModel):
+class KayzeAssistant(Chain, BaseModel):
     """Controller model for the GptVerse Assistant."""
     
     stage_id = "1"
@@ -86,7 +86,7 @@ class GptVerseAssistant(Chain, BaseModel):
         self._call(inputs={})
 
     def _call(self, inputs: Dict[str, Any]) -> None:
-        """Run one step of the GptVerseAssistant."""
+        """Run one step of the KayzeAssistant."""
         
         # print(f"stage: {self.stage_id}")
         if self.stage_id == "6":
@@ -143,8 +143,8 @@ class GptVerseAssistant(Chain, BaseModel):
         return self.conversation_history[-1].rstrip("<END_OF_TURN>")
 
     @classmethod
-    def from_llm(cls, llm: BaseLLM, verbose: bool = False, **kwargs) -> "GptVerseAssistant":
-        """Initialize the GptVerseAssistant Controller."""
+    def from_llm(cls, llm: BaseLLM, verbose: bool = False, **kwargs) -> "KayzeAssistant":
+        """Initialize the KayzeAssistant Controller."""
         service_selection_chain = ServiceSelectionChain.from_llm(llm, verbose=verbose)
         service_conversation_utterance_chain = ServiceConversationChain.from_llm(
             llm, verbose=verbose
@@ -162,7 +162,6 @@ if __name__ == '__main__':
     import os
     from dotenv import load_dotenv
     from langchain.chat_models import ChatOpenAI
-    # from gptverse_assistant import GptVerseAssistant
 
     load_dotenv()
 
@@ -196,9 +195,9 @@ if __name__ == '__main__':
         ),
     )
     
-    gptverse_agent = GptVerseAssistant.from_llm(llm, verbose=False, **config)
-    gptverse_agent.seed_agent()
-    res = gptverse_agent.get_response("hello!")
+    kayze_agent = KayzeAssistant.from_llm(llm, verbose=False, **config)
+    kayze_agent.seed_agent()
+    res = kayze_agent.get_response("hello!")
     print(res)
     
     
