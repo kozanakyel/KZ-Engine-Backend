@@ -52,6 +52,8 @@ class ForecastEngine():
     def forecast_builder(self):
         sentiment_featured_matrix = self.sentiment_featured_pipeline.create_sentiment_aggregate_feature_matrix()
         datetime_t, next_candle_prediction, bt_json = self.predict_next_candle(sentiment_featured_matrix)
+        last_candle_structure = self.data_creator.get_current_candlestick()
+        print(last_candle_structure['candlestick_pattern'])
         
         if not self.is_backtest:
             response_db = services.prediction_service_new_signaltracker(
@@ -68,6 +70,7 @@ class ForecastEngine():
             print(f'db commit signal: {response_db}')
 
         return self.ai_type, datetime_t, next_candle_prediction
+    
     
     
         

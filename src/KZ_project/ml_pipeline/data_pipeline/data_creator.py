@@ -82,7 +82,7 @@ class DataCreator(IBinaryFeatureLabel):
         self.log(f'Created Feature label for next day and dropn NaN values')
         return dframe
     
-    def get_current_candlestick(self, dframe):
+    def get_current_candlestick(self):
         """_summary_
 
         Args:
@@ -91,7 +91,10 @@ class DataCreator(IBinaryFeatureLabel):
         Returns:
             dataframe: added candlestick structure and labels for last 20 timestamp
         """
-        df = dframe.tail(20).copy()
+        df = self.download_ohlc_from_client()
+        df = self.create_datetime_index(df)
+        df = self.column_names_preparation(df, self.range_list)
+        df = df.tail(20).copy()
         JapaneseCandlestickCreator.create_candle_columns(df)
         JapaneseCandlestickCreator.create_candle_label(df) 
         return df
