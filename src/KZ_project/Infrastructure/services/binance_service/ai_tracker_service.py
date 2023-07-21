@@ -113,11 +113,11 @@ if __name__ == '__main__':
 
         twm = ThreadedWebsocketManager()    # for avoid thread sockets errors
         twm.start()
-        interval = '1h'
+        interval = '1d'
         cr_list = [
-            {"symbol": "BTCUSDT", "name": "btc", "bar_length": "1m"},
-             # {"symbol": "BNBUSDT", "name": "bnb", "bar_length": "5m"},
-             # {"symbol": "ETHUSDT", "name": "eth", "bar_length": "5m"},
+            {"symbol": "BTCUSDT", "name": "btc", "bar_length": "5m"},
+             {"symbol": "BNBUSDT", "name": "bnb", "bar_length": "5m"},
+             {"symbol": "ETHUSDT", "name": "eth", "bar_length": "5m"},
         ]
         trader_c_list = []
         for coin_d in cr_list:

@@ -23,6 +23,7 @@ class SignalTracker:
             self,
             signal: int,
             ticker: str,
+            japanese_candle: str,
             tweet_counts: int,
             datetime_t: str,
             backtest_returns_data: str,
@@ -32,6 +33,7 @@ class SignalTracker:
         self.datetime_t = datetime_t
         self.tweet_counts = tweet_counts
         self.ticker = ticker
+        self.japanese_candle = japanese_candle
         self.backtest_returns_data = backtest_returns_data
         self.forecast_model = forecast_model
 
@@ -47,6 +49,7 @@ class SignalTracker:
             'datetime_t': self.datetime_t,
             'tweet_counts': self.tweet_counts,
             'ticker': self.ticker,
+            'japanese_candle': self.japanese_candle,
             'backtest_returns_data': self.backtest_returns_data,
             'forecast_model': self.forecast_model.json()
         }
