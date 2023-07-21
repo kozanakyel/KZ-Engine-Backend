@@ -3,6 +3,7 @@ from KZ_project.Infrastructure.logger.logger import Logger
 from KZ_project.core.interfaces.Ibinary_feature_label import IBinaryFeatureLabel
 from KZ_project.Infrastructure.file_processor.data_checker import DataChecker
 from KZ_project.core.interfaces.Iclient_service import IClientService
+from KZ_project.ml_pipeline.japanese_candlestick.japanese_candlestick_creator import JapaneseCandlestickCreator
 
 
 class DataCreator(IBinaryFeatureLabel):
@@ -80,9 +81,51 @@ class DataCreator(IBinaryFeatureLabel):
         dframe.dropna(inplace= True, how='any')
         self.log(f'Created Feature label for next day and dropn NaN values')
         return dframe
+    
+    def get_current_candlestick(self, dframe):
+        """_summary_
+
+        Args:
+            dframe (Dataframe): 
+
+        Returns:
+            dataframe: added candlestick structure and labels for last 20 timestamp
+        """
+        df = dframe.tail(20).copy()
+        JapaneseCandlestickCreator.create_candle_columns(df)
+        JapaneseCandlestickCreator.create_candle_label(df) 
+        return df
+    
         
     def log(self, text):
         if self.logger:
             self.logger.append_log(text)
         else:
             print(text)
+            
+if __name__ == '__main__':
+    from KZ_project.Infrastructure.services.yahoo_service.yahoo_client import YahooClient
+    MAIN_PATH = '/data/outputs/data_ind/'
+    PURE_PATH = '/data/pure_data/'
+    FEATURE_PATH = '/data/outputs/feature_data/'
+    PREFIX_PATH = '.'
+    SYMBOL = 'BTC-USD' 
+    PERIOD = "1y"
+    INTERVAL = '1d'
+    START_DATE = '2021-06-30'
+    END_DATE = '2022-07-01'
+    HASHTAG = 'btc'
+    scale = 1
+    range_list = [i for i in range(5,21)]
+    range_list = [i*scale for i in range_list]
+    source='yahoo'
+
+    y = YahooClient()
+    d = DataCreator(symbol=SYMBOL, source=source, range_list=range_list, period=PERIOD, interval=INTERVAL, 
+                    start_date=START_DATE, end_date=END_DATE, 
+                    client=y)  
+    df = d.download_ohlc_from_client()
+    df = d.create_datetime_index(df)
+    df = d.column_names_preparation(df, range_list)
+    candle_japon = d.get_current_candlestick(df)
+    print(candle_japon)
