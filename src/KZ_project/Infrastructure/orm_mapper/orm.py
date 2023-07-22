@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship, registry
 
 from KZ_project.core.domain.crypto import Crypto
 from KZ_project.core.domain.forecast_model import ForecastModel
+from KZ_project.core.domain.sentiment_record import SentimentRecord
 from KZ_project.core.domain.signal_tracker import SignalTracker
 from KZ_project.core.domain.user import User
 
@@ -60,7 +61,7 @@ sentiment_records = Table(
     "sentiment_records",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("datetime_t", DateTime, index=True),
+    Column("datetime_t", DateTime, index=True, unique=True),
     Column("sentiment_score", Float)
 )
 

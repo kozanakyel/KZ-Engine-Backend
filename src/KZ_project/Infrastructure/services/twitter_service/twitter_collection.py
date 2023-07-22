@@ -11,6 +11,9 @@ from KZ_project.Infrastructure.logger.logger import Logger
 from langchain.document_loaders import TwitterTweetLoader
 import warnings
 
+
+
+
 warnings.filterwarnings('ignore')
 
 load_dotenv()
@@ -252,16 +255,23 @@ class TwitterCollection():
 if __name__ == '__main__':
     from KZ_project.ml_pipeline.sentiment_analyzer.sentiment_analyzer import SentimentAnalyzer
     import matplotlib.pyplot as plt
+    from KZ_project.webapi.services.services import add_sentiment_record_from_dataframe, get_all_sentiment_records
+    from KZ_project.core.adapters.sentimentrecord_repository import SentimentRecordRepository
+    from KZ_project.webapi.entrypoints.flask_app import get_session
     
     client = TwitterCollection()
-    df = client.get_tweet_contents(tw_counts_points=10)
+    df = client.get_tweet_contents(tw_counts_points=100)
     sid = SentimentAnalyzer()
     df = sid.cleaning_tweet_data(df)
     df = sid.preprocessing_tweet_datetime(df)
     df = sid.get_sentiment_scores(df)
     sid.add_datetime_to_col(df)
     sent_scores = sid.get_sent_with_mean_interval(df, '1h')
-    last_month = client.get_last_mont_df(sent_scores)
-    last_month.plot()
-    plt.show()
+    last_month = client.get_last_mont_df(sent_scores)  # uses dataframe to series procedure
+
     print(last_month, last_month.info())
+    
+    # sent_scores = sent_scores.to_frame()   # dont forget the convert dataframe
+    add_sentiment_record_from_dataframe(sent_scores, get_session())
+    result = get_all_sentiment_records(get_session())
+    print(result)

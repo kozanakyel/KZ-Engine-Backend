@@ -45,9 +45,9 @@ class SentimentRecordRepository(AbstractSentimentRecordRepository):
         Returns:
             list: A list of all crypto entities in the repository.
         """
-        return self.session.query(SentimentRecord).all()
+        return self.session.query(SentimentRecord).order_by(desc(SentimentRecord.datetime_t)).all()
     
-    def add_list_from_dataframe(self, dataframe: DataFrame):
+    def add_list_from_dataframe(self, df: DataFrame):
         """
         Add a list of sentiment records to the repository from a DataFrame.
 
@@ -56,10 +56,15 @@ class SentimentRecordRepository(AbstractSentimentRecordRepository):
         """
         sentiment_records_list = []
 
-        for index, row in dataframe.iterrows():
+        for index, row in df.iterrows():
             datetime_t = index.to_pydatetime()  # Convert the DataFrame index to a Python datetime object
             sentiment_score = row['sentiment_score']
-            sentiment_record = SentimentRecord(datetime_t=datetime_t, sentiment_score=sentiment_score)
-            sentiment_records_list.append(sentiment_record)
+            existing_record = self.session.query(SentimentRecord).filter_by(datetime_t=datetime_t).first()
+            # print(existing_record, 'exitingssss')
+
+            if not existing_record:
+                # Add a new sentiment record if no existing record with the same datetime_t
+                sentiment_record = SentimentRecord(datetime_t=datetime_t, sentiment_score=sentiment_score)
+                sentiment_records_list.append(sentiment_record)
 
         self.session.add_all(sentiment_records_list)

@@ -2,8 +2,12 @@ from flask import request, jsonify, Blueprint
 from dotenv import load_dotenv
 from KZ_project.Infrastructure.services.twitter_service.twitter_collection import TwitterCollection
 from KZ_project.Infrastructure.services.yahoo_service.yahoo_client import YahooClient
+from KZ_project.core.adapters.sentimentrecord_repository import SentimentRecordRepository
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
 from KZ_project.ml_pipeline.sentiment_analyzer.sentiment_analyzer import SentimentAnalyzer
+
+from KZ_project.webapi.services import services
+from KZ_project.webapi.entrypoints.flask_app import get_session
 
 
 MAIN_PATH = '/data/outputs/data_ind/'
@@ -50,3 +54,16 @@ def post_sentiment_analysis():
     last_month = client.get_last_mont_df(sent_scores)
     response = last_month.to_json()
     return response, 201
+
+@japanese_blueprint.route('/last_sentiment', methods=["POST"])
+def post_last_sentiment():
+    session = get_session()
+    result = services.get_last_sentiment(session)
+    return result.json(), 201
+
+@japanese_blueprint.route('/all_sentiment', methods=["POST"])
+def post_all_sentiment():
+    session = get_session()
+    result = services.get_all_sentiment_records(session)
+    sentiment_records_json = [record.json() for record in result]
+    return jsonify(sentiment_records_json), 201

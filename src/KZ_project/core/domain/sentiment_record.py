@@ -39,7 +39,7 @@ class SentimentRecord:
         Returns:
             str: A string representation of the sentiment score record.
         """
-        return f"<Record {self.sentiment_score}>"
+        return f"<Record {self.datetime_t}, {self.sentiment_score}>"
 
     def __eq__(self, other):
         """
