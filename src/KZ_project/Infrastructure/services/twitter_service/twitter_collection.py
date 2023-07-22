@@ -254,14 +254,14 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     
     client = TwitterCollection()
-    df = client.get_tweet_contents(tw_counts_points=100)
+    df = client.get_tweet_contents(tw_counts_points=10)
     sid = SentimentAnalyzer()
     df = sid.cleaning_tweet_data(df)
     df = sid.preprocessing_tweet_datetime(df)
     df = sid.get_sentiment_scores(df)
     sid.add_datetime_to_col(df)
-    sent_scores = sid.get_sent_with_mean_interval(df, '1d')
+    sent_scores = sid.get_sent_with_mean_interval(df, '1h')
     last_month = client.get_last_mont_df(sent_scores)
     last_month.plot()
     plt.show()
-    print(last_month)
+    print(last_month, last_month.info())

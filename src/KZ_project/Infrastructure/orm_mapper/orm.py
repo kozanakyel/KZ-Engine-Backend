@@ -56,10 +56,19 @@ signal_trackers = Table(
     Column("forecast_model_id", ForeignKey("forecast_models.id")),
 )
 
+sentiment_records = Table(
+    "sentiment_records",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("datetime_t", DateTime, index=True),
+    Column("sentiment_score", Float)
+)
+
 
 def start_mappers():
     user_mapper = mapper_registry.map_imperatively(User, users)
     crypto_mapper = mapper_registry.map_imperatively(Crypto, cryptos)
+    sentiment_mapper = mapper_registry.map_imperatively(SentimentRecord, sentiment_records)
     forecast_model_mapper = mapper_registry.map_imperatively(ForecastModel, forecast_models,
                                                              properties={
                                                                  'crypto': relationship(crypto_mapper)
