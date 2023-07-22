@@ -1,9 +1,12 @@
 from __future__ import annotations
+
+from pandas import DataFrame
 from KZ_project.core.adapters.crypto_repository import CryptoRepository
 from KZ_project.core.adapters.forecastmodel_repository import ForecastModelRepository
 from KZ_project.core.adapters.signaltracker_repository import SignalTrackerRepository
 
 from KZ_project.core.domain.forecast_model import ForecastModel
+from KZ_project.core.domain.sentiment_record import SentimentRecord
 from KZ_project.core.domain.signal_tracker import SignalTracker
 
 from KZ_project.core.domain.crypto import Crypto
@@ -191,3 +194,25 @@ def save_crypto_forecast_model_service(accuracy_score, session, ticker,
         return f'An errror for creating model {e}'
     # print(f'Succes creating save model for {symbol}')
     return f'Succesfully created model {symbol}'
+
+
+def add_sentiment_record_from_dataframe(
+        dataframe: DataFrame,
+        repo: AbstractBaseRepository, session
+) -> None:
+    sentiment_records_list = []
+    for index, row in dataframe.iterrows():
+        datetime_t = index.to_pydatetime()
+        sentiment_score = row['sentiment_score']
+        sentiment_record = SentimentRecord(datetime_t, sentiment_score)
+        sentiment_records_list.append(sentiment_record)
+
+    repo.add_list_from_dataframe(sentiment_records_list)
+    session.commit()
+
+
+def get_all_sentiment_records(
+        repo: AbstractBaseRepository, session,
+) -> list:
+    session.commit()
+    return repo.list()
