@@ -155,33 +155,21 @@ class SentimentAnalyzer:
             else:
                 df.loc[i, 'Datetime'] = pd.to_datetime(f'{str(df.Date[i])} {str(df.hour[i])}:00+00:00')
 
-    def get_sent_with_mean_interval(self, df_tweets: pd.DataFrame(), interval: str = '1d') -> pd.DataFrame():
+    def get_sent_with_mean_interval(self, df_tweets: pd.DataFrame(), interval: str = '1h') -> pd.DataFrame():
         df_result = pd.DataFrame()
+        df_result['Datetime'] = df_tweets.Datetime.unique()
+        df_result['sentiment_score'] = 0
+        for i, dt, com in df_result.itertuples():
+            sub_df = df_tweets.copy()
+            df_result.loc[i, 'sentiment_score'] = sub_df.loc[
+                (sub_df.Datetime.unique()[i] == sub_df.Datetime), 'compound'].mean()
+        df_result.set_index('Datetime', inplace=True)
+        df_result = df_result.sort_values('Datetime')
         if interval == '1d':
-            df_result['Date'] = df_tweets.Date.unique()
-            df_result['compound_total'] = 0
-            # self.log(f'subdf: {df_result}')
-            # self.log(f'tweets: {df_tweets}')
-            for i, dt, com in df_result.itertuples():
-                sub_df = df_tweets.loc[(df_tweets.comp_score != 'Neutral'), :]
-                # error for if the result df have one dataset with mean value
-                df_result.loc[i, 'compound_total'] = sub_df.loc[
-                    (sub_df.Date.unique()[i] == sub_df.Date), 'compound'].mean()
-
-            df_result.set_index('Date', inplace=True)
-            df_result = df_result.sort_values('Date')
-            self.log(f'Daily sentiment score Calculated')
-        elif interval == '1h':
-            df_result['Datetime'] = df_tweets.Datetime.unique()
-            df_result['compound_total'] = 0
-            for i, dt, com in df_result.itertuples():
-                sub_df = df_tweets.copy()
-
-                df_result.loc[i, 'compound_total'] = sub_df.loc[
-                    (sub_df.Datetime.unique()[i] == sub_df.Datetime), 'compound'].mean()
+            df_result = df_result.resample('D').mean().reset_index()
             df_result.set_index('Datetime', inplace=True)
             df_result = df_result.sort_values('Datetime')
-            self.log(f'Hourly sentiment score Calculated')
+        df_result = df_result.dropna(axis=0)
         return df_result
 
     def concat_ohlc_compound_score(self, ohlc: pd.DataFrame(), result_sent_df: pd.DataFrame()) -> pd.DataFrame():

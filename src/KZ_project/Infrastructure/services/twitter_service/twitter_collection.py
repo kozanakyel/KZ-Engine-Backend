@@ -6,7 +6,9 @@ import os
 from dotenv import load_dotenv
 import datetime
 from datetime import timedelta as td
+from KZ_project.Infrastructure.constant import DATA_PATH
 from KZ_project.Infrastructure.logger.logger import Logger
+from langchain.document_loaders import TwitterTweetLoader
 import warnings
 
 warnings.filterwarnings('ignore')
@@ -64,6 +66,31 @@ class TwitterCollection():
             self.log("Authentication Successfull")
         except:
             self.log("Error: Authentication Failed")
+            
+    def get_users_twitter(self, file: str) -> list:
+        with open(file, 'r') as f:
+            usernames = f.read().splitlines()
+        return usernames
+    
+    def get_tweet_contents(self, tw_counts_points: int) -> pd.DataFrame:
+        loader = TwitterTweetLoader.from_bearer_token(
+            oauth2_bearer_token=self.bearer_token,
+            twitter_users=self.get_users_twitter(os.path.join(DATA_PATH, 'tweets_data/list_users_twitter.txt')),
+            number_tweets=tw_counts_points,  # Default value is 100
+        )
+        contents = []
+        documents = loader.load()
+        for doc in documents:
+            contents.append(doc.dict())
+        df = pd.DataFrame(contents)
+
+        df['created_at'] = pd.to_datetime(df['metadata'].apply(lambda x: x['created_at']), format='%a %b %d %H:%M:%S %z %Y')
+        df['screen_name'] = df['metadata'].apply(lambda x: x['user_info']['screen_name'])
+        df = df[['screen_name', 'page_content', 'created_at']]
+        df = df.rename(columns={'page_content': 'text', 'screen_name': 'username'})
+        return df
+        
+        
 
     def post_tweet_with_media(self, tweet: str, media_path: str = None):
         tweet = tweet
@@ -144,6 +171,34 @@ class TwitterCollection():
                     blanks.append(i)
 
         df_tweets.drop(blanks, inplace=True)
+        
+    def cleaning_tweet_data_v2( df: pd.DataFrame()):
+        # for langchain tweet loader new versions
+        import re
+        df_tweets = df.copy()
+        if 'Unnamed: 0' in df_tweets.columns:
+            df_tweets.drop(columns=['Unnamed: 0'], axis=1, inplace=True)
+        if 'source' in df_tweets.columns:
+            df_tweets.drop(columns=['source', 'name', 'location', 'verified', 'description'], axis=1, inplace=True)
+            
+
+        df_tweets = df_tweets.apply(lambda x: x.astype(str).str.lower()).drop_duplicates(subset=['text', 'username'],
+                                                                                            keep='first')
+
+        df_tweets['text'] = df_tweets['text'].apply(lambda x: re.split('https:\/\/.*', str(x))[0])
+        df_tweets['text'] = df_tweets['text'].str.lower()
+        df_tweets['text'] = df_tweets['text'].str.replace("@[a-z0-9A-Z]+", "", regex=True)
+        df_tweets['text'] = df_tweets['text'].str.replace("#[a-z0-9A-Z]+", "", regex=True)
+
+        blanks = []  # start with an empty list
+        for i, created_at, text, *username in df_tweets.itertuples():
+            if type(text) == str:
+                if text.isspace():
+                    blanks.append(i)
+        df_tweets.drop(blanks, inplace=True)
+        df_tweets.dropna(inplace=True)
+
+        return df_tweets 
 
     def write_tweets_csv(self, df: pd.DataFrame(), pathdf: str, filedf: str) -> None:
         if not os.path.exists(os.path.join(pathdf, filedf)):
@@ -186,8 +241,27 @@ class TwitterCollection():
             df_tweet.drop(columns=['index'], axis=1, inplace=True)
         return df_tweet
     
+    def get_last_mont_df(self, sent_scores):
+        from pandas.tseries.offsets import DateOffset
+
+        last_month_start = sent_scores.index.max() - DateOffset(months=1)
+        last_month_scores = sent_scores[sent_scores.index >= last_month_start]['sentiment_score']
+        return last_month_scores
+    
     
 if __name__ == '__main__':
+    from KZ_project.ml_pipeline.sentiment_analyzer.sentiment_analyzer import SentimentAnalyzer
+    import matplotlib.pyplot as plt
+    
     client = TwitterCollection()
-    df = client.get_tweets('#btc', 'en', '2023-06-23', '2023-06-25')
-    print(df)
+    df = client.get_tweet_contents(tw_counts_points=100)
+    sid = SentimentAnalyzer()
+    df = sid.cleaning_tweet_data(df)
+    df = sid.preprocessing_tweet_datetime(df)
+    df = sid.get_sentiment_scores(df)
+    sid.add_datetime_to_col(df)
+    sent_scores = sid.get_sent_with_mean_interval(df, '1d')
+    last_month = client.get_last_mont_df(sent_scores)
+    last_month.plot()
+    plt.show()
+    print(last_month)
