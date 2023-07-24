@@ -256,11 +256,10 @@ if __name__ == '__main__':
     from KZ_project.ml_pipeline.sentiment_analyzer.sentiment_analyzer import SentimentAnalyzer
     import matplotlib.pyplot as plt
     from KZ_project.webapi.services.services import add_sentiment_record_from_dataframe, get_all_sentiment_records
-    from KZ_project.core.adapters.sentimentrecord_repository import SentimentRecordRepository
     from KZ_project.webapi.entrypoints.flask_app import get_session
     
     client = TwitterCollection()
-    df = client.get_tweet_contents(tw_counts_points=100)
+    df = client.get_tweet_contents(tw_counts_points=1000)
     sid = SentimentAnalyzer()
     df = sid.cleaning_tweet_data(df)
     df = sid.preprocessing_tweet_datetime(df)
