@@ -58,7 +58,7 @@ class AITrackerService:
         complete = msg["k"]["x"]
 
         if self.interval[-1] == 'h':
-            start_date = (event_time - timedelta(days=100)).strftime('%Y-%m-%d')
+            start_date = (event_time - timedelta(days=200)).strftime('%Y-%m-%d')
         elif self.interval[-1] == 'd':
             start_date = (event_time - timedelta(days=365)).strftime('%Y-%m-%d')
 
@@ -113,11 +113,11 @@ if __name__ == '__main__':
 
         twm = ThreadedWebsocketManager()    # for avoid thread sockets errors
         twm.start()
-        interval = '1d'
+        interval = '1h'
         cr_list = [
-            {"symbol": "BTCUSDT", "name": "btc", "bar_length": "5m"},
-             {"symbol": "BNBUSDT", "name": "bnb", "bar_length": "5m"},
-             {"symbol": "ETHUSDT", "name": "eth", "bar_length": "5m"},
+            {"symbol": "BTCUSDT", "name": "btc", "bar_length": "3m"},
+             {"symbol": "BNBUSDT", "name": "bnb", "bar_length": "3m"},
+             {"symbol": "ETHUSDT", "name": "eth", "bar_length": "3m"},
         ]
         trader_c_list = []
         for coin_d in cr_list:
