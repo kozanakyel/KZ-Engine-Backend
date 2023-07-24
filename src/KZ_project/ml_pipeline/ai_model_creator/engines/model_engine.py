@@ -107,13 +107,15 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
 
         # self.xgb.save_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}")    
         y_pred = self.xgb.model.predict(xtest)
-        self.create_retuns_data(xtest, y_pred)
-        bt_json = self.trade_fee_net_returns(xtest)
+        # self.create_retuns_data(xtest, y_pred)
+        # bt_json = self.trade_fee_net_returns(xtest)
+        bt_json = self.xgb.get_n_importance_features()[:10]
+        # print(type(bt_json), bt_json)
 
         print(f'Accuracy Score: {score} last datetime_t: {X.index[-1]}')
 
 
-        return xtest.index[-1], y_pred[-1], json.dumps(bt_json), score
+        return xtest.index[-1], y_pred[-1], bt_json, score
 
     def create_model_and_prediction(self, df_final: pd.DataFrame()) -> tuple:
         y = df_final.feature_label
