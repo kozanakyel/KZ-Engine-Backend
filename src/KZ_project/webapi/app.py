@@ -17,7 +17,7 @@ app.register_blueprint(japanese_blueprint)
 
 if __name__ == '__main__':
     redis_service = IndexRedisService()
-    # pdf_files = redis_service.get_pdf_files()
-    # redis_service.index_checker()
-    # redis_service.initiliaze_tokenizer()
+    pdf_files = redis_service.get_pdf_files()
+    redis_service.index_checker()
+    redis_service.initiliaze_tokenizer()
     app.run(port=5005, host='0.0.0.0')
