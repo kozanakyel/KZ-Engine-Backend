@@ -4,7 +4,7 @@ from pandas import DataFrame
 from KZ_project.core.adapters.repository import AbstractBaseRepository
 from KZ_project.core.domain.sentiment_record import SentimentRecord
 
-from sqlalchemy import desc, asc
+from sqlalchemy import desc, asc, exc
 
 
 class AbstractSentimentRecordRepository(AbstractBaseRepository):
@@ -60,11 +60,19 @@ class SentimentRecordRepository(AbstractSentimentRecordRepository):
             datetime_t = index.to_pydatetime()  # Convert the DataFrame index to a Python datetime object
             sentiment_score = row['sentiment_score']
             existing_record = self.session.query(SentimentRecord).filter_by(datetime_t=datetime_t).first()
-            # print(existing_record, 'exitingssss')
 
-            if not existing_record:
+            if existing_record:
+                # Update the existing record if it already exists
+                existing_record.sentiment_score = sentiment_score
+            else:
                 # Add a new sentiment record if no existing record with the same datetime_t
                 sentiment_record = SentimentRecord(datetime_t=datetime_t, sentiment_score=sentiment_score)
                 sentiment_records_list.append(sentiment_record)
 
-        self.session.add_all(sentiment_records_list)
+        try:
+            if sentiment_records_list:
+                self.session.add_all(sentiment_records_list)
+            self.session.commit()
+        except exc.SQLAlchemyError as e:
+            self.session.rollback()
+            raise e
