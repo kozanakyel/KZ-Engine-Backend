@@ -150,14 +150,15 @@ def get_signal_tracker_all():
     # print(model_list)
     signal_tracker_list = []
     for i in model_list:
+        if i.interval == request.json["interval"]:
 
-        # print(i.id)
-        res_signal = services.get_signal_tracker(
-            i.id, repo_sg, session
-        )
-        # print(i.symbol)
-        if res_signal:
-            signal_tracker_list.append(res_signal.json())
+            # print(i.id)
+            res_signal = services.get_signal_tracker(
+                i.id, repo_sg, session
+            )
+            # print(i.symbol)
+            if res_signal:
+                signal_tracker_list.append(res_signal.json())
 
     # json_obj_list = [i.json() for i in model_list]
     # print(json_obj_list)
