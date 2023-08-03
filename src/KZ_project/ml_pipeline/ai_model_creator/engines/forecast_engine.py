@@ -8,7 +8,7 @@ from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline impo
 from KZ_project.webapi.services import services
 from KZ_project.webapi.entrypoints.flask_app import get_session
 
-class ForecastEngine():
+class ForecastEngine:
     
     def __init__(
         self, 
