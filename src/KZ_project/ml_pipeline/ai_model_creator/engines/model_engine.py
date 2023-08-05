@@ -7,22 +7,23 @@ from KZ_project.Infrastructure.services.yahoo_service.yahoo_client import YahooC
 from KZ_project.core.domain.abstract_forecaster import AbstractForecaster
 from KZ_project.core.interfaces.Ifee_calculateable import IFeeCalculateable
 from KZ_project.core.interfaces.Ireturn_data_creatable import IReturnDataCreatable
-from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
+from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import (
+    XgboostBinaryForecaster,
+)
 
 from KZ_project.webapi.services import services
 from KZ_project.webapi.entrypoints.flask_app import get_session
 
 
 class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
-
     def __init__(
-            self,
-            symbol: str,
-            symbol_cut: str,
-            source: str,
-            interval: str,
-            forecaster: AbstractForecaster,
-            is_backtest: bool = False
+        self,
+        symbol: str,
+        symbol_cut: str,
+        source: str,
+        interval: str,
+        forecaster: AbstractForecaster,
+        is_backtest: bool = False,
     ):
         self.symbol = symbol
         self.source = source
@@ -41,7 +42,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         valuable_features = self.xgb.get_n_importance_features()
         index_col = X_pd.index
 
-        X_pd['importance_features'] = ""
+        X_pd["importance_features"] = ""
         len_index = len(index_col)
         len_features = len(valuable_features)
 
@@ -59,41 +60,49 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         other = 0.0001  # proportional costs for bid-ask spread & slippage (more detailed analysis required!)
         ptc = np.log(1 - commissions) + np.log(1 - other)
 
-        X_pd["strategy_net"] = X_pd.strategy + X_pd.trades * ptc  # strategy returns net of costs
+        X_pd["strategy_net"] = (
+            X_pd.strategy + X_pd.trades * ptc
+        )  # strategy returns net of costs
         X_pd["cstrategy_net"] = X_pd.strategy_net.cumsum().apply(np.exp)
 
         # X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(figsize = (12 , 8),  title = f"{self.symbol} - Forecaster strategy")
         # plt.show()
-        return X_pd[["creturns", "cstrategy", "cstrategy_net", "importance_features"]].to_json()
+        return X_pd[
+            ["creturns", "cstrategy", "cstrategy_net", "importance_features"]
+        ].to_json()
 
     def create_model_and_strategy_return(self, df_final: pd.DataFrame()):
         y = df_final.feature_label
-        X = df_final.drop(columns=['feature_label'], axis=1)
+        X = df_final.drop(columns=["feature_label"], axis=1)
 
         self.ai_type = self.xgb.__class__.__name__
         self.xgb.create_train_test_data(X, y, test_size=0.2)
 
         self.xgb.fit()
 
-        self.model_name = f'extract_ad_est_{self.xgb.model.n_estimators}_{self.symbol}_{self.source}_model_price_{self.interval}_feature_numbers_{X.shape[1]}.json'
+        self.model_name = f"extract_ad_est_{self.xgb.model.n_estimators}_{self.symbol}_{self.source}_model_price_{self.interval}_feature_numbers_{X.shape[1]}.json"
 
         score = self.xgb.get_score()
 
-        print(f'Accuracy Score: {score} and shape: {X.shape}')
+        print(f"Accuracy Score: {score} and shape: {X.shape}")
         # best_params = GridSearchableCV.bestparams_gridcv([100, 200], [0.1], [1, 3], verbose=3)
 
         xtest = self.xgb.X_test  # last addeded tro backtest data for modeliing hourly
         ytest = self.xgb.y_test
 
         if not self.is_backtest:
-
-            if self.interval[-1] == 'h':
-                datetime_t = str(xtest.index[-1] + timedelta(hours=int(self.interval[0])))
-            elif self.interval[-1] == 'd':
-                datetime_t = str(xtest.index[-1] + timedelta(days=int(self.interval[0])))
+            if self.interval[-1] == "h":
+                datetime_t = str(
+                    xtest.index[-1] + timedelta(hours=int(self.interval[0]))
+                )
+            elif self.interval[-1] == "d":
+                datetime_t = str(
+                    xtest.index[-1] + timedelta(days=int(self.interval[0]))
+                )
 
             res_str = services.save_crypto_forecast_model_service(
-                score, get_session(),
+                score,
+                get_session(),
                 self.symbol_cut,
                 self.symbol,
                 self.source,
@@ -101,36 +110,35 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
                 self.model_name,
                 self.interval,
                 self.ai_type,
-                datetime_t
+                datetime_t,
             )
-            print(f'model engine model save: {res_str}')
+            print(f"model engine model save: {res_str}")
 
-        # self.xgb.save_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}")    
+        # self.xgb.save_model(f"./src/KZ_project/ml_pipeline/ai_model_creator/model_stack/{self.symbol_cut}/{self.model_name}")
         y_pred = self.xgb.model.predict(xtest)
         # self.create_retuns_data(xtest, y_pred)
         # bt_json = self.trade_fee_net_returns(xtest)
         bt_json = self.xgb.get_n_importance_features()[:10]
         # print(type(bt_json), bt_json)
 
-        print(f'Accuracy Score: {score} last datetime_t: {X.index[-1]}')
-
+        print(f"Accuracy Score: {score} last datetime_t: {X.index[-1]}")
 
         return xtest.index[-1], y_pred[-1], bt_json, score
 
     def create_model_and_prediction(self, df_final: pd.DataFrame()) -> tuple:
         y = df_final.feature_label
-        X = df_final.drop(columns=['feature_label'], axis=1)
+        X = df_final.drop(columns=["feature_label"], axis=1)
 
         self.ai_type = self.xgb.__class__.__name__
         self.xgb.create_train_test_data(X, y, test_size=0.2)
 
         self.xgb.fit()
 
-        self.model_name = f'test_{self.symbol}_{self.source}_model_price_{self.interval}_feature_numbers_{X.shape[1]}.json'
+        self.model_name = f"test_{self.symbol}_{self.source}_model_price_{self.interval}_feature_numbers_{X.shape[1]}.json"
 
         accuracy_score = self.xgb.get_score()
 
-        print(f'Accuracy Score: {accuracy_score} last datetime_t: {X.index[-1]}')
+        print(f"Accuracy Score: {accuracy_score} last datetime_t: {X.index[-1]}")
         xtest = self.xgb.X_test  # last addeded tro backtest data for modeliing hourly
         ytest = self.xgb.y_test
         y_pred = self.xgb.model.pr
@@ -142,9 +150,9 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         return json.dumps(bt_json)
 
     def save_model_to_service(self, xtest, acc_score, x_shape):
-        if self.interval[-1] == 'h':
+        if self.interval[-1] == "h":
             datetime_t = str(xtest.index[-1] + timedelta(hours=int(self.interval[0])))
-        elif self.interval[-1] == 'd':
+        elif self.interval[-1] == "d":
             datetime_t = str(xtest.index[-1] + timedelta(days=int(self.interval[0])))
 
         res_str = services.save_crypto_forecast_model_service(
@@ -157,52 +165,72 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
             self.model_name,
             self.interval,
             self.ai_type,
-            datetime_t
+            datetime_t,
         )
         return res_str.status
 
 
-if __name__ == '__main__':
-    from KZ_project.Infrastructure.services.binance_service.binance_client import BinanceClient
+if __name__ == "__main__":
+    from KZ_project.Infrastructure.services.binance_service.binance_client import (
+        BinanceClient,
+    )
     from dotenv import load_dotenv
     import os
     import pandas as pd
     import matplotlib.pyplot as plt
     from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
-    from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
+    from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline import (
+        SentimentFeaturedMatrixPipeline,
+    )
 
     load_dotenv()
-    api_key = os.getenv('BINANCE_API_KEY')
-    api_secret_key = os.getenv('BINANCE_SECRET_KEY')
+    api_key = os.getenv("BINANCE_API_KEY")
+    api_secret_key = os.getenv("BINANCE_SECRET_KEY")
 
     client = BinanceClient(api_key, api_secret_key)
     data_creator = DataCreator(
         symbol="BTCUSDT",
-        source='binance',
+        source="binance",
         range_list=[i for i in range(5, 21)],
         period=None,
         interval="1h",
         start_date="2018-01-15",
         end_date="2023-01-01",
-        client=client
+        client=client,
     )
 
     # client_yahoo = YahooClient()
     # data_creator = DataCreator(
-    #     symbol="AAPL", 
-    #     source='yahoo', 
+    #     symbol="AAPL",
+    #     source='yahoo',
     #     range_list=[i for i in range(5, 21)],
-    #     period='max', 
-    #     interval="1d", 
-    #     start_date="2018-01-01", 
-    #     end_date="2023-01-01", 
+    #     period='max',
+    #     interval="1d",
+    #     start_date="2018-01-01",
+    #     end_date="2023-01-01",
     #     client=client_yahoo
-    # )  
+    # )
 
-    forecaster = XgboostBinaryForecaster(n_estimators=7000, eta=0.3, max_depth=1, early_stopping_rounds=0, cv=5,
-                                         is_kfold=True)
-    model_engine = ModelEngine(data_creator.symbol, 'btc', data_creator.source, data_creator.interval, forecaster,
-                               is_backtest=True)
-    pipeline = SentimentFeaturedMatrixPipeline(data_creator, None, None, is_twitter=False)
+    forecaster = XgboostBinaryForecaster(
+        n_estimators=7000,
+        eta=0.3,
+        max_depth=1,
+        early_stopping_rounds=0,
+        cv=5,
+        is_kfold=True,
+    )
+    model_engine = ModelEngine(
+        data_creator.symbol,
+        "btc",
+        data_creator.source,
+        data_creator.interval,
+        forecaster,
+        is_backtest=True,
+    )
+    pipeline = SentimentFeaturedMatrixPipeline(
+        data_creator, None, None, is_twitter=False
+    )
     featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
-    dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(featured_matrix)
+    dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(
+        featured_matrix
+    )
