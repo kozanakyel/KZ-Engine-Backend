@@ -92,8 +92,12 @@ class SignalTrackerRepository(AbstractSignalTrackerRepository):
         Raises:
             None
         """
-        return self.session.query(SignalTracker).filter_by(forecast_model_id=forecast_model_id).order_by(
-            desc(SignalTracker.datetime_t)).first()
+        return (
+            self.session.query(SignalTracker)
+            .filter_by(forecast_model_id=forecast_model_id)
+            .order_by(desc(SignalTracker.datetime_t))
+            .first()
+        )
 
     def list(self):
         """
@@ -108,6 +112,6 @@ class SignalTrackerRepository(AbstractSignalTrackerRepository):
             None
         """
         return self.session.query(SignalTracker).all()
-    
+
     def list_with_ticker(self, ticker: str):
         return self.session.query(SignalTracker).filter_by(ticker=ticker).all()
