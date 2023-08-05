@@ -98,7 +98,23 @@ def get_forecast_model():
         return result.json(), 201
     else:
         return {"message": "Searching AI model is not found!"}, 400
-
+    
+@kz_blueprint.route("/signals_ticker", methods=["POST"])
+def get_signals_with_ticker():
+    session = get_session()
+    repo = SignalTrackerRepository(session)
+    
+    result = services.get_signal_tracker_with_ticker(
+        request.json["ticker"],
+        repo,
+        session
+    )
+    print(f'ticker results: {result}')
+    serialized_result = [signal_tracker.json() for signal_tracker in result]
+    if serialized_result:
+        return jsonify(serialized_result), 201
+    else:
+        return {"message": "Ticker is not found!"}, 400
 
 @kz_blueprint.route("/signal_tracker", methods=["POST"])
 def get_signal_tracker():

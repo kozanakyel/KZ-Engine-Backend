@@ -108,3 +108,6 @@ class SignalTrackerRepository(AbstractSignalTrackerRepository):
             None
         """
         return self.session.query(SignalTracker).all()
+    
+    def list_with_ticker(self, ticker: str):
+        return self.session.query(SignalTracker).filter_by(ticker=ticker).all()

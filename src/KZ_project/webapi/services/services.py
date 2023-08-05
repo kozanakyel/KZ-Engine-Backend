@@ -15,6 +15,7 @@ from KZ_project.core.adapters.repository import AbstractBaseRepository
 from KZ_project.core.domain.user import User
 
 
+
 class InvalidName(Exception):
     pass
 
@@ -85,7 +86,7 @@ def add_forecast_model(
     # finding_crypto = get_crypto(ticker=hashtag, repo=repo_cr, session=session)
     f = ForecastModel(symbol, source, feature_counts, model_name,
                       interval, ai_type, hashtag, accuracy_score, datetime_t, crypto)
-    print(f"################## {f}")
+    
     repo.add(ForecastModel(symbol, source, feature_counts, model_name,
                            interval, ai_type, hashtag, accuracy_score, datetime_t, crypto))
     session.commit()
@@ -118,6 +119,15 @@ def get_signal_tracker(
 ):
     result = repo.get(forecast_model_id)
 
+    session.commit()
+    return result
+
+def get_signal_tracker_with_ticker(
+    ticker: str,
+    repo: AbstractBaseRepository,
+    session
+):
+    result = repo.list_with_ticker(ticker)
     session.commit()
     return result
 
@@ -218,3 +228,5 @@ def get_last_sentiment(
     result = repo.get()
     session.commit()
     return result
+
+    
