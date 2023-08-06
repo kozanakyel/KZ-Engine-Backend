@@ -109,12 +109,14 @@ class ForecastModelRepository(AbstractForecastModelRepository):
         Returns:
             ForecastModel: The retrieved forecast model entity.
         """
-        return self.session.query(ForecastModel) \
-            .filter_by(symbol=symbol) \
-            .filter_by(interval=interval) \
-            .filter_by(ai_type=ai_type) \
-            .order_by(desc(ForecastModel.datetime_t)) \
+        return (
+            self.session.query(ForecastModel)
+            .filter_by(symbol=symbol)
+            .filter_by(interval=interval)
+            .filter_by(ai_type=ai_type)
+            .order_by(desc(ForecastModel.datetime_t))
             .first()
+        )
 
     def list(self):
         """
@@ -144,18 +146,23 @@ class ForecastModelRepository(AbstractForecastModelRepository):
         Raises:
             None
         """
-        subq = self.session.query(
-            ForecastModel.symbol.label('symbol'),
-            func.max(ForecastModel.datetime_t).label('max_datetime_t')
-        ).filter_by(interval=interval) \
-            .filter_by(ai_type=ai_type) \
-            .group_by(ForecastModel.symbol).subquery()
+        subq = (
+            self.session.query(
+                ForecastModel.symbol.label("symbol"),
+                func.max(ForecastModel.datetime_t).label("max_datetime_t"),
+            )
+            .filter_by(interval=interval)
+            .filter_by(ai_type=ai_type)
+            .group_by(ForecastModel.symbol)
+            .subquery()
+        )
 
         q = self.session.query(ForecastModel).join(
-            subq, and_(
+            subq,
+            and_(
                 ForecastModel.symbol == subq.c.symbol,
-                ForecastModel.datetime_t == subq.c.max_datetime_t
-            )
+                ForecastModel.datetime_t == subq.c.max_datetime_t,
+            ),
         )
 
         return q.all()
