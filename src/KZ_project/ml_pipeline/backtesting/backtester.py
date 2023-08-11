@@ -2,6 +2,8 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score
+from matplotlib.dates import DateFormatter
+
 from KZ_project.Infrastructure.services.yahoo_service.yahoo_client import YahooClient
 from KZ_project.core.interfaces.Ifee_calculateable import IFeeCalculateable
 from KZ_project.core.interfaces.Ireturn_data_creatable import IReturnDataCreatable
@@ -51,11 +53,11 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         elif self.data_creator.interval == "1d":
             ei = start_index + self.period
         else:
-            raise ValueError(f"Enb index is not available end_index: {ei}")
+            raise ValueError(f"End index is not available end_index: {ei}")
         return ei
 
     def _predict_next_candle(self, df: pd.DataFrame) -> tuple:
-        forecaster = XgboostBinaryForecaster(eta=0.3)
+        forecaster = XgboostBinaryForecaster(eta=0.3, tree_method="gpu_hist")
         model_engine = ModelEngine(
             self.data_creator.symbol,
             None,
@@ -77,7 +79,9 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         )
 
     def _predict_next_candle_from_model(self, df: pd.DataFrame, hashtag: str) -> tuple:
-        forecaster = XgboostBinaryForecaster(early_stopping_rounds=0)
+        forecaster = XgboostBinaryForecaster(
+            early_stopping_rounds=0, tree_method="gpu_hist"
+        )
         model_engine = ModelEngine(
             self.data_creator.symbol,
             hashtag,
@@ -131,30 +135,37 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
 
     def backtest(self, backtest_counts: int) -> float:
         fm = self.featured_matrix
-        print(self.featured_matrix.log_return)
+        # print(self.featured_matrix.log_return)
         true_accuracy = []
         false_accuracy = []
         succes_predict = 0
         c = 0
         for i in range(backtest_counts):
-            
-            if (fm.loc[fm.index[i]]["log_return"] > 0.005) or (fm.loc[fm.index[i]]["log_return"] < -0.005):
-                c= c+1
-                print('condition agregated ', c)
-                df = self._get_interval_df(i)
-                # df.to_csv(f"./data/outputs/model_fine_tuned_data/prompt_{i}.csv")
-                dt, signal, bt, accuracy_score = self._predict_next_candle(df)
-                ei = self._get_end_index(i)
-                actual_result = (fm.loc[fm.index[ei + 1]]["log_return"] > 0).astype(int)
-                # log_return = fm.loc[fm.index[ei+1]]["log_return"]
-                # if accuracy_score > 0.50:
-                self.backtest_data.append((dt, accuracy_score, signal, actual_result))
+            # if (fm.loc[fm.index[i]]["log_return"] > 0.005) or (fm.loc[fm.index[i]]["log_return"] < -0.005):
+            # c= c+1
+            # print('condition agregated ', c)
+            df = self._get_interval_df(i)
+            # df.to_csv(f"./data/outputs/model_fine_tuned_data/prompt_{i}.csv")
+            dt, signal, bt, accuracy_score = self._predict_next_candle(df)
+            ei = self._get_end_index(i)
+            actual_result = (fm.loc[fm.index[ei + 1]]["log_return"] > 0).astype(int)
+            # log_return = fm.loc[fm.index[ei+1]]["log_return"]
+            # if accuracy_score > 0.50:
+            self.backtest_data.append(
+                (
+                    dt,
+                    accuracy_score,
+                    signal,
+                    actual_result,
+                    fm.loc[fm.index[ei + 1]]["log_return"],
+                )
+            )
 
-                if actual_result == signal:
-                    succes_predict = succes_predict + 1
-                    true_accuracy.append(accuracy_score)
-                else:
-                    false_accuracy.append(accuracy_score)
+            if actual_result == signal:
+                succes_predict = succes_predict + 1
+                true_accuracy.append(accuracy_score)
+            else:
+                false_accuracy.append(accuracy_score)
         return succes_predict / len(self.backtest_data)
 
     def create_retuns_data(self, X_pd, y_pred):
@@ -193,6 +204,7 @@ if __name__ == "__main__":
     import os
     import pandas as pd
     import matplotlib.pyplot as plt
+    from typing import Tuple, List
 
     load_dotenv()
     api_key = os.getenv("BINANCE_API_KEY")
@@ -204,7 +216,7 @@ if __name__ == "__main__":
         source="binance",
         range_list=[i for i in range(5, 21)],
         period=None,
-        interval="1d",
+        interval="1h",
         start_date="2022-06-01",
         client=client,
     )
@@ -221,10 +233,49 @@ if __name__ == "__main__":
     #     client=client_yahoo
     # )
 
-    backtrader = Backtester(100, data_creator)
+    backtrader = Backtester(20, data_creator)
     # acc_score, x, y, y_pred = backtrader._predict_next_candle_from_model(backtrader.featured_matrix)
-    result_score = backtrader.backtest(100)
+    result_score = backtrader.backtest(50)
     print(f"backtest result: {result_score}")
+    # print(f"backtest data: {backtrader.backtest_data}")
+    
+    def calculate_profit_loss_from_backtest_data(backtest_data: List[Tuple]):
+        total_profit_loss = 0
+
+        for item in backtest_data:
+            _, _, signal, _, log_return = item
+            profit_loss = signal * log_return
+            total_profit_loss += profit_loss
+
+        print("Total Profit/Loss:", total_profit_loss)
+        
+    def create_list_profit_loss_from_bt(backtest_data: List[Tuple]) -> List: 
+        cumulative_profit_loss = [0]  # Initialize with 0, as starting balance is $100
+        for item in backtest_data:
+            _, _, signal, _, log_return = item
+            profit_loss = signal * log_return
+            cumulative_profit_loss.append(cumulative_profit_loss[-1] + profit_loss)
+        return cumulative_profit_loss
+    
+        
+    calculate_profit_loss_from_backtest_data(backtrader.backtest_data)
+    dates = [item[0] for item in backtrader.backtest_data]
+    cumulative_pl = create_list_profit_loss_from_bt(backtrader.backtest_data)
+
+    fig, ax = plt.subplots()
+
+    ax.plot_date(dates, cumulative_pl, linestyle='solid')
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Cumulative Profit/Loss ($)")
+    ax.set_title(f"{data_creator.symbol} Cumulative Profit/Loss 200 daily")
+
+    # Set the date formatter to display only the hour and minute in the format
+    date_format = DateFormatter('%Y-%m-%d')
+    ax.xaxis.set_major_formatter(date_format)
+
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
     # acc_score = backtrader._predict_next_candle_from_model(backtrader.featured_matrix, 'btc')
     # print(f'ACCURACY SCORE FOR LAST BACKTEST: {acc_score} last shape: {backtrader.featured_matrix.shape}')
     # print(f'ACCURACY SCORE FOR LAST BACKTEST: {acc_score} {x} {y} {y_pred} last shape: {backtrader.featured_matrix.shape}')
