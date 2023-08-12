@@ -2,7 +2,6 @@ from datetime import timedelta
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score
-from matplotlib.dates import DateFormatter
 
 from KZ_project.Infrastructure.services.yahoo_service.yahoo_client import YahooClient
 from KZ_project.core.interfaces.Ifee_calculateable import IFeeCalculateable
@@ -57,7 +56,9 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         return ei
 
     def _predict_next_candle(self, df: pd.DataFrame) -> tuple:
-        forecaster = XgboostBinaryForecaster(eta=0.3, tree_method="gpu_hist")
+        forecaster = XgboostBinaryForecaster(
+            eta=0.3, tree_method="gpu_hist"
+        )
         model_engine = ModelEngine(
             self.data_creator.symbol,
             None,
@@ -150,7 +151,7 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
             ei = self._get_end_index(i)
             actual_result = (fm.loc[fm.index[ei + 1]]["log_return"] > 0).astype(int)
             # log_return = fm.loc[fm.index[ei+1]]["log_return"]
-            # if accuracy_score > 0.50:
+            
             self.backtest_data.append(
                 (
                     dt,
@@ -168,29 +169,7 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
                 false_accuracy.append(accuracy_score)
         return succes_predict / len(self.backtest_data)
 
-    def create_retuns_data(self, X_pd, y_pred):
-        X_pd["position"] = [y_pred[i] for i, _ in enumerate(X_pd.index)]
-        X_pd["strategy"] = X_pd.position.shift(1) * X_pd["log_return"]
-        X_pd[["log_return", "strategy"]].sum().apply(np.exp)
-        X_pd["cstrategy"] = X_pd["strategy"].cumsum().apply(np.exp)
-        X_pd["creturns"] = X_pd.log_return.cumsum().apply(np.exp)
 
-    def trade_fee_net_returns(self, X_pd: pd.DataFrame()):
-        X_pd["trades"] = X_pd.position.diff().fillna(0).abs()
-        commissions = 0.00075  # reduced Binance commission 0.075%
-        other = 0.0001  # proportional costs for bid-ask spread & slippage (more detailed analysis required!)
-        ptc = np.log(1 - commissions) + np.log(1 - other)
-
-        X_pd["strategy_net"] = (
-            X_pd.strategy + X_pd.trades * ptc
-        )  # strategy returns net of costs
-        X_pd["cstrategy_net"] = X_pd.strategy_net.cumsum().apply(np.exp)
-
-        X_pd[["creturns", "cstrategy", "cstrategy_net"]].plot(
-            figsize=(12, 8), title=f"{self.data_creator.symbol}"
-        )
-        plt.show()
-        return X_pd[["creturns", "cstrategy", "cstrategy_net"]]
 
 
 if __name__ == "__main__":
@@ -202,6 +181,7 @@ if __name__ == "__main__":
     )
     from dotenv import load_dotenv
     import os
+    from datetime import datetime
     import pandas as pd
     import matplotlib.pyplot as plt
     from typing import Tuple, List
@@ -210,14 +190,32 @@ if __name__ == "__main__":
     api_key = os.getenv("BINANCE_API_KEY")
     api_secret_key = os.getenv("BINANCE_SECRET_KEY")
 
+    def calculate_profit_loss_from_backtest_data(backtest_data: List[Tuple]):
+        total_profit_loss = 0
+
+        for item in backtest_data:
+            _, _, signal, _, log_return = item
+            profit_loss = signal * log_return
+            total_profit_loss += profit_loss
+
+        print("Total Profit/Loss:", total_profit_loss)
+
+    def create_list_profit_loss_from_bt(backtest_data: List[Tuple]) -> List:
+        cumulative_profit_loss = [0]  # Initialize with 0, as starting balance is $100
+        for item in backtest_data:
+            _, _, signal, _, log_return = item
+            profit_loss = signal * log_return
+            cumulative_profit_loss.append(cumulative_profit_loss[-1] + profit_loss)
+        return cumulative_profit_loss
+
     client = BinanceClient(api_key, api_secret_key)
     data_creator = DataCreator(
         symbol="BTCUSDT",
         source="binance",
         range_list=[i for i in range(5, 21)],
         period=None,
-        interval="1h",
-        start_date="2022-06-01",
+        interval="1d",
+        start_date="2020-01-01",
         client=client,
     )
 
@@ -233,45 +231,29 @@ if __name__ == "__main__":
     #     client=client_yahoo
     # )
 
-    backtrader = Backtester(20, data_creator)
+    backtrader = Backtester(365, data_creator)
     # acc_score, x, y, y_pred = backtrader._predict_next_candle_from_model(backtrader.featured_matrix)
-    result_score = backtrader.backtest(50)
+    result_score = backtrader.backtest(365)
     print(f"backtest result: {result_score}")
-    # print(f"backtest data: {backtrader.backtest_data}")
-    
-    def calculate_profit_loss_from_backtest_data(backtest_data: List[Tuple]):
-        total_profit_loss = 0
+    # print(f"backtest data: {backtrader.backtest_data}"
 
-        for item in backtest_data:
-            _, _, signal, _, log_return = item
-            profit_loss = signal * log_return
-            total_profit_loss += profit_loss
-
-        print("Total Profit/Loss:", total_profit_loss)
-        
-    def create_list_profit_loss_from_bt(backtest_data: List[Tuple]) -> List: 
-        cumulative_profit_loss = [0]  # Initialize with 0, as starting balance is $100
-        for item in backtest_data:
-            _, _, signal, _, log_return = item
-            profit_loss = signal * log_return
-            cumulative_profit_loss.append(cumulative_profit_loss[-1] + profit_loss)
-        return cumulative_profit_loss
-    
-        
     calculate_profit_loss_from_backtest_data(backtrader.backtest_data)
     dates = [item[0] for item in backtrader.backtest_data]
-    cumulative_pl = create_list_profit_loss_from_bt(backtrader.backtest_data)
+    datetime_objects = [
+        datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S%z") for dt_str in dates
+    ]
+    # print(datetime_objects, type(dates[0]))
+    cumulative_pl = create_list_profit_loss_from_bt(backtrader.backtest_data)[1:]
 
     fig, ax = plt.subplots()
-
-    ax.plot_date(dates, cumulative_pl, linestyle='solid')
+    ax.plot(datetime_objects, cumulative_pl, linestyle="solid")
     ax.set_xlabel("Date")
     ax.set_ylabel("Cumulative Profit/Loss ($)")
-    ax.set_title(f"{data_creator.symbol} Cumulative Profit/Loss 200 daily")
+    ax.set_title(f"{data_creator.symbol} Cumulative Profit/Loss between {datetime_objects[0]} and {datetime_objects[-1]} daily")
 
     # Set the date formatter to display only the hour and minute in the format
-    date_format = DateFormatter('%Y-%m-%d')
-    ax.xaxis.set_major_formatter(date_format)
+    # date_format = DateFormatter('%Y-%m-%d')
+    # ax.xaxis.set_major_formatter(date_format)
 
     plt.xticks(rotation=45)
     plt.tight_layout()
