@@ -3,11 +3,12 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score
 
-from KZ_project.Infrastructure.services.yahoo_service.yahoo_client import YahooClient
-from KZ_project.core.interfaces.Ifee_calculateable import IFeeCalculateable
-from KZ_project.core.interfaces.Ireturn_data_creatable import IReturnDataCreatable
+import os
+import matplotlib.pyplot as plt
+from typing import Tuple, List
 
 from KZ_project.ml_pipeline.ai_model_creator.engines.model_engine import ModelEngine
+from KZ_project.ml_pipeline.ai_model_creator.forecasters.gridsearchable_cv import GridSearchableCV
 from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import (
     XgboostBinaryForecaster,
 )
@@ -18,7 +19,7 @@ from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline impo
 from KZ_project.Infrastructure.constant import ROOT_PATH, MODEL_STACK_PATH
 
 
-class Backtester(IFeeCalculateable, IReturnDataCreatable):
+class Backtester:
     def __init__(self, period: int, data_creator: DataCreator):
         self.data_creator = data_creator
         self.period = period
@@ -56,9 +57,7 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         return ei
 
     def _predict_next_candle(self, df: pd.DataFrame) -> tuple:
-        forecaster = XgboostBinaryForecaster(
-            eta=0.3, tree_method="gpu_hist"
-        )
+        forecaster = XgboostBinaryForecaster(eta=0.3, tree_method="gpu_hist")
         model_engine = ModelEngine(
             self.data_creator.symbol,
             None,
@@ -151,7 +150,7 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
             ei = self._get_end_index(i)
             actual_result = (fm.loc[fm.index[ei + 1]]["log_return"] > 0).astype(int)
             # log_return = fm.loc[fm.index[ei+1]]["log_return"]
-            
+
             self.backtest_data.append(
                 (
                     dt,
@@ -170,111 +169,3 @@ class Backtester(IFeeCalculateable, IReturnDataCreatable):
         return succes_predict / len(self.backtest_data)
 
 
-
-
-if __name__ == "__main__":
-    from KZ_project.Infrastructure.services.binance_service.binance_client import (
-        BinanceClient,
-    )
-    from KZ_project.ml_pipeline.ai_model_creator.forecasters.gridsearchable_cv import (
-        GridSearchableCV,
-    )
-    from dotenv import load_dotenv
-    import os
-    from datetime import datetime
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    from typing import Tuple, List
-
-    load_dotenv()
-    api_key = os.getenv("BINANCE_API_KEY")
-    api_secret_key = os.getenv("BINANCE_SECRET_KEY")
-
-    def calculate_profit_loss_from_backtest_data(backtest_data: List[Tuple]):
-        total_profit_loss = 0
-
-        for item in backtest_data:
-            _, _, signal, _, log_return = item
-            profit_loss = signal * log_return
-            total_profit_loss += profit_loss
-
-        print("Total Profit/Loss:", total_profit_loss)
-
-    def create_list_profit_loss_from_bt(backtest_data: List[Tuple]) -> List:
-        cumulative_profit_loss = [0]  # Initialize with 0, as starting balance is $100
-        for item in backtest_data:
-            _, _, signal, _, log_return = item
-            profit_loss = signal * log_return
-            cumulative_profit_loss.append(cumulative_profit_loss[-1] + profit_loss)
-        return cumulative_profit_loss
-
-    client = BinanceClient(api_key, api_secret_key)
-    data_creator = DataCreator(
-        symbol="BTCUSDT",
-        source="binance",
-        range_list=[i for i in range(5, 21)],
-        period=None,
-        interval="1d",
-        start_date="2020-01-01",
-        client=client,
-    )
-
-    # for backtest yahoo
-    # client_yahoo = YahooClient()
-    # data_creator = DataCreator(
-    #     symbol="AAPL",
-    #     source='yahoo',
-    #     range_list=[i for i in range(5, 21)],
-    #     period='max',
-    #     interval="1d",
-    #     start_date="2023-05-10",
-    #     client=client_yahoo
-    # )
-
-    backtrader = Backtester(365, data_creator)
-    # acc_score, x, y, y_pred = backtrader._predict_next_candle_from_model(backtrader.featured_matrix)
-    result_score = backtrader.backtest(365)
-    print(f"backtest result: {result_score}")
-    # print(f"backtest data: {backtrader.backtest_data}"
-
-    calculate_profit_loss_from_backtest_data(backtrader.backtest_data)
-    dates = [item[0] for item in backtrader.backtest_data]
-    datetime_objects = [
-        datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S%z") for dt_str in dates
-    ]
-    # print(datetime_objects, type(dates[0]))
-    cumulative_pl = create_list_profit_loss_from_bt(backtrader.backtest_data)[1:]
-
-    fig, ax = plt.subplots()
-    ax.plot(datetime_objects, cumulative_pl, linestyle="solid")
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Cumulative Profit/Loss ($)")
-    ax.set_title(f"{data_creator.symbol} Cumulative Profit/Loss between {datetime_objects[0]} and {datetime_objects[-1]} daily")
-
-    # Set the date formatter to display only the hour and minute in the format
-    # date_format = DateFormatter('%Y-%m-%d')
-    # ax.xaxis.set_major_formatter(date_format)
-
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.show()
-    # acc_score = backtrader._predict_next_candle_from_model(backtrader.featured_matrix, 'btc')
-    # print(f'ACCURACY SCORE FOR LAST BACKTEST: {acc_score} last shape: {backtrader.featured_matrix.shape}')
-    # print(f'ACCURACY SCORE FOR LAST BACKTEST: {acc_score} {x} {y} {y_pred} last shape: {backtrader.featured_matrix.shape}')
-    # backtrader.create_retuns_data(x, y_pred)
-    # bt_json = backtrader.trade_fee_net_returns(x)
-
-    # # Assuming self.backtest_data is a list of tuples
-    # data = pd.DataFrame(bt.backtest_data, columns=['date', 'accuracy', 'signal', 'actual'])
-    # data['date'] = pd.to_datetime(data['date'])
-
-    # # Plot the data
-    # plt.plot(data['date'], data['accuracy'], label='Accuracy')
-    # # plt.plot(data['date'], data['signal'], label='Signal')
-    # # plt.plot(data['date'], data['actual'], label='Actual')
-    # plt.legend()
-    # plt.show()
-
-    # gcv = backtrader.grid_backtest()
-    # print(f'best params: {gcv}')  # 0.5, 1, 400
-    # best params: {'eta': 0.9, 'max_depth': 1, 'n_estimators': 1200}

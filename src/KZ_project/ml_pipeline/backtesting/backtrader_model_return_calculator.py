@@ -49,3 +49,11 @@ class BacktraderModelReturnCalculator(IFeeCalculateable, IReturnDataCreatable):
             profit_loss = signal * log_return
             cumulative_profit_loss.append(cumulative_profit_loss[-1] + profit_loss)
         return cumulative_profit_loss
+    
+    def create_list_actual_profit_loss_from_bt(self, backtest_data: List[Tuple]) -> List:
+        cumulative_profit_loss = [0]  # Initialize with 0, as starting balance is $100
+        for item in backtest_data:
+            _, _, signal, act, log_return = item
+            profit_loss = 1*log_return  # Treat negative log_return as loss
+            cumulative_profit_loss.append(cumulative_profit_loss[-1] + profit_loss)
+        return cumulative_profit_loss

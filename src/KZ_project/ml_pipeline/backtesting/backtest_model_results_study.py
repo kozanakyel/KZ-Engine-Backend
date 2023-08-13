@@ -1,16 +1,21 @@
 from KZ_project.Infrastructure.services.binance_service.binance_client import (
     BinanceClient,
 )
+from KZ_project.Infrastructure.services.yahoo_service.yahoo_client import YahooClient
 from dotenv import load_dotenv
 import os
 from datetime import datetime
-import pandas as pd
 import matplotlib.pyplot as plt
 from typing import Tuple, List
+
 from KZ_project.ml_pipeline.backtesting.backtester import Backtester
-from KZ_project.ml_pipeline.backtesting.backtrader_model_return_calculator import BacktraderModelReturnCalculator
+from KZ_project.ml_pipeline.backtesting.backtrader_model_return_calculator import (
+    BacktraderModelReturnCalculator,
+)
 
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
+
+import yfinance as yf
 
 load_dotenv()
 api_key = os.getenv("BINANCE_API_KEY")
@@ -19,12 +24,12 @@ api_secret_key = os.getenv("BINANCE_SECRET_KEY")
 
 client = BinanceClient(api_key, api_secret_key)
 data_creator = DataCreator(
-    symbol="BTCUSDT",
+    symbol="ETHUSDT",
     source="binance",
     range_list=[i for i in range(5, 21)],
     period=None,
     interval="1d",
-    start_date="2020-01-01",
+    start_date="2021-04-01",
     client=client,
 )
 
@@ -45,27 +50,42 @@ bt_model_calculator = BacktraderModelReturnCalculator()
 # acc_score, x, y, y_pred = backtrader._predict_next_candle_from_model(backtrader.featured_matrix)
 result_score = backtrader.backtest(365)
 print(f"backtest result: {result_score}")
-# print(f"backtest data: {backtrader.backtest_data}"
 
 bt_model_calculator.calculate_profit_loss_from_backtest_data(backtrader.backtest_data)
 dates = [item[0] for item in backtrader.backtest_data]
 datetime_objects = [
     datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S%z") for dt_str in dates
 ]
-# print(datetime_objects, type(dates[0]))
-cumulative_pl = bt_model_calculator.create_list_profit_loss_from_bt(backtrader.backtest_data)[1:]
+
+cumulative_pl = bt_model_calculator.create_list_profit_loss_from_bt(
+    backtrader.backtest_data
+)[1:]
+cumulative_act_pnl = bt_model_calculator.create_list_actual_profit_loss_from_bt(
+    backtrader.backtest_data
+)[1:]
+
+
+# btc_symbol = "BTC-USD"
+# btc_data = yf.download(btc_symbol, start=datetime_objects[0], end=datetime_objects[-1], progress=False)
+# btc_prices = btc_data['Adj Close']
+# btc_dates = btc_prices.index
 
 fig, ax = plt.subplots()
 ax.plot(datetime_objects, cumulative_pl, linestyle="solid")
+ax.plot(datetime_objects, cumulative_act_pnl, linestyle="dashed", color="red")
 ax.set_xlabel("Date")
-ax.set_ylabel("Cumulative Profit/Loss ($)")
+ax.set_ylabel("Cumulative Profit/Loss ($)", color='blue')
+ax.tick_params(axis="y", labelcolor="blue")
 ax.set_title(
     f"{data_creator.symbol} Cumulative Profit/Loss between {datetime_objects[0]} and {datetime_objects[-1]} daily"
 )
 
-# Set the date formatter to display only the hour and minute in the format
-# date_format = DateFormatter('%Y-%m-%d')
-# ax.xaxis.set_major_formatter(date_format)
+# ax2 = ax1.twinx()
+
+# Plot BTC prices on the secondary y-axis
+# ax2.plot(datetime_objects, cumulative_act_pnl, linestyle="dashed", color="red")
+# ax2.set_ylabel("Actual Pnl", color="red")
+# ax2.tick_params(axis="y", labelcolor="red")
 
 plt.xticks(rotation=45)
 plt.tight_layout()
