@@ -10,6 +10,10 @@ The motivation behind this project is that when people decide to buy a coin, gen
 
 Financial saturation is a well-known phenomenon in the world of trading and investing, and it can be difficult for individuals to navigate. With the advancements in technology and the increasing popularity of artificial intelligence, there is an opportunity to create a system that can help individuals make better decisions when it comes to trading. By detecting the points of financial saturation, individuals can avoid buying or selling at the wrong time and potentially lose money. This project aims to develop such a system using various methods and algorithms, including the use of machine learning and neural networks. Additionally, by creating an application that can be used by customers, this system can be accessible to a wider audience, ultimately helping more people make profitable trades and achieve their financial goals.
 
+Before Dive into KZEngine, 
+Lets take a coffe;
+USDT -> (TRC20): TEMt1TQE1MNtMQDcrEN165tPv8wWzEF4Dr
+
 ## How installed and Run
 Require specific python version because Binance API not upgraded for other new python verison.
 We recommend pyenv and use python 3.8
@@ -80,7 +84,7 @@ Below picture you can see model importance for this model and DOGE coin
 
 ![DOGE coin Feature importance for AI model](/data/plots/model_evaluation/doge/DOGEUSDT_binance_1h_model_importance.png)
 
-## AI pipeline and GPTVERSE Engine Logic
+## KZEngine Algorithm and System Architecture for MLOps
 
 ![Project Logic Flow](/assets/images/KZ_project.jpg)
 
@@ -94,9 +98,3 @@ This indicator shows the all the indicators says strong buy signal and the botto
 ![KZ_INDEX/SCORE](/assets/images/kz_index.png)
 
 Twitter and telegram APIs will be purchased for natural language process operations, and the related data will be provided with data mining and its APIs, and the effect of new features and people's thoughts and sentiments on this subject on the price will be monitored. With the process to be added to the data pipeline, the optimization and effects of the model will be observed. The results obtained in the last stage will be evaluated as both technical, deep learning and sentimental analysis, and it will be tried to determine where the price can go in the next candle. It seems like a topic that has been mentioned in many places, but when you enter it, it will be noticed how small the visible part of the iceberg is. My purpose in choosing this subject, which has been talked about so much and information pollution is at a high level. It comes from my curiosity to determine how price algorithms move in scientific ways.
-
-For Business Partnership;
-kozanakyel@gmail.com
-
-Lets take a coffe;
-USDT -> (TRC20): TEMt1TQE1MNtMQDcrEN165tPv8wWzEF4Dr
