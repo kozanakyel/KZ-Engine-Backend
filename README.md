@@ -95,6 +95,12 @@ This indicator shows the all the indicators says strong buy signal and the botto
 
 Twitter and telegram APIs will be purchased for natural language process operations, and the related data will be provided with data mining and its APIs, and the effect of new features and people's thoughts and sentiments on this subject on the price will be monitored. With the process to be added to the data pipeline, the optimization and effects of the model will be observed. The results obtained in the last stage will be evaluated as both technical, deep learning and sentimental analysis, and it will be tried to determine where the price can go in the next candle. It seems like a topic that has been mentioned in many places, but when you enter it, it will be noticed how small the visible part of the iceberg is. My purpose in choosing this subject, which has been talked about so much and information pollution is at a high level. It comes from my curiosity to determine how price algorithms move in scientific ways.
 
+!! gunicorn --chdir /root/Documents/KZ-Engine-Backend/src/KZ_project/webapi --bind 0.0.0.0:5005 -w 3 app:app > gunicorn.log 2>&1 &
+!! disown
+!! nohup python src/KZ_project/Infrastructure/services/binance_service/ai_tracker_service.py &
+
+
+
 For Business Partnership;
 kozanakyel@gmail.com
 

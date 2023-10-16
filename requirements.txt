@@ -23,8 +23,8 @@ flask_cors
 flask-sqlalchemy
 gunicorn
 pytest
-langchain
+langchain==0.0.187
 openai
 redis
 tiktoken
-textract
+textract==1.6.5
