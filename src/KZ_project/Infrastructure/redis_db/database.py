@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import openai
+
 from redis import Redis
 from redis.commands.search.field import VectorField
 from redis.commands.search.field import TextField, NumericField
@@ -40,7 +41,6 @@ def create_hnsw_index(
         ]
     )
 
-
 # Create a Redis pipeline to load all the vectors and their metadata
 def load_vectors(client: Redis, input_list, vector_field_name):
     p = client.pipeline(transaction=False)
@@ -58,7 +58,6 @@ def load_vectors(client: Redis, input_list, vector_field_name):
         p.hset(key, mapping=item_metadata)
 
     p.execute()
-
 
 # Make query to Redis
 def query_redis(redis_conn, query, index_name, top_k=2):
