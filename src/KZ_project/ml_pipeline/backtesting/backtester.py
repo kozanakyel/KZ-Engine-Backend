@@ -34,7 +34,7 @@ class Backtester:
 
     def _create_featured_matrix(self) -> pd.DataFrame:
         pipeline = SentimentFeaturedMatrixPipeline(
-            self.data_creator, None, None, is_twitter=False
+            self.data_creator, None, None
         )
         featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
         # featured_matrix.to_csv(os.path.join("data", "deneme1.csv"))

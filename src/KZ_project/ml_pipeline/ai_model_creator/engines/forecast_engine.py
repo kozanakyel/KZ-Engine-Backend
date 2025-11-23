@@ -11,23 +11,20 @@ from KZ_project.webapi.entrypoints.flask_app import get_session
 class ForecastEngine:
     
     def __init__(
-        self, 
-        data_creator: DataCreator, 
-        hashtag: str, 
-        data_checker: DataChecker=None, 
-        is_backtest: bool=False, 
-        is_twitter: bool=True
+        self,
+        data_creator: DataCreator,
+        hashtag: str,
+        data_checker: DataChecker=None,
+        is_backtest: bool=False,
     ):
         self.data_creator = data_creator
         self.data_checker = data_checker
         self.hashtag = hashtag
         self.is_backtest = is_backtest
-        self.is_twitter = is_twitter
         self.sentiment_featured_pipeline = SentimentFeaturedMatrixPipeline(
-                                                    data_creator, 
-                                                    data_checker, 
-                                                    hashtag, 
-                                                    is_twitter=self.is_twitter)
+                                                    data_creator,
+                                                    data_checker,
+                                                    hashtag)
         
     def predict_next_candle(self, df_final):    
         forecaster = XgboostBinaryForecaster(eta=0.3)

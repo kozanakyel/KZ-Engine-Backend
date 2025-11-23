@@ -228,7 +228,7 @@ if __name__ == "__main__":
         is_backtest=True,
     )
     pipeline = SentimentFeaturedMatrixPipeline(
-        data_creator, None, None, is_twitter=False
+        data_creator, None, None
     )
     featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
     dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(

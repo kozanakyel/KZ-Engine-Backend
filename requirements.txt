@@ -4,7 +4,6 @@ pandas
 pandas_ta
 xgboost
 yfinance
-tweepy
 ta-lib
 scikit-learn
 wordcloud

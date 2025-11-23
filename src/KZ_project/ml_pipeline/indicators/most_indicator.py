@@ -5,8 +5,6 @@ import os
 import matplotlib.pyplot as plt
 
 from KZ_project.Infrastructure.services.binance_service.binance_client import BinanceClient
-from KZ_project.ml_pipeline.sentiment_analyzer.sentiment_analyzer import SentimentAnalyzer
-from KZ_project.Infrastructure.services.twitter_service.twitter_collection import TwitterCollection
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
 from KZ_project.Infrastructure.constant import DATA_PATH
 
@@ -60,13 +58,6 @@ if __name__ == '__main__':
 
     load_dotenv()
 
-    symbol = "btc"
-    client_twitter = TwitterCollection()
-    tsa = SentimentAnalyzer()
-    df_tweets = client_twitter.get_tweets_with_interval("btc", 'en', hour=24 * 2, interval=2)
-    daily_sents, hourly_sents = tsa.create_sent_results_df(df_tweets)
-    print(daily_sents)
-
     api_key = os.getenv('BINANCE_API_KEY')
     api_secret_key = os.getenv('BINANCE_SECRET_KEY')
 
@@ -94,30 +85,5 @@ if __name__ == '__main__':
     plt.scatter(df.index[up_to_down], df['close'][up_to_down], marker='^', color='green', label='Buy')
     plt.scatter(df.index[down_to_up], df['close'][down_to_up], marker='v', color='red', label='Sell')
 
-    capital = 1000  # Initial capital
-    position = 0  # 0 indicates no position, 1 indicates long position
-    buy_price = 0  # Stores the buy price for calculating profit/loss
-    profit_loss = []  # List to store profit/loss
-
-    for i in range(len(df)):
-        if up_to_down[i] and position == 0:  # Buy signal and no position
-            position = 1
-            buy_price = df['close'][i]
-        elif down_to_up[i] and position == 1:  # Sell signal and long position
-            position = 0
-            sell_price = df['close'][i]
-            pl = (sell_price - buy_price) / buy_price  # Calculate profit/loss
-            profit_loss.append(pl)
-            capital = capital * (1 + pl)  # Update capital
-
     plt.legend()
-    plt.savefig(os.path.join(DATA_PATH, 'tweet_plot.png'))
-
-    # Calculate the cumulative return
-    cumulative_return = (capital - 1000) / 1000
-    c_return_string = f"MOST indicator trend is: {df['Trend_8_2'].iloc[-1].upper()}.\n"
-    output_string = daily_sents.to_string(header=False)
-    twitter_sent_scores = f'Last 3 day Twitter Sentiment Scores for #Bitcoin:\n{output_string}\n'
-    last_tweet_update = c_return_string + twitter_sent_scores
-    response_twt = client_twitter.post_tweet_with_media(last_tweet_update, os.path.join(DATA_PATH, 'tweet_plot.png'))
-    print(response_twt)
+    plt.savefig(os.path.join(DATA_PATH, 'most_plot.png'))
