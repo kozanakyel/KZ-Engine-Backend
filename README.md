@@ -90,14 +90,12 @@ Below picture you can see model importance for this model and DOGE coin
 
 ### some extra information
 
-![Bitcoin Sentiment Analysis](/assets/images/btc_twitter_sentimen.png)
-
 INNOVATION: Always ask myself why and when all the people say buy coin but then price decrease, Sell the coin then price UP.
 So i innovate a new Indicator with combination 23 indicators and also some strategies most popular. then all this indicators converted to binary matrix. at the last step i sum up all rows for obtain some knowledge about them. I named it the KZ_INDEX/SCORE.
 This indicator shows the all the indicators says strong buy signal and the bottom point say that all the indicators stromg sell. and you can see actually this 2 things works opposite direction. and you can define buy/sell points. but you cannot implement esaily this indicator because it has very complex calculation.
 ![KZ_INDEX/SCORE](/assets/images/kz_index.png)
 
-Twitter and telegram APIs will be purchased for natural language process operations, and the related data will be provided with data mining and its APIs, and the effect of new features and people's thoughts and sentiments on this subject on the price will be monitored. With the process to be added to the data pipeline, the optimization and effects of the model will be observed. The results obtained in the last stage will be evaluated as both technical, deep learning and sentimental analysis, and it will be tried to determine where the price can go in the next candle. It seems like a topic that has been mentioned in many places, but when you enter it, it will be noticed how small the visible part of the iceberg is. My purpose in choosing this subject, which has been talked about so much and information pollution is at a high level. It comes from my curiosity to determine how price algorithms move in scientific ways.
+> Note: The project previously included Twitter-based sentiment collection and visualization. These components have been removed to avoid the operational and data costs associated with third-party social media APIs.
 
 !! gunicorn --chdir /root/Documents/KZ-Engine-Backend/src/KZ_project/webapi --bind 0.0.0.0:5005 -w 3 app:app > gunicorn.log 2>&1 &
 !! disown
