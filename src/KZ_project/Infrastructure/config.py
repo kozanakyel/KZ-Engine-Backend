@@ -14,6 +14,7 @@ LOG_FILE_NAME_PREFIX = f"log_{datetime.now()}"
 # logger = Logger(LOG_PATH, LOG_FILE_NAME_PREFIX)
 # client = BinanceClient(api_key, api_secret_key, logger=logger)
 
+PG_DB_URL = os.getenv("PG_DB_URL")
 PSQL_USER = os.getenv('PSQL_USER')
 PSQL_PWD = os.getenv('PSQL_PWD')
 PSQL_HOST = os.getenv('PSQL_HOST')
@@ -173,6 +174,9 @@ config_coin_list = [BinanceConfig(), BitcoinConfig(), RippleConfig(), EthereumCo
 
 
 def get_postgres_uri():
+    if PG_DB_URL:
+        return PG_DB_URL
+
     host = PSQL_HOST
     port = PSQL_PORT
     password = PSQL_PWD

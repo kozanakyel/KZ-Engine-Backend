@@ -3,6 +3,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
 import json
+from typing import Callable, Optional
+
 from KZ_project.Infrastructure.services.yahoo_service.yahoo_client import YahooClient
 from KZ_project.core.domain.abstract_forecaster import AbstractForecaster
 from KZ_project.core.interfaces.Ifee_calculateable import IFeeCalculateable
@@ -12,7 +14,6 @@ from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecast
 )
 
 from KZ_project.webapi.services import services
-from KZ_project.webapi.entrypoints.flask_app import get_session
 
 
 class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
@@ -24,6 +25,8 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         interval: str,
         forecaster: AbstractForecaster,
         is_backtest: bool = False,
+        persist_models: bool = False,
+        session_provider: Optional[Callable] = None,
     ):
         self.symbol = symbol
         self.source = source
@@ -31,6 +34,8 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         self.symbol_cut = symbol_cut
         self.is_backtest = is_backtest
         self.xgb = forecaster
+        self.persist_models = persist_models
+        self.session_provider = session_provider
 
     def create_retuns_data(self, X_pd, y_pred):
         X_pd["position"] = [y_pred[i] for i, _ in enumerate(X_pd.index)]
@@ -90,7 +95,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         xtest = self.xgb.X_test  # last addeded tro backtest data for modeliing hourly
         ytest = self.xgb.y_test
 
-        if not self.is_backtest:
+        if not self.is_backtest and self.persist_models and self.session_provider:
             if self.interval[-1] == "h":
                 datetime_t = str(
                     xtest.index[-1] + timedelta(hours=int(self.interval[0]))
@@ -102,7 +107,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
 
             res_str = services.save_crypto_forecast_model_service(
                 score,
-                get_session(),
+                self.session_provider(),
                 self.symbol_cut,
                 self.symbol,
                 self.source,
@@ -150,6 +155,9 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
         return json.dumps(bt_json)
 
     def save_model_to_service(self, xtest, acc_score, x_shape):
+        if not self.persist_models or not self.session_provider:
+            return None
+
         if self.interval[-1] == "h":
             datetime_t = str(xtest.index[-1] + timedelta(hours=int(self.interval[0])))
         elif self.interval[-1] == "d":
@@ -157,7 +165,7 @@ class ModelEngine(IFeeCalculateable, IReturnDataCreatable):
 
         res_str = services.save_crypto_forecast_model_service(
             acc_score,
-            get_session(),
+            self.session_provider(),
             self.symbol_cut,
             self.symbol,
             self.source,
@@ -228,7 +236,7 @@ if __name__ == "__main__":
         is_backtest=True,
     )
     pipeline = SentimentFeaturedMatrixPipeline(
-        data_creator, None, None, is_twitter=False
+        data_creator, None, None
     )
     featured_matrix = pipeline.create_sentiment_aggregate_feature_matrix()
     dtt, y_pred, bt_json, acc_score = model_engine.create_model_and_strategy_return(

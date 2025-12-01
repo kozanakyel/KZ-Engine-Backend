@@ -1,8 +1,8 @@
 # KZENGINE Forecasting Engine with Sentiment Analysis and Decision Trees
 The objective of this project is to use various techniques such as Decision Trees, Sentiment Analysis with Natural Language Processing, and Japanese Candlestick Art to forecast the structure of the next candle for popular cryptocurrencies like Bitcoin, Ethereum, Binance coin, Ripple, and Doge coin. The predictions will be made using a binary format and will aim to determine whether the price movement of the cryptocurrencies in the market will increase or decrease within the next 1-2 hours based on the candle structure.
 
-In addition to these techniques, the research also involves studying other technical analysis and indicator structures, as well as incorporating Twitter data and sentiment analysis scores into the model.
-The research resulted in the development of an application with a backend data and AI modelling pipeline, as well as a frontend for users to view the coin signal results and how many tweets were evaluated.
+In addition to these techniques, the research also involves studying other technical analysis and indicator structures, with the current model focusing on on-chain/market data instead of third-party social data sources.
+The research resulted in the development of an application with a backend data and AI modelling pipeline, as well as a frontend for users to view the coin signal results.
 
 However, it is important to note that predicting the movement of cryptocurrencies can be challenging due to their volatility and the many external factors that may impact their value. Therefore, while this project may provide useful insights, investors should exercise caution and consider all relevant information before making investment decisions.
 
@@ -28,7 +28,7 @@ $ cd KZ-Forecasting-Engine-Backend
 $ python3 -m venv venv
 $ source venv/bin/activate
 $ pip install -U pip
-$ pip install -U requirements.txt
+$ pip install -r requirements.txt
 $ pip install -e src
 $ python -m nltk.downloader stopwords
 $ sudo apt install ntpdate
@@ -39,32 +39,17 @@ $ sudo ntpdate -sb time.nist.gov
 OK! At the now tou can ready for running application but before you should add .env file with this format.
 
 ```
-TW_access_token=...
-TW_access_token_secret=...
-TW_consumer_key=...
-TW_consumer_secret=...
-TW_BEARER_TOKEN=...
-
 BINANCE_API_KEY=...
 BINANCE_SECRET_KEY=...
-
-SECRET_KEY=...
-
-PSQL_USER=postgres
-PSQL_PWD=postgres
-PSQL_HOST=localhost
-PSQL_PORT=5433
-PSQL_DB_NAME=kz_project
-
-API_PORT=5000
-API_HOST=127.0.0.1
+PG_DB_URL=postgresql://user:password@hostname:5432/database
 ```
 
-Then we can ready for running application. Firstly you must start the web api project part.
+`PG_DB_URL` is preferred over the older `PSQL_*` variables and is used by tests to validate PostgreSQL connectivity when provided.
+
+Then we can ready for running application. The API now uses FastAPI; start it with:
 
 ```
-$ export FLASK_APP=src/KZ_project/webapi/app.py
-$ flask run
+$ uvicorn KZ_project.webapi.app:app --host 0.0.0.0 --port 5005
 ```
 
 If ypu can track and getting instantly model prediction for 5 coins(BTCUSDT, BNBUSDT, ETHUSDT, XRPUSDT, DOGEUSDT). you must run this command:
@@ -90,14 +75,14 @@ Below picture you can see model importance for this model and DOGE coin
 
 ### some extra information
 
-![Bitcoin Sentiment Analysis](/assets/images/btc_twitter_sentimen.png)
-
 INNOVATION: Always ask myself why and when all the people say buy coin but then price decrease, Sell the coin then price UP.
 So i innovate a new Indicator with combination 23 indicators and also some strategies most popular. then all this indicators converted to binary matrix. at the last step i sum up all rows for obtain some knowledge about them. I named it the KZ_INDEX/SCORE.
 This indicator shows the all the indicators says strong buy signal and the bottom point say that all the indicators stromg sell. and you can see actually this 2 things works opposite direction. and you can define buy/sell points. but you cannot implement esaily this indicator because it has very complex calculation.
 ![KZ_INDEX/SCORE](/assets/images/kz_index.png)
 
-Twitter and telegram APIs will be purchased for natural language process operations, and the related data will be provided with data mining and its APIs, and the effect of new features and people's thoughts and sentiments on this subject on the price will be monitored. With the process to be added to the data pipeline, the optimization and effects of the model will be observed. The results obtained in the last stage will be evaluated as both technical, deep learning and sentimental analysis, and it will be tried to determine where the price can go in the next candle. It seems like a topic that has been mentioned in many places, but when you enter it, it will be noticed how small the visible part of the iceberg is. My purpose in choosing this subject, which has been talked about so much and information pollution is at a high level. It comes from my curiosity to determine how price algorithms move in scientific ways.
+> Note: The project previously included Twitter-based sentiment collection and visualization. These components have been removed to avoid the operational and data costs associated with third-party social media APIs.
+>
+> Note: FastAPI no longer exposes the legacy GPT/Redis chatbot or trading-advice endpoints, and technical-analysis helpers that depended on tradingview-ta/TA-LIB/pandas_ta have been removed to simplify dependencies. The runtime now focuses on the core forecasting pipeline and Binance data access.
 
 !! gunicorn --chdir /root/Documents/KZ-Engine-Backend/src/KZ_project/webapi --bind 0.0.0.0:5005 -w 3 app:app > gunicorn.log 2>&1 &
 !! disown

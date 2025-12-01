@@ -5,29 +5,31 @@ from KZ_project.Infrastructure.file_processor.data_checker import DataChecker
 from KZ_project.ml_pipeline.ai_model_creator.forecasters.xgboost_binary_forecaster import XgboostBinaryForecaster
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
 from KZ_project.ml_pipeline.data_pipeline.sentiment_feature_matrix_pipeline import SentimentFeaturedMatrixPipeline
+from typing import Callable, Optional
+
 from KZ_project.webapi.services import services
-from KZ_project.webapi.entrypoints.flask_app import get_session
 
 class ForecastEngine:
     
     def __init__(
-        self, 
-        data_creator: DataCreator, 
-        hashtag: str, 
-        data_checker: DataChecker=None, 
-        is_backtest: bool=False, 
-        is_twitter: bool=True
+        self,
+        data_creator: DataCreator,
+        hashtag: str,
+        data_checker: DataChecker = None,
+        is_backtest: bool = False,
+        persist_predictions: bool = False,
+        session_provider: Optional[Callable] = None,
     ):
         self.data_creator = data_creator
         self.data_checker = data_checker
         self.hashtag = hashtag
         self.is_backtest = is_backtest
-        self.is_twitter = is_twitter
+        self.persist_predictions = persist_predictions
+        self.session_provider = session_provider
         self.sentiment_featured_pipeline = SentimentFeaturedMatrixPipeline(
-                                                    data_creator, 
-                                                    data_checker, 
-                                                    hashtag, 
-                                                    is_twitter=self.is_twitter)
+                                                    data_creator,
+                                                    data_checker,
+                                                    hashtag)
         
     def predict_next_candle(self, df_final):    
         forecaster = XgboostBinaryForecaster(eta=0.3)
@@ -55,18 +57,18 @@ class ForecastEngine:
         last_candle_structure = self.data_creator.get_candlesticks(is_complete=False)
         print('last candlestick', last_candle_structure['candlestick_pattern'].iloc[-1])
         
-        if not self.is_backtest:
+        if not self.is_backtest and self.persist_predictions and self.session_provider:
             response_db = services.prediction_service_new_signaltracker(
-                self.ai_type, 
-                datetime_t, 
+                self.ai_type,
+                datetime_t,
                 next_candle_prediction,
-                self.data_creator.symbol, 
-                self.data_creator.interval, 
-                self.hashtag, 
-                self.sentiment_featured_pipeline.tweet_counts, 
+                self.data_creator.symbol,
+                self.data_creator.interval,
+                self.hashtag,
+                self.sentiment_featured_pipeline.tweet_counts,
                 last_candle_structure['candlestick_pattern'].iloc[-1],
-                bt_json, 
-                get_session()
+                bt_json,
+                self.session_provider(),
             )
             print(f'db commit signal: {response_db}')
 

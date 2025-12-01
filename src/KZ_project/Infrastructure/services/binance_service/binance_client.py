@@ -12,15 +12,22 @@ from KZ_project.core.interfaces.Iclient_service import IClientService
 
 class BinanceClient(IClientService):
     
-    def __init__(self, api_key: str, api_secret_key: str, logger: Logger=None):
+    def __init__(
+        self,
+        api_key: str,
+        api_secret_key: str,
+        logger: Logger = None,
+        client: Client | None = None,
+        twm: ThreadedWebsocketManager | None = None,
+    ):
         self.api_key = api_key
         self.api_secret_key = api_secret_key
         self.logger = logger
-        
-        self.client = Client(api_key = self.api_key, 
-                             api_secret = self.api_secret_key, 
-                             tld = "com")
-        self.twm = ThreadedWebsocketManager() 
+
+        self.client = client or Client(
+            api_key=self.api_key, api_secret=self.api_secret_key, tld="com"
+        )
+        self.twm = twm or ThreadedWebsocketManager()
         
     def log(self, text):
         if self.logger:

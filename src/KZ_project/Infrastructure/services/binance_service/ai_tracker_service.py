@@ -1,5 +1,6 @@
 import pandas as pd
 from binance import ThreadedWebsocketManager
+from datetime import timedelta
 
 from KZ_project.Infrastructure.logger.logger import Logger
 from KZ_project.ml_pipeline.data_pipeline.data_creator import DataCreator
@@ -21,7 +22,6 @@ class AITrackerService:
         units,
         interval: str,
         logger: Logger = None,
-        is_twitter: bool = True,
         twm: ThreadedWebsocketManager = None,
     ):
         self.twm = twm
@@ -55,7 +55,6 @@ class AITrackerService:
         self.units = units
         self.logger = logger
         self.interval = interval
-        self.is_twitter = is_twitter
 
     def start_trading(self):
         # self.twm.start()
@@ -97,7 +96,7 @@ class AITrackerService:
                 client=self.client,
             )
             sentiment_pipeline = ForecastEngine(
-                data_creator, self.ticker, is_twitter=self.is_twitter
+                data_creator, self.ticker
             )
             ai_type, Xt, next_candle_prediction = sentiment_pipeline.forecast_builder()
             print(f"prediction {Xt} {next_candle_prediction}")
@@ -147,7 +146,6 @@ if __name__ == "__main__":
                 client=client,
                 units=20,
                 interval=interval,
-                is_twitter=False,
                 twm=twm,
             )
 
