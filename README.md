@@ -78,24 +78,42 @@ $ python ai_trader.py
 
 You can see some backtest result in data/plots folder for this 5 coins
 
-![DOGE coin 5 months backtest result for AI model](/data/plots/model_evaluation/doge/DOGEUSDT_binance_1h_model_backtest.png)
+![DOGE coin 5 months backtest result for AI model](data/plots/model_evaluation/doge/DOGEUSDT_binance_1h_model_backtest.png)
 
 Below picture you can see model importance for this model and DOGE coin
 
-![DOGE coin Feature importance for AI model](/data/plots/model_evaluation/doge/DOGEUSDT_binance_1h_model_importance.png)
+![DOGE coin Feature importance for AI model](data/plots/model_evaluation/doge/DOGEUSDT_binance_1h_model_importance.png)
 
 ## KZEngine Algorithm and System Architecture for MLOps
 
-![Project Logic Flow](/assets/images/KZ_project.jpg)
+![Project Logic Flow](assets/images/KZ_project.jpg)
 
 ### some extra information
 
 INNOVATION: Always ask myself why and when all the people say buy coin but then price decrease, Sell the coin then price UP.
 So i innovate a new Indicator with combination 23 indicators and also some strategies most popular. then all this indicators converted to binary matrix. at the last step i sum up all rows for obtain some knowledge about them. I named it the KZ_INDEX/SCORE.
 This indicator shows the all the indicators says strong buy signal and the bottom point say that all the indicators stromg sell. and you can see actually this 2 things works opposite direction. and you can define buy/sell points. but you cannot implement esaily this indicator because it has very complex calculation.
-![KZ_INDEX/SCORE](/assets/images/kz_index.png)
+![KZ_INDEX/SCORE](assets/images/kz_index.png)
 
 > Note: The project previously included Twitter-based sentiment collection and visualization. These components have been removed to avoid the operational and data costs associated with third-party social media APIs.
+
+## Import reviewed X/Twitter exports
+
+KZEngine can still use local tweet evidence without adding a live social-media
+collector back into the forecasting loop. The helper below converts TweetClaw
+CSV, JSONL, or JSON exports into the `created_at,text,username` CSV shape used
+by the sentiment analyzer.
+
+```bash
+python scripts/tweetclaw_export_to_tweets_csv.py tweetclaw-export.json data/tweets_data/btc/btc_hour.csv
+```
+
+The converter accepts common TweetClaw export fields such as `created_at`,
+`text`, `tweet_text`, `full_text`, `user`, `author`, `username`, or `handle`.
+Rows without tweet text are skipped, and duplicate `created_at`, `username`,
+and `text` triples are written once. Use the matching coin path from
+`src/KZ_project/Infrastructure/config.py` when preparing hourly or daily
+sentiment files.
 
 !! gunicorn --chdir /root/Documents/KZ-Engine-Backend/src/KZ_project/webapi --bind 0.0.0.0:5005 -w 3 app:app > gunicorn.log 2>&1 &
 !! disown
